@@ -574,7 +574,7 @@
       <div class="set-card">
         <div class="set-title">정보</div>
         <div class="set-row"><span>버전</span><span class="sub" id="appVersion"></span></div>
-        <div class="set-row"><span>오하루 웹</span><a href="https://oharu.vercel.app" target="_blank" rel="noopener">oharu.vercel.app</a></div>
+        <div class="set-row"><span>오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
       </div>
     </div>
 
@@ -586,16 +586,10 @@
 
     <div class="spacer"></div>
 
-    <!-- ═══════════ 광고 영역 ═══════════
-         쿠팡 파트너스 승인 후, .ad-slot 안의 내용을
-         발급받은 다이나믹 배너 <iframe> 코드로 교체하세요.
-         disclosure 문구(공정위 표시)는 절대 지우지 마세요. -->
-    <footer class="ad-card">
+    <!-- ═══════════ 광고 영역 (애드센스 승인 후 .ad-slot에 수동 광고 단위 삽입) ═══════════ -->
+    <footer class="ad-card" hidden>
       <div class="ad-tag">AD</div>
-      <div class="ad-slot">
-        <div class="ph">여기에 쿠팡 파트너스<br>다이나믹 배너가 표시됩니다</div>
-      </div>
-      <div class="disclosure">이 영역은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+      <div class="ad-slot"></div>
     </footer>
   </div>
 
@@ -614,6 +608,15 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 // 데스크톱(Electron) 앱은 URL에 ?desktop=1을 붙여 로드한다: 로그인 필수 + 구글 버튼 숨김
 const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
+
+// 애드센스: 웹에서만 로드 (데스크톱 앱 내 로드는 정책 위반)
+if (!IS_DESKTOP) {
+  const ad = document.createElement("script");
+  ad.async = true;
+  ad.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9388248558941306";
+  ad.crossOrigin = "anonymous";
+  document.head.appendChild(ad);
+}
 
 // ── 유틸 ───────────────────────────────────────
 const $ = id => document.getElementById(id);

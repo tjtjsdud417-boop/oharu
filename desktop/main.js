@@ -10,7 +10,7 @@ const {
 const path = require("path");
 const fs = require("fs");
 
-const APP_URL = "https://oharu.vercel.app/?desktop=1";
+const APP_URL = "https://oharu.today/?desktop=1";
 const DEFAULT_BOUNDS = { width: 420, height: 640 };
 
 const DRAG_CSS = `

@@ -10,7 +10,7 @@
 - `web/index.html`은 완성·검증된 단일 파일 앱이다. **전체 재작성 금지. 리팩토링 금지.**
   수정은 아래 [허용된 수정]만 부분 치환으로 하고, 반드시 변경 전후 diff를 보여준다.
 - 한글 IME Enter 중복 등록 방지 가드(`isComposing` 체크) **제거 금지.**
-- 쿠팡 파트너스 공정위 문구(`.disclosure`) **제거 금지.**
+- 쿠팡 파트너스 공정위 문구(`.disclosure`) **폐기됨(애드센스 전환).**
 - localStorage 키 `"oneul.v3"` **변경 금지** (변경 시 기존 사용자 로컬 데이터 소실).
 - Supabase 데이터 모델(아래) **변경 금지.**
 - 게스트 데이터 이전 함수 `migrateLocalIfAny`의 **'이전 성공 시에만 로컬 삭제'** 로직 변경 금지.
@@ -42,7 +42,7 @@
 ## 배포 (Vercel)
 
 - 재배포 방법: `cd web && npx vercel --prod`
-- 프로덕션 URL: https://oharu.vercel.app
+- 프로덕션 URL: https://oharu.today (Vercel alias)
 - 연결 정보: `web/.vercel/` (삭제 금지)
 - **배포 직전 반드시 git 커밋** (`git add -A && git commit -m "..."`) — 배포 전 상태를 기록해 잘못된 배포 시 복구 가능하게 한다.
 - **`web/` 폴더에는 오하루 파일만** 존재해야 한다. 다른 프로젝트(SAI 등) 파일을 두지 않는다.
