@@ -6,6 +6,7 @@
 <title>Oharu — Today's To-Do List | 오하루</title>
 <meta name="description" content="The simplest free to-do list, focused only on today. No sign-up needed — start instantly, sync across devices, and use it as a Windows desktop widget. 오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트.">
 <meta name="naver-site-verification" content="9b85138bf4fdfd70d642d452cb54b76a4b681db8" />
+<meta name="keywords" content="to-do list, todo app, today planner, desktop widget, 투두리스트, 할일 관리, 오늘 할 일, 바탕화면 위젯, ToDoリスト, 待办清单, lista de tareas">
 <link rel="canonical" href="https://oharu.today/">
 <link rel="alternate" hreflang="x-default" href="https://oharu.today/">
 <link rel="alternate" hreflang="en" href="https://oharu.today/?lang=en">
@@ -653,12 +654,13 @@
         <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
         <div class="set-row" id="setPcWidgetRow" hidden><span id="setPcWidgetLabel">PC 위젯</span><a href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe" target="_blank" rel="noopener" id="setPcWidgetLink">다운로드</a></div>
         <div class="set-row"><span id="setWebLabel">오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
+        <div class="set-row"><span data-i18n="contact">문의</span><a href="mailto:ceo@moodweb.co.kr">ceo@moodweb.co.kr</a></div>
       </div>
     </div>
 
     <!-- 게스트 모드에서만 노출되는 로그인 유도 -->
     <div class="nudge" id="nudge" hidden>
-      <div class="nudge-text" id="nudgeText">할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
+      <div class="nudge-text" id="nudgeText">오하루는 오늘 할 일에만 집중하는 투두리스트예요.<br>할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
       <button class="nudge-btn" id="nudgeLoginBtn">로그인</button>
     </div>
 
@@ -774,7 +776,7 @@ const T = {
     overdue: " · 지남",
     todaySuffix: " · 오늘",
     noRecords: "이 날은 기록이 없어요",
-    nudgeText: "할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.",
+    nudgeText: "오하루는 오늘 할 일에만 집중하는 투두리스트예요.<br>할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.",
     calBtnTitle: "목록 보기",
     calBtnAria: "달력으로 전체 보기",
     setBtnTitle: "설정",
@@ -801,6 +803,7 @@ const T = {
     privacy: "개인정보처리방침",
     view: "보기",
     oharuWeb: "오하루 웹",
+    contact: "문의",
     logoAria: "오하루 로고",
     installTitle: "윈도우 바탕화면에 설치하기",
     installSub: "항상 위에 떠 있는 투두 위젯",
@@ -849,7 +852,7 @@ const T = {
     overdue: " · overdue",
     todaySuffix: " · Today",
     noRecords: "No records for this day",
-    nudgeText: "Your to-dos are saved only on this device.<br>Log in to sync across phone and PC.",
+    nudgeText: "Oharu is a to-do list focused only on today.<br>Your to-dos are saved only on this device.<br>Log in to sync across phone and PC.",
     calBtnTitle: "Calendar",
     calBtnAria: "Calendar",
     setBtnTitle: "Settings",
@@ -876,6 +879,7 @@ const T = {
     privacy: "Privacy Policy",
     view: "View",
     oharuWeb: "Oharu Web",
+    contact: "Contact",
     logoAria: "Oharu logo",
     installTitle: "Install on your Windows desktop",
     installSub: "An always-on-top to-do widget",
@@ -920,7 +924,7 @@ const T = {
     overdue: " · 時間切れ",
     todaySuffix: " · 今日",
     noRecords: "この日は記録がありません",
-    nudgeText: "やることはこの端末にのみ保存されています。<br>ログインするとスマホ・PCどこでも続けられます。",
+    nudgeText: "Oharuは今日のやることだけに集中するToDoリストです。<br>やることはこの端末にのみ保存されています。<br>ログインするとスマホ・PCどこでも続けられます。",
     calBtnTitle: "カレンダー",
     calBtnAria: "カレンダー",
     setBtnTitle: "設定",
@@ -950,6 +954,7 @@ const T = {
     privacy: "プライバシーポリシー",
     view: "表示",
     oharuWeb: "Oharu Web",
+    contact: "お問い合わせ",
     logoAria: "Oharu logo",
     installTitle: "Windowsデスクトップにインストール",
     installSub: "常に手前に表示されるToDoウィジェット",
@@ -991,7 +996,7 @@ const T = {
     overdue: " · 已超时",
     todaySuffix: " · 今天",
     noRecords: "这一天没有记录",
-    nudgeText: "待办目前只保存在此设备上。<br>登录后可在手机和电脑间同步。",
+    nudgeText: "Oharu 是一款只专注今日待办的清单。<br>待办目前只保存在此设备上。<br>登录后可在手机和电脑间同步。",
     calBtnTitle: "日历",
     calBtnAria: "日历",
     setBtnTitle: "设置",
@@ -1021,6 +1026,7 @@ const T = {
     privacy: "隐私政策",
     view: "查看",
     oharuWeb: "Oharu Web",
+    contact: "联系我们",
     logoAria: "Oharu logo",
     installTitle: "安装到 Windows 桌面",
     installSub: "始终置顶的待办小组件",
@@ -1062,7 +1068,7 @@ const T = {
     overdue: " · vencida",
     todaySuffix: " · Hoy",
     noRecords: "Sin registros este día",
-    nudgeText: "Tus tareas solo se guardan en este dispositivo.<br>Inicia sesión para sincronizar entre móvil y PC.",
+    nudgeText: "Oharu es una lista de tareas centrada solo en hoy.<br>Tus tareas solo se guardan en este dispositivo.<br>Inicia sesión para sincronizar entre móvil y PC.",
     calBtnTitle: "Calendario",
     calBtnAria: "Calendario",
     setBtnTitle: "Ajustes",
@@ -1092,8 +1098,8 @@ const T = {
     privacy: "Política de privacidad",
     view: "Ver",
     oharuWeb: "Oharu Web",
+    contact: "Contacto",
     logoAria: "Oharu logo",
-    installTitle: "Instalar en tu escritorio de Windows",
     installSub: "Un widget de tareas siempre visible",
     pcWidget: "Widget para PC",
     download: "Descargar",
@@ -1185,6 +1191,8 @@ function applyTexts() {
   $("setPrivacyLabel").textContent = t("privacy");
   $("setPrivacyLink").textContent = t("view");
   $("setWebLabel").textContent = t("oharuWeb");
+  const contactEl = document.querySelector('[data-i18n="contact"]');
+  if (contactEl) contactEl.textContent = t("contact");
   $("seoLine").textContent = t("seoLine");
   if (!IS_DESKTOP) {
     $("setPcWidgetRow").hidden = false;
@@ -1553,7 +1561,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.5.1";
+const APP_VERSION = "1.5.3";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();

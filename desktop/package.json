@@ -1,8 +1,8 @@
 {
   "name": "oharu-desktop",
   "productName": "Oharu",
-  "version": "1.4.1",
-  "description": "Oharu — today's to-do (Windows widget)",
+  "version": "1.5.3",
+  "description": "Oharu — Today's To-Do List Widget (투두리스트 위젯)",
   "main": "main.js",
   "author": "moodweb",
   "license": "UNLICENSED",
@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.moodweb.oharu",
     "productName": "Oharu",
+    "copyright": "MoodWeb",
     "directories": {
       "output": "dist"
     },

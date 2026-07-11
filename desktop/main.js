@@ -149,6 +149,11 @@ function broadcastPrefs() {
 function buildTrayMenu() {
   return Menu.buildFromTemplate([
     {
+      label: "Oharu — To-Do Widget",
+      enabled: false,
+    },
+    { type: "separator" },
+    {
       label: "열기",
       click: showMainWindow,
     },
@@ -274,7 +279,7 @@ function createWindow() {
 
 function createTray() {
   tray = new Tray(createTrayIcon());
-  tray.setToolTip("오하루");
+  tray.setToolTip("Oharu — Today's To-Do List");
   buildTray();
   tray.on("double-click", showMainWindow);
 }
