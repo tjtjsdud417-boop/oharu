@@ -78,8 +78,9 @@ create policy "own rows only" on public.todos
 - 창 위치·크기 저장 및 재시작 시 복원
 - frameless 창 드래그 이동은 Electron preload/CSS 주입으로 해결. `web/index.html` 수정 금지
 - electron-builder로 Windows portable exe 빌드. 스크립트: `npm run dist`
-- 빌드 방법: `cd desktop && npm run dist` → `desktop/dist/Oharu-1.1.0.exe`
+- 빌드 방법: `cd desktop && npm run dist` → `desktop/dist/Oharu-1.2.0.exe`
 - v1.1.0: `transparent: true` + `backgroundColor: "#00000000"` (Windows 투명창 — 크기 조절 불안정 가능)
+- v1.2.0: 설정 화면 앱 섹션(항상 위·자동 실행·종료) + `desktopBridge` prefs API + 시작 시 캐시 정리
 
 ## Electron 완료 기준 (전부 증거로 보고)
 
@@ -99,6 +100,8 @@ create policy "own rows only" on public.todos
 - [x] v1.1.0 — 설정 화면(배경 투명도 슬라이더 `bgAlphaRange`, 설정 버튼 `setBtn`) 추가
   - 반영본 SHA256: 04F0FFBE6036F21A7F574B26E4701EDC3B2C73151D68CE416ED241764C6EAF78 (+ Supabase 키 이식)
 - [x] v1.1.0 — Electron 투명창 전환 (`transparent: true`, `backgroundColor: "#00000000"`)
+- [x] v1.2.0 — 설정 앱 섹션 + desktopBridge(getPrefs/setAlwaysOnTop/setAutoLaunch/quitApp/onPrefs) + 캐시 정리
+  - 웹 반영본 SHA256(키 비움): 051CBDC741089E9175068816BD300F30BD328DB28FBE68E05410328FF92C215B (+ Supabase 키 이식)
 - [x] Vercel 배포 → https://oharu.vercel.app
 - [x] SAI 잘못 배포 복구 (2026-07-11) — web/에서 오하루 v1.1.0 재배포
 - [ ] Supabase 프로젝트 생성 → SQL 실행 → URL/anon key를 index.html에 입력

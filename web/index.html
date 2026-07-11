@@ -284,6 +284,20 @@
   .set-btn.primary:hover { background: #1B64DA; }
   .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
   .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .tog { position: relative; display: inline-flex; flex-shrink: 0; }
+  .tog input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tog i {
+    display: block; width: 44px; height: 26px; border-radius: 13px;
+    background: #D1D6DB; cursor: pointer; transition: background .2s;
+    position: relative;
+  }
+  .tog i::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: transform .2s;
+  }
+  .tog input:checked + i { background: var(--blue); }
+  .tog input:checked + i::after { transform: translateX(18px); }
 
   /* ── 캘린더 보기 ──────────────────────── */
   .cal {
@@ -540,6 +554,21 @@
           <span>배경 투명도</span>
           <input type="range" id="bgAlphaRange" min="30" max="100" step="5" value="100" aria-label="배경 투명도">
           <span class="pct" id="bgAlphaVal">100%</span>
+        </div>
+      </div>
+      <div class="set-card" id="setApp" hidden>
+        <div class="set-title">앱</div>
+        <div class="set-row">
+          <span>항상 위 고정</span>
+          <label class="tog"><input type="checkbox" id="alwaysOnTopToggle" aria-label="항상 위 고정"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span>시작 시 자동 실행</span>
+          <label class="tog"><input type="checkbox" id="autoLaunchToggle" aria-label="시작 시 자동 실행"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span>앱 종료</span>
+          <button type="button" class="set-btn danger" id="quitAppBtn">완전히 종료</button>
         </div>
       </div>
       <div class="set-card">
@@ -847,7 +876,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 $("appVersion").textContent = "v" + APP_VERSION;
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
@@ -890,6 +919,27 @@ if (IS_DESKTOP) {
     applyBgAlpha(v);
     saveUI({ ...loadUI(), bgAlpha: v });
   });
+
+  const bridge = window.desktopBridge;
+  if (bridge) {
+    $("setApp").hidden = false;
+    const topToggle = $("alwaysOnTopToggle");
+    const launchToggle = $("autoLaunchToggle");
+    const applyPrefs = (p) => {
+      if (!p) return;
+      topToggle.checked = !!p.alwaysOnTop;
+      launchToggle.checked = !!p.autoLaunch;
+    };
+    if (bridge.getPrefs) bridge.getPrefs().then(applyPrefs);
+    if (bridge.onPrefs) bridge.onPrefs(applyPrefs);
+    topToggle.addEventListener("change", () => {
+      if (bridge.setAlwaysOnTop) bridge.setAlwaysOnTop(topToggle.checked);
+    });
+    launchToggle.addEventListener("change", () => {
+      if (bridge.setAutoLaunch) bridge.setAutoLaunch(launchToggle.checked);
+    });
+    $("quitAppBtn").onclick = () => { if (bridge.quitApp) bridge.quitApp(); };
+  }
 }
 
 // ── 시간 선택 ──────────────────────────────────

@@ -134,11 +134,30 @@ function isAllowedExternalUrl(url) {
   }
 }
 
+function getPrefs() {
+  return {
+    alwaysOnTop: win ? win.isAlwaysOnTop() : state.alwaysOnTop,
+    autoLaunch: state.openAtLogin,
+  };
+}
+
+function broadcastPrefs() {
+  if (!win || win.isDestroyed()) return;
+  win.webContents.send("prefs-changed", getPrefs());
+}
+
 function buildTrayMenu() {
   return Menu.buildFromTemplate([
     {
       label: "열기",
       click: showMainWindow,
+    },
+    {
+      label: "새로고침",
+      click: () => {
+        if (!win) return;
+        win.webContents.reloadIgnoringCache();
+      },
     },
     {
       label: "항상 위 고정",
@@ -150,6 +169,7 @@ function buildTrayMenu() {
         state.alwaysOnTop = item.checked;
         saveState();
         buildTray();
+        broadcastPrefs();
       },
     },
     {
@@ -161,6 +181,7 @@ function buildTrayMenu() {
         applyLoginItemSettings(item.checked);
         saveState();
         buildTray();
+        broadcastPrefs();
       },
     },
     { type: "separator" },
@@ -180,7 +201,14 @@ function buildTray() {
   tray.setContextMenu(buildTrayMenu());
 }
 
+async function clearWebCache() {
+  const ses = win.webContents.session;
+  await ses.clearCache();
+  await ses.clearStorageData({ storages: ["serviceworkers", "cachestorage"] });
+}
+
 async function loadAppContents() {
+  await clearWebCache();
   try {
     await win.loadURL(APP_URL);
   } catch (e) {
@@ -264,6 +292,35 @@ if (!gotLock) {
     if (!isAllowedExternalUrl(url)) return false;
     await shell.openExternal(url);
     return true;
+  });
+
+  ipcMain.handle("get-prefs", () => getPrefs());
+
+  ipcMain.handle("set-always-on-top", (_event, val) => {
+    if (!win) return false;
+    const on = !!val;
+    win.setAlwaysOnTop(on);
+    state.alwaysOnTop = on;
+    saveState();
+    buildTray();
+    broadcastPrefs();
+    return true;
+  });
+
+  ipcMain.handle("set-auto-launch", (_event, val) => {
+    const on = !!val;
+    state.openAtLogin = on;
+    applyLoginItemSettings(on);
+    saveState();
+    buildTray();
+    broadcastPrefs();
+    return true;
+  });
+
+  ipcMain.handle("quit-app", () => {
+    isQuitting = true;
+    saveState();
+    app.quit();
   });
 
   app.on("second-instance", (_event, argv) => {
