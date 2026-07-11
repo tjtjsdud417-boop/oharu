@@ -6,4 +6,19 @@
   <url>
     <loc>https://oharu.today/privacy</loc>
   </url>
+  <url>
+    <loc>https://oharu.today/?lang=en</loc>
+  </url>
+  <url>
+    <loc>https://oharu.today/?lang=ko</loc>
+  </url>
+  <url>
+    <loc>https://oharu.today/?lang=ja</loc>
+  </url>
+  <url>
+    <loc>https://oharu.today/?lang=zh</loc>
+  </url>
+  <url>
+    <loc>https://oharu.today/?lang=es</loc>
+  </url>
 </urlset>

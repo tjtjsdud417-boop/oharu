@@ -3,25 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>오하루 — 오늘 할 일</title>
-<meta name="description" content="오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트, 오하루. 로그인 없이 바로 시작하고, 윈도우 바탕화면 위젯으로도 쓸 수 있어요.">
+<title>Oharu — Today's To-Do List | 오하루</title>
+<meta name="description" content="The simplest free to-do list, focused only on today. No sign-up needed — start instantly, sync across devices, and use it as a Windows desktop widget. 오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트.">
 <link rel="canonical" href="https://oharu.today/">
+<link rel="alternate" hreflang="x-default" href="https://oharu.today/">
+<link rel="alternate" hreflang="en" href="https://oharu.today/?lang=en">
+<link rel="alternate" hreflang="ko" href="https://oharu.today/?lang=ko">
+<link rel="alternate" hreflang="ja" href="https://oharu.today/?lang=ja">
+<link rel="alternate" hreflang="zh" href="https://oharu.today/?lang=zh">
+<link rel="alternate" hreflang="es" href="https://oharu.today/?lang=es">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="오하루 (Oharu)">
-<meta property="og:title" content="오하루 — 오늘 할 일에만 집중하는 투두리스트">
-<meta property="og:description" content="로그인 없이 바로 시작하는 가장 단순한 무료 투두리스트. 윈도우 바탕화면 위젯 지원.">
+<meta property="og:site_name" content="Oharu (오하루)">
+<meta property="og:title" content="Oharu — The simplest to-do list, focused only on today">
+<meta property="og:description" content="Free · No sign-up needed · Windows desktop widget · 오늘 할 일에만 집중하는 투두리스트">
 <meta property="og:url" content="https://oharu.today/">
-<meta property="og:image" content="https://oharu.today/og-image.png">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://oharu.today/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://oharu.today/og-image.png">
+<meta name="twitter:image" content="https://oharu.today/og-image.jpg">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"Oharu (오하루)",
 "url":"https://oharu.today","applicationCategory":"ProductivityApplication",
 "operatingSystem":"Web, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
 "inLanguage":["ko","en","ja","zh","es"],
-"description":"오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트. 웹과 윈도우 바탕화면 위젯 지원.",
+"description":"The simplest free to-do list, focused only on today. No sign-up needed — start instantly, sync across devices, and use it as a Windows desktop widget. 오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트.",
 "downloadUrl":"https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe"}
 </script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232b76f3'/%3E%3Crect x='79.5' y='57' width='69.8' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='92.8' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='128.5' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Ccircle cx='60.2' cy='65' r='9.5' fill='%23fff'/%3E%3C/svg%3E">
@@ -694,6 +705,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 // 데스크톱(Electron) 앱은 URL에 ?desktop=1을 붙여 로드한다: 로그인 필수 + 구글 버튼 숨김
 const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
+const URL_LANGS = new Set(["ko", "en", "ja", "zh", "es"]);
+const urlLangParam = new URLSearchParams(location.search).get("lang");
 
 // 애드센스: 웹에서만 로드 (데스크톱 앱 내 로드는 정책 위반)
 if (!IS_DESKTOP) {
@@ -1098,6 +1111,10 @@ function detectLang() {
   return "en";
 }
 function resolveLang() {
+  if (urlLangParam && URL_LANGS.has(urlLangParam)) {
+    saveUI({ ...loadUI(), lang: urlLangParam });
+    return urlLangParam;
+  }
   const saved = loadUI().lang;
   if (saved && saved !== "auto" && T[saved]) return saved;
   return detectLang();
@@ -1535,7 +1552,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.5.1";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
