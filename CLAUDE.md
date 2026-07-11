@@ -17,6 +17,7 @@
 - "완료"는 증거가 있어야 완료다. 파일 트리 / 실행 출력 / diff / 생성 파일 경로 중
   하나 이상을 항상 함께 보고한다.
 - 문제 발생 시 **진단(원인 분석)과 수정을 한 턴에 섞지 않는다.** 원인 보고 → 승인 → 수정.
+- **web/index.html 배포 전 필수 게이트:** `<script type="module">` 내용을 추출해 `node --check` 통과 확인. 실패 시 배포 금지. 검증 명령을 배포 절차에 포함할 것.
 
 ## 허용된 수정 — web/index.html
 
@@ -42,6 +43,7 @@
 ## 배포 (Vercel)
 
 - 재배포 방법: `cd web && npx vercel --prod`
+- **배포 전 문법 검증:** `cd web && node extract-diag.mjs && node --check _diag.mjs` (extract-diag.mjs는 `<script type="module">` 추출용). 통과 후에만 배포.
 - 프로덕션 URL: https://oharu.today (Vercel alias)
 - 연결 정보: `web/.vercel/` (삭제 금지)
 - **배포 직전 반드시 git 커밋** (`git add -A && git commit -m "..."`) — 배포 전 상태를 기록해 잘못된 배포 시 복구 가능하게 한다.
