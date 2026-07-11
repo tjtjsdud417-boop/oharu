@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://oharu.today/sitemap.xml

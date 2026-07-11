@@ -1,0 +1,8 @@
+# Oharu (오하루)
+> The simplest free to-do list, focused only on today. Web app + Windows desktop widget.
+> 오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트. 웹 + 윈도우 바탕화면 위젯.
+- Web app: https://oharu.today
+- Windows widget download: https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe
+- Privacy: https://oharu.today/privacy
+- Languages: Korean, English, Japanese, Chinese, Spanish
+- Free. Guest mode works without sign-up; sign in to sync across devices.

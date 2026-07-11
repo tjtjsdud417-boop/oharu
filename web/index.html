@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오하루 — 오늘 할 일</title>
+<meta name="description" content="오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트, 오하루. 로그인 없이 바로 시작하고, 윈도우 바탕화면 위젯으로도 쓸 수 있어요.">
+<link rel="canonical" href="https://oharu.today/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="오하루 (Oharu)">
+<meta property="og:title" content="오하루 — 오늘 할 일에만 집중하는 투두리스트">
+<meta property="og:description" content="로그인 없이 바로 시작하는 가장 단순한 무료 투두리스트. 윈도우 바탕화면 위젯 지원.">
+<meta property="og:url" content="https://oharu.today/">
+<meta property="og:image" content="https://oharu.today/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://oharu.today/og-image.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Oharu (오하루)",
+"url":"https://oharu.today","applicationCategory":"ProductivityApplication",
+"operatingSystem":"Web, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+"inLanguage":["ko","en","ja","zh","es"],
+"description":"오늘 할 일에만 집중하는 가장 단순한 무료 투두리스트. 웹과 윈도우 바탕화면 위젯 지원.",
+"downloadUrl":"https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe"}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232b76f3'/%3E%3Crect x='79.5' y='57' width='69.8' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='92.8' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='128.5' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Ccircle cx='60.2' cy='65' r='9.5' fill='%23fff'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#F2F4F6">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -366,8 +386,17 @@
   }
   .day .cnt.all-done { background: var(--blue); color: #fff; }
   .day .cnt.has-left { background: var(--danger-soft); color: var(--danger); }
+  .day .cnt.future { background: var(--blue-soft); color: var(--blue); }
 
   .day-detail { margin-top: 14px; }
+  .day-detail .composer {
+    margin-bottom: 10px;
+    padding: 4px 4px 4px 14px;
+  }
+  .day-detail .composer input[type="text"] { font-size: 14px; }
+  .day-detail .composer .clock { min-width: 32px; height: 32px; }
+  .day-detail .composer .clock svg { width: 16px; height: 16px; }
+  .day-detail .composer .add { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
   .day-detail .dd-title {
     font-size: 13px; font-weight: 700; color: var(--text-sub);
     padding: 0 6px 8px;
@@ -444,6 +473,7 @@
   }
   .ad-card .ad-tag { font-size: 10.5px; font-weight: 700; color: var(--text-faint); letter-spacing: .06em; margin-bottom: 8px; }
   .ad-slot { border-radius: 12px; overflow: hidden; background: transparent; height: 100px; }
+  .seo-line { margin-top: 12px; text-align: center; font-size: 11px; color: var(--text-faint); }
 
   /* ── PC 위젯 다운로드 카드 (웹·넓은 화면) ── */
   .dl-card {
@@ -632,6 +662,7 @@
              data-ad-slot="4023111265"></ins>
       </div>
     </footer>
+    <p class="seo-line" id="seoLine">오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원</p>
   </div>
 
 </div>
@@ -764,8 +795,9 @@ const T = {
     langJa: "日本語",
     langZh: "中文",
     langEs: "Español",
+    futurePh: "이 날 할 일을 적어보세요",
+    seoLine: "오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원",
   },
-  en: {
     title: "Oharu — Today's To-dos",
     authBrand: "Oharu",
     authSub: "The simplest to-do list,<br>focused only on today",
@@ -837,6 +869,8 @@ const T = {
     langJa: "日本語",
     langZh: "中文",
     langEs: "Español",
+    futurePh: "Write a to-do for this day",
+    seoLine: "Oharu — a free to-do list focused only on today · Web & Windows widget",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -906,6 +940,8 @@ const T = {
     installSub: "常に手前に表示されるToDoウィジェット",
     pcWidget: "PCウィジェット",
     download: "ダウンロード",
+    futurePh: "この日のやることを書く",
+    seoLine: "Oharu — 今日のタスクだけに集中する無料ToDo · Web & Windowsウィジェット",
   },
   zh: {
     title: "Oharu — 今日待办",
@@ -975,6 +1011,8 @@ const T = {
     installSub: "始终置顶的待办小组件",
     pcWidget: "PC 小组件",
     download: "下载",
+    futurePh: "为这一天添加待办",
+    seoLine: "Oharu — 只专注今日待办的免费清单 · 网页与 Windows 小组件",
   },
   es: {
     title: "Oharu — Tareas de hoy",
@@ -1044,6 +1082,8 @@ const T = {
     installSub: "Un widget de tareas siempre visible",
     pcWidget: "Widget para PC",
     download: "Descargar",
+    futurePh: "Añade una tarea para este día",
+    seoLine: "Oharu — lista de tareas gratis solo para hoy · Web y widget de Windows",
   },
 };
 
@@ -1126,6 +1166,7 @@ function applyTexts() {
   $("setPrivacyLabel").textContent = t("privacy");
   $("setPrivacyLink").textContent = t("view");
   $("setWebLabel").textContent = t("oharuWeb");
+  $("seoLine").textContent = t("seoLine");
   if (!IS_DESKTOP) {
     $("setPcWidgetRow").hidden = false;
     $("setPcWidgetLabel").textContent = t("pcWidget");
@@ -1329,6 +1370,75 @@ function renderToday() {
 }
 
 // ── 캘린더 보기 ────────────────────────────────
+function buildFutureComposer() {
+  const comp = document.createElement("div");
+  comp.className = "composer";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.maxLength = 80;
+  input.placeholder = t("futurePh");
+  input.autocomplete = "off";
+
+  let localTime = null;
+  const clockEl = document.createElement("div");
+  clockEl.className = "clock";
+  clockEl.title = t("clockTitle");
+  const clockSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  clockSvg.setAttribute("viewBox", "0 0 24 24");
+  clockSvg.setAttribute("fill", "none");
+  clockSvg.setAttribute("stroke", "currentColor");
+  clockSvg.setAttribute("stroke-width", "2");
+  clockSvg.setAttribute("stroke-linecap", "round");
+  const c1 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  c1.setAttribute("cx", "12"); c1.setAttribute("cy", "12"); c1.setAttribute("r", "9");
+  const p1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  p1.setAttribute("d", "M12 7v5l3 2");
+  clockSvg.append(c1, p1);
+  const clockTextEl = document.createElement("span");
+  clockTextEl.className = "t";
+  const clearEl = document.createElement("span");
+  clearEl.className = "clear";
+  clearEl.title = t("clockClearTitle");
+  clearEl.textContent = "×";
+  const timeIn = document.createElement("input");
+  timeIn.type = "time";
+  clockEl.append(clockSvg, clockTextEl, clearEl, timeIn);
+
+  timeIn.addEventListener("change", () => {
+    localTime = timeIn.value || null;
+    clockEl.classList.toggle("set", !!localTime);
+    clockTextEl.textContent = localTime ? fmtTime(localTime) : "";
+  });
+  clearEl.addEventListener("click", e => {
+    e.stopPropagation(); e.preventDefault();
+    localTime = null; timeIn.value = "";
+    clockEl.classList.remove("set"); clockTextEl.textContent = "";
+  });
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "add";
+  addBtn.textContent = t("addBtn");
+
+  async function addFuture() {
+    const text = input.value.trim();
+    if (!text) return;
+    const newTodo = { id: newId(), text, time: localTime, done: false, todoDate: selDate, createdAt: new Date().toISOString() };
+    todos.push(newTodo);
+    render();
+    await repo.add(newTodo);
+    input.focus();
+  }
+  addBtn.onclick = addFuture;
+  input.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    if (e.isComposing || e.keyCode === 229) return;
+    addFuture();
+  });
+
+  comp.append(input, clockEl, addBtn);
+  return comp;
+}
+
 function renderCal() {
   const y = calCursor.getFullYear(), m = calCursor.getMonth();
   $("calMonth").textContent = fmtCalMonth(y, m);
@@ -1358,10 +1468,18 @@ function renderCal() {
     cell.appendChild(n);
     const items = byDate(ds);
     if (items.length) {
-      const left = items.filter(t => !t.done).length;
+      const left = items.filter(item => !item.done).length;
       const cnt = document.createElement("span");
-      cnt.className = "cnt " + (left === 0 ? "all-done" : "has-left");
-      cnt.textContent = left === 0 ? "✓" : left;
+      if (left === 0) {
+        cnt.className = "cnt all-done";
+        cnt.textContent = "✓";
+      } else if (ds > todayStr()) {
+        cnt.className = "cnt future";
+        cnt.textContent = left;
+      } else {
+        cnt.className = "cnt has-left";
+        cnt.textContent = left;
+      }
       cell.appendChild(cnt);
     }
     cell.onclick = () => { selDate = ds; renderCal(); };
@@ -1375,17 +1493,20 @@ function renderCal() {
   title.className = "dd-title";
   title.textContent = fmtDayTitle(sy, sm, sd);
   dd.appendChild(title);
+  const editable = selDate >= todayStr();
+  if (editable) dd.appendChild(buildFutureComposer());
   const items = sortItems(byDate(selDate));
   if (!items.length) {
-    const none = document.createElement("div");
-    none.className = "none";
-    none.textContent = t("noRecords");
-    dd.appendChild(none);
+    if (!editable) {
+      const none = document.createElement("div");
+      none.className = "none";
+      none.textContent = t("noRecords");
+      dd.appendChild(none);
+    }
   } else {
     const l = document.createElement("div");
     l.className = "list";
-    // 오늘 항목은 캘린더에서도 조작 가능, 과거는 기록으로만
-    for (const t of items) l.appendChild(buildItem(t, { interactive: selDate === todayStr() }));
+    for (const item of items) l.appendChild(buildItem(item, { interactive: editable }));
     dd.appendChild(l);
   }
 }
@@ -1413,7 +1534,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
