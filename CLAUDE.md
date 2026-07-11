@@ -44,6 +44,7 @@
 
 - 재배포 방법: `cd web && npx vercel --prod`
 - **배포 전 문법 검증:** `cd web && node extract-diag.mjs && node --check _diag.mjs` (extract-diag.mjs는 `<script type="module">` 추출용). 통과 후에만 배포.
+- **배포 후 확인:** curl로 `https://oharu.today/` 응답에서 새 버전 반영 확인(예: 추가한 메타·버전 문자열). 미반영 시 rollback 활성 여부를 의심하고 `npx vercel promote <최신-배포-URL>`로 해제.
 - 프로덕션 URL: https://oharu.today (Vercel alias)
 - 연결 정보: `web/.vercel/` (삭제 금지)
 - **배포 직전 반드시 git 커밋** (`git add -A && git commit -m "..."`) — 배포 전 상태를 기록해 잘못된 배포 시 복구 가능하게 한다.
