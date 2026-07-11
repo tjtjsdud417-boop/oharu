@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오하루 — 오늘 할 일</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232b76f3'/%3E%3Crect x='79.5' y='57' width='69.8' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='92.8' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='128.5' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Ccircle cx='60.2' cy='65' r='9.5' fill='%23fff'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#F2F4F6">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --bg: #F2F4F6;
+    --card: #FFFFFF;
+    --text: #191F28;
+    --text-sub: #8B95A1;
+    --text-faint: #B0B8C1;
+    --blue: #3182F6;
+    --blue-soft: #E8F3FF;
+    --line: #F2F4F6;
+    --danger: #F04452;
+    --danger-soft: #FEECEE;
+    --radius: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: rgb(242 244 246 / var(--bg-alpha, 1));
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  /* ── 헤더 ─────────────────────────────── */
+  .head { padding: 4px 4px 20px; position: relative; }
+  .head .date { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: -0.01em; }
+  .head h1 { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+  .head h1 .num { color: var(--blue); }
+  .progress { margin-top: 16px; height: 6px; border-radius: 3px; background: #E5E8EB; overflow: hidden; }
+  .progress > i {
+    display: block; height: 100%; width: 0%; border-radius: 3px;
+    background: var(--blue);
+    transition: width .45s cubic-bezier(.22,1,.36,1);
+  }
+  .topbtns { position: absolute; top: 2px; right: 0; display: flex; gap: 6px; }
+  .iconbtn {
+    width: 36px; height: 36px;
+    border: none; border-radius: 12px;
+    background: var(--card);
+    color: var(--text-sub);
+    cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .12s, color .12s, transform .1s;
+  }
+  .iconbtn:hover { color: var(--text); }
+  .iconbtn:active { transform: scale(.94); }
+  .iconbtn.on { background: var(--blue); color: #fff; }
+  .iconbtn svg { width: 18px; height: 18px; }
+  .textbtn {
+    height: 36px; padding: 0 14px;
+    border: none; border-radius: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .15s, transform .1s;
+  }
+  .textbtn:hover { background: #1B64DA; }
+  .textbtn:active { transform: scale(.96); }
+
+  /* ── 입력 ─────────────────────────────── */
+  .composer {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 6px 6px 6px 18px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    border: 1.5px solid transparent;
+    transition: border-color .15s;
+  }
+  .composer:focus-within { border-color: var(--blue); }
+  .composer input[type="text"] {
+    flex: 1; border: none; outline: none;
+    font: inherit; font-size: 15.5px; font-weight: 500;
+    color: var(--text); background: transparent; min-width: 0;
+  }
+  .composer input[type="text"]::placeholder { color: var(--text-faint); }
+  .clock {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    border-radius: 12px;
+    color: var(--text-faint);
+    cursor: pointer; flex-shrink: 0;
+    transition: background .12s, color .12s;
+    padding: 0 4px; gap: 4px;
+  }
+  .clock:hover { background: var(--bg); color: var(--text-sub); }
+  .clock.set { color: var(--blue); background: var(--blue-soft); font-size: 12.5px; font-weight: 700; padding: 0 10px; }
+  .clock svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .clock .t { white-space: nowrap; letter-spacing: -0.01em; }
+  .clock input[type="time"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .clock .clear {
+    display: none; width: 15px; height: 15px; border-radius: 50%;
+    background: #C9D8F0; color: #fff;
+    align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    position: relative; z-index: 2; flex-shrink: 0;
+  }
+  .clock.set .clear { display: flex; }
+  .clock .clear:hover { background: var(--blue); }
+  .composer .add {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 14px; font-weight: 700;
+    padding: 10px 16px; border-radius: 14px;
+    cursor: pointer; flex-shrink: 0;
+    transition: transform .1s, background .15s;
+  }
+  .composer .add:hover { background: #1B64DA; }
+  .composer .add:active { transform: scale(.96); }
+
+  /* ── 리스트 ───────────────────────────── */
+  .list {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    overflow: hidden;
+  }
+  .list:empty { display: none; }
+  .item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 15px 18px;
+    cursor: pointer;
+    transition: background .12s;
+    animation: slideIn .25s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .item + .item { border-top: 1px solid var(--line); }
+  .item:hover { background: #FAFBFC; }
+  .check {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid #D1D6DB;
+    flex-shrink: 0; display: grid; place-items: center;
+    transition: border-color .15s, background .15s;
+  }
+  .check svg {
+    width: 13px; stroke: #fff; stroke-width: 3.2; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 20; stroke-dashoffset: 20;
+  }
+  .item.done .check { background: var(--blue); border-color: var(--blue); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+  .item.done .check svg { animation: draw .25s .05s ease-out forwards; }
+  @keyframes pop { 50% { transform: scale(1.15); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .body { flex: 1; min-width: 0; }
+  .body .time {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--blue); background: var(--blue-soft);
+    padding: 2px 7px; border-radius: 6px;
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .body .time.late { color: var(--danger); background: var(--danger-soft); }
+  .item.done .body .time { color: var(--text-faint); background: var(--bg); }
+  .body .label {
+    font-size: 15.5px; font-weight: 500; letter-spacing: -0.01em;
+    line-height: 1.45; word-break: break-all;
+    transition: color .2s;
+  }
+  .item.done .label { color: var(--text-faint); text-decoration: line-through; text-decoration-color: #D1D6DB; }
+  .del {
+    border: none; background: none; cursor: pointer;
+    color: var(--text-faint);
+    width: 28px; height: 28px; border-radius: 8px;
+    display: grid; place-items: center;
+    opacity: 0;
+    transition: opacity .12s, background .12s, color .12s;
+    flex-shrink: 0;
+  }
+  .item:hover .del { opacity: 1; }
+  .del:hover { background: var(--danger-soft); color: var(--danger); }
+  @media (hover: none) { .del { opacity: .6; } }
+
+  .empty {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 44px 20px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+  }
+  .empty .emoji { font-size: 34px; }
+  .empty p { margin-top: 10px; font-size: 14.5px; color: var(--text-sub); font-weight: 500; line-height: 1.5; }
+
+  /* ── 로그인 유도 카드 (게스트 모드) ─────────── */
+  .nudge {
+    margin-top: 14px;
+    background: var(--blue-soft);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge .nudge-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1B64DA;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+  .nudge .nudge-btn {
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s, transform .1s;
+  }
+  .nudge .nudge-btn:hover { background: #1B64DA; }
+  .nudge .nudge-btn:active { transform: scale(.96); }
+
+  /* ── 설정 보기 ─────────────────────────── */
+  .set-card {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 4px 0 6px;
+  }
+  .set-card .set-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-faint);
+    padding: 12px 18px 6px;
+    letter-spacing: .02em;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+  .set-row + .set-row { border-top: 1px solid var(--line); }
+  .set-row .sub { color: var(--text-sub); font-size: 13px; font-weight: 500; }
+  .set-row a { color: var(--blue); text-decoration: none; font-weight: 600; font-size: 13.5px; }
+  .set-btn {
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .12s, transform .1s;
+  }
+  .set-btn:hover { background: #E5E8EB; }
+  .set-btn:active { transform: scale(.96); }
+  .set-btn.danger { color: var(--danger); }
+  .set-btn.primary { background: var(--blue); color: #fff; }
+  .set-btn.primary:hover { background: #1B64DA; }
+  .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
+  .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+
+  /* ── 캘린더 보기 ──────────────────────── */
+  .cal {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 18px 16px 14px;
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px 14px;
+  }
+  .cal-head .month { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .cal-head .nav { display: flex; gap: 4px; }
+  .cal-head .nav button {
+    border: none; background: var(--bg); color: var(--text-sub);
+    width: 30px; height: 30px; border-radius: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 700;
+    display: grid; place-items: center;
+    transition: background .12s, color .12s;
+  }
+  .cal-head .nav button:hover { color: var(--text); background: #E5E8EB; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-grid .dow {
+    text-align: center;
+    font-size: 11px; font-weight: 700; color: var(--text-faint);
+    padding: 4px 0 8px;
+  }
+  .cal-grid .dow.sun { color: #F08085; }
+  .day {
+    aspect-ratio: 1;
+    border: none; background: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text);
+    transition: background .12s;
+    position: relative;
+  }
+  .day:hover { background: var(--bg); }
+  .day .n { font-size: 13px; font-weight: 600; line-height: 1; }
+  .day.other { color: var(--text-faint); }
+  .day.today .n {
+    background: var(--blue); color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .day.sel { background: var(--blue-soft); }
+  .day .cnt {
+    font-size: 9px; font-weight: 800;
+    min-width: 14px; height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: #E5E8EB; color: var(--text-sub);
+    display: grid; place-items: center;
+    line-height: 1;
+  }
+  .day .cnt.all-done { background: var(--blue); color: #fff; }
+  .day .cnt.has-left { background: var(--danger-soft); color: var(--danger); }
+
+  .day-detail { margin-top: 14px; }
+  .day-detail .dd-title {
+    font-size: 13px; font-weight: 700; color: var(--text-sub);
+    padding: 0 6px 8px;
+  }
+  .day-detail .list { margin-top: 0; }
+  .day-detail .none {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 22px;
+    text-align: center;
+    font-size: 13.5px; font-weight: 500; color: var(--text-faint);
+  }
+
+  /* ── 로그인 화면 ──────────────────────── */
+  .auth {
+    margin: auto 0;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 36px 28px 28px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    text-align: center;
+  }
+  .auth .emoji { font-size: 40px; }
+  .auth .logo { width: 44px; height: 40px; display: block; margin: 0 auto; }
+  .auth h2 { margin-top: 14px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .auth p { margin-top: 8px; font-size: 14px; color: var(--text-sub); font-weight: 500; line-height: 1.55; }
+  .auth .row { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .auth input {
+    border: 1.5px solid #E5E8EB; border-radius: 14px;
+    padding: 14px 16px;
+    font: inherit; font-size: 15px; font-weight: 500;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .auth input:focus { border-color: var(--blue); }
+  .btn {
+    border: none; border-radius: 14px;
+    padding: 14px;
+    font: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  .btn.primary:hover { background: #1B64DA; }
+  .btn.google { background: #fff; color: var(--text); border: 1.5px solid #E5E8EB; }
+  .btn.google:hover { background: #FAFBFC; }
+  .btn.google svg { width: 18px; height: 18px; }
+  .divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 18px 0 0;
+    color: var(--text-faint);
+    font-size: 12px; font-weight: 600;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E5E8EB; }
+  .auth .switch {
+    margin-top: 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-sub);
+  }
+  .auth .switch a { color: var(--blue); cursor: pointer; text-decoration: none; }
+  .auth .msg { margin-top: 14px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--blue); min-height: 1em; }
+  .auth .msg.err { color: var(--danger); }
+
+  /* ── 광고 영역 ────────────────────────── */
+  .spacer { flex: 1; min-height: 20px; }
+  .ad-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 14px 16px 12px;
+  }
+  .ad-card .ad-tag { font-size: 10.5px; font-weight: 700; color: var(--text-faint); letter-spacing: .06em; margin-bottom: 8px; }
+  .ad-slot {
+    border-radius: 12px; overflow: hidden;
+    background: var(--blue-soft);
+    min-height: 72px;
+    display: grid; place-items: center;
+  }
+  .ad-slot .ph { font-size: 13px; font-weight: 600; color: var(--blue); text-align: center; line-height: 1.5; padding: 14px; }
+  .ad-card .disclosure { margin-top: 8px; font-size: 10.5px; color: var(--text-faint); line-height: 1.4; }
+
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ 로그인 화면 ══ -->
+  <div class="auth" id="authView" hidden>
+    <svg class="logo" viewBox="0 0 98.55 88.94" width="44" height="40" xmlns="http://www.w3.org/2000/svg" aria-label="오하루 로고" role="img">
+      <g fill="#2b76f3">
+        <rect x="28.75" y="1.53" width="69.8" height="15.93" rx="7.96"/>
+        <rect x="0" y="37.27" width="98.55" height="15.93" rx="7.96"/>
+        <rect x="0" y="73.01" width="98.55" height="15.93" rx="7.96"/>
+        <circle cx="9.5" cy="9.5" r="9.5"/>
+      </g>
+    </svg>
+    <h2>오하루</h2>
+    <p>오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
+    <div class="row">
+      <button class="btn google" id="googleBtn">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+        구글로 계속하기
+      </button>
+      <div class="divider">또는 이메일로</div>
+      <input id="email" type="email" placeholder="이메일 주소" autocomplete="email">
+      <input id="pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+      <button class="btn primary" id="emailBtn">로그인</button>
+    </div>
+    <div class="switch" id="switchLine">
+      처음이신가요? <a id="switchLink">이메일로 가입하기</a>
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div class="switch" id="backLine" hidden><a id="backLink">← 돌아가기</a></div>
+  </div>
+
+  <!-- ══ 메인 화면 ══ -->
+  <div id="mainView" hidden style="display:flex;flex-direction:column;flex:1;">
+    <header class="head">
+      <div class="date" id="dateLine"></div>
+      <div class="topbtns">
+        <button class="textbtn" id="loginTopBtn" hidden>로그인</button>
+        <button class="iconbtn" id="calBtn" title="목록 보기" aria-label="달력으로 전체 보기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="5" width="18" height="16" rx="3"/>
+            <path d="M3 10h18M8 3v4M16 3v4"/>
+          </svg>
+        </button>
+        <button class="iconbtn" id="setBtn" title="설정" aria-label="설정">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+      <h1 id="headline"></h1>
+      <div class="progress"><i id="bar"></i></div>
+    </header>
+
+    <!-- 기본: 오늘 투두 -->
+    <div id="todayView">
+      <div class="composer">
+        <input id="input" type="text" maxlength="80" placeholder="오늘 할 일을 적어보세요" autocomplete="off">
+        <div class="clock" id="clock" title="시간 설정 (선택)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span class="t" id="clockText"></span>
+          <span class="clear" id="clockClear" title="시간 해제">×</span>
+          <input type="time" id="timeInput">
+        </div>
+        <button class="add" id="addBtn">추가</button>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty" hidden>
+        <div class="emoji">☀️</div>
+        <p>아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.</p>
+      </div>
+    </div>
+
+    <!-- 목록(캘린더) 보기: 버튼 눌렀을 때만 -->
+    <div id="calView" hidden>
+      <div class="cal">
+        <div class="cal-head">
+          <div class="month" id="calMonth"></div>
+          <div class="nav">
+            <button id="prevM" aria-label="이전 달">‹</button>
+            <button id="nextM" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="day-detail" id="dayDetail"></div>
+    </div>
+
+    <!-- 설정 보기: 설정 버튼 눌렀을 때만 -->
+    <div id="setView" hidden>
+      <div class="set-card">
+        <div class="set-title">계정</div>
+        <div class="set-row" id="setAccount"></div>
+      </div>
+      <div class="set-card" id="setDesign" hidden>
+        <div class="set-title">화면</div>
+        <div class="set-row">
+          <span>배경 투명도</span>
+          <input type="range" id="bgAlphaRange" min="30" max="100" step="5" value="100" aria-label="배경 투명도">
+          <span class="pct" id="bgAlphaVal">100%</span>
+        </div>
+      </div>
+      <div class="set-card">
+        <div class="set-title">정보</div>
+        <div class="set-row"><span>버전</span><span class="sub" id="appVersion"></span></div>
+        <div class="set-row"><span>오하루 웹</span><a href="https://oharu.vercel.app" target="_blank" rel="noopener">oharu.vercel.app</a></div>
+      </div>
+    </div>
+
+    <!-- 게스트 모드에서만 노출되는 로그인 유도 -->
+    <div class="nudge" id="nudge" hidden>
+      <div class="nudge-text">할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
+      <button class="nudge-btn" id="nudgeLoginBtn">로그인</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- ═══════════ 광고 영역 ═══════════
+         쿠팡 파트너스 승인 후, .ad-slot 안의 내용을
+         발급받은 다이나믹 배너 <iframe> 코드로 교체하세요.
+         disclosure 문구(공정위 표시)는 절대 지우지 마세요. -->
+    <footer class="ad-card">
+      <div class="ad-tag">AD</div>
+      <div class="ad-slot">
+        <div class="ph">여기에 쿠팡 파트너스<br>다이나믹 배너가 표시됩니다</div>
+      </div>
+      <div class="disclosure">이 영역은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+    </footer>
+  </div>
+
+</div>
+
+<script type="module">
+/* ═══════════════════════════════════════════════
+   설정 — Supabase 프로젝트의 두 값을 채우면
+   "로그인 필수 + 클라우드 저장" 서비스 모드가 됩니다.
+   비워두면 로그인 없는 로컬 모드(개발 미리보기용).
+   anon key는 클라이언트 공개용 키 — RLS가 진짜 잠금장치.
+   ═══════════════════════════════════════════════ */
+const SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";      // 예: "https://xxxx.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY"; // Project Settings > API > anon public
+
+const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+// 데스크톱(Electron) 앱은 URL에 ?desktop=1을 붙여 로드한다: 로그인 필수 + 구글 버튼 숨김
+const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
+
+// ── 유틸 ───────────────────────────────────────
+const $ = id => document.getElementById(id);
+const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayStr = () => dstr(new Date());
+const fmtTime = hhmm => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}`;
+};
+const isLate = hhmm => {
+  const [h, m] = hhmm.split(":").map(Number);
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes() > h * 60 + m;
+};
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
+
+// ── 저장소: local / cloud 동일 인터페이스 ─────────
+// todo: { id, text, time|null, done, todoDate, createdAt }
+let repo = null, supabase = null;
+
+function localRepo() {
+  const KEY = "oneul.v3";
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (_) { return window.__mem || null; } };
+  const write = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (_) { window.__mem = s; } };
+  let state = read() || { todos: [] };
+  // 비정상 상태(같은 id 중복 저장) 자동 복구
+  {
+    const seen = new Set();
+    state.todos = (state.todos || []).filter(t => {
+      if (!t || !t.id || seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }
+  return {
+    async load() { return state.todos; },
+    async add(t) { state.todos.push(t); write(state); },
+    async update(t) { state.todos = state.todos.map(x => x.id === t.id ? t : x); write(state); },
+    async remove(id) { state.todos = state.todos.filter(x => x.id !== id); write(state); },
+    async rollover() {
+      const today = todayStr();
+      state.todos = state.todos.map(t =>
+        (!t.done && t.todoDate < today) ? { ...t, todoDate: today, time: null } : t
+      );
+      write(state);
+    }
+  };
+}
+
+function cloudRepo() {
+  const map = r => ({ id: r.id, text: r.text, time: r.time, done: r.done, todoDate: r.todo_date, createdAt: r.created_at });
+  return {
+    async load() {
+      const { data, error } = await supabase.from("todos").select("*").order("created_at");
+      if (error) { console.error(error); return []; }
+      return data.map(map);
+    },
+    async add(t) {
+      const { error } = await supabase.from("todos")
+        .insert({ id: t.id, text: t.text, time: t.time, done: false, todo_date: t.todoDate });
+      if (error) console.error(error);
+    },
+    async update(t) {
+      const { error } = await supabase.from("todos").update({ done: t.done }).eq("id", t.id);
+      if (error) console.error(error);
+    },
+    async remove(id) {
+      const { error } = await supabase.from("todos").delete().eq("id", id);
+      if (error) console.error(error);
+    },
+    async rollover() {
+      // 완료 항목은 자기 날짜에 보존(캘린더 기록), 미완료만 오늘로 이월
+      const { error } = await supabase.from("todos")
+        .update({ todo_date: todayStr(), time: null })
+        .eq("done", false).lt("todo_date", todayStr());
+      if (error) console.error(error);
+    }
+  };
+}
+
+// ── 앱 상태 ────────────────────────────────────
+let todos = [];                 // 전체 (모든 날짜)
+let view = "today";             // 'today' | 'cal'
+let calCursor = new Date();     // 캘린더가 보고 있는 달
+let selDate = todayStr();       // 캘린더에서 선택한 날짜
+
+const byDate = date => todos.filter(t => t.todoDate === date);
+
+function sortItems(arr) {
+  return [...arr].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const at = a.time || "99:99", bt = b.time || "99:99";
+    if (at !== bt) return at < bt ? -1 : 1;
+    return (a.createdAt || "") < (b.createdAt || "") ? -1 : 1;
+  });
+}
+
+// ── 헤더 ───────────────────────────────────────
+function renderHead() {
+  const d = new Date();
+  $("dateLine").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${DAYS[d.getDay()]}요일`;
+  const t = byDate(todayStr());
+  const total = t.length, left = t.filter(x => !x.done).length;
+  const h = $("headline"), bar = $("bar");
+  if (total === 0) { h.textContent = "오늘은 어떤 하루인가요?"; bar.style.width = "0%"; }
+  else if (left === 0) { h.textContent = "오늘 할 일을 다 끝냈어요 🎉"; bar.style.width = "100%"; }
+  else {
+    h.innerHTML = `할 일이 <span class="num">${left}개</span> 남았어요`;
+    bar.style.width = `${Math.round(((total - left) / total) * 100)}%`;
+  }
+}
+
+// ── 리스트 아이템 공용 렌더러 ────────────────────
+function buildItem(t, { interactive = true } = {}) {
+  const row = document.createElement("div");
+  row.className = "item" + (t.done ? " done" : "");
+  row.setAttribute("role", "checkbox");
+  row.setAttribute("aria-checked", t.done);
+  if (interactive) row.tabIndex = 0;
+
+  const check = document.createElement("span");
+  check.className = "check";
+  check.innerHTML = '<svg viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg>';
+
+  const body = document.createElement("div");
+  body.className = "body";
+  if (t.time) {
+    const chip = document.createElement("div");
+    const late = !t.done && t.todoDate === todayStr() && isLate(t.time);
+    chip.className = "time" + (late ? " late" : "");
+    chip.textContent = fmtTime(t.time) + (late ? " · 지남" : "");
+    body.appendChild(chip);
+  }
+  const label = document.createElement("div");
+  label.className = "label";
+  label.textContent = t.text;
+  body.appendChild(label);
+
+  row.append(check, body);
+
+  if (interactive) {
+    const del = document.createElement("button");
+    del.className = "del";
+    del.setAttribute("aria-label", "삭제");
+    del.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+    del.onclick = async e => {
+      e.stopPropagation();
+      todos = todos.filter(x => x.id !== t.id);
+      render();
+      await repo.remove(t.id);
+    };
+    const toggle = async () => {
+      t.done = !t.done;
+      row.classList.toggle("done", t.done);
+      row.setAttribute("aria-checked", t.done);
+      renderHead();
+      setTimeout(render, 320);
+      await repo.update(t);
+    };
+    row.onclick = toggle;
+    row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
+    row.appendChild(del);
+  }
+  return row;
+}
+
+// ── 오늘 보기 ──────────────────────────────────
+function renderToday() {
+  const list = $("list");
+  list.innerHTML = "";
+  const items = sortItems(byDate(todayStr()));
+  $("empty").hidden = items.length !== 0;
+  for (const t of items) list.appendChild(buildItem(t));
+}
+
+// ── 캘린더 보기 ────────────────────────────────
+function renderCal() {
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  $("calMonth").textContent = `${y}년 ${m + 1}월`;
+  const grid = $("calGrid");
+  grid.innerHTML = "";
+  DAYS.forEach((d, i) => {
+    const el = document.createElement("div");
+    el.className = "dow" + (i === 0 ? " sun" : "");
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const first = new Date(y, m, 1);
+  const start = new Date(first);
+  start.setDate(1 - first.getDay());
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const ds = dstr(d);
+    const cell = document.createElement("button");
+    cell.className = "day"
+      + (d.getMonth() !== m ? " other" : "")
+      + (ds === todayStr() ? " today" : "")
+      + (ds === selDate ? " sel" : "");
+    const n = document.createElement("span");
+    n.className = "n";
+    n.textContent = d.getDate();
+    cell.appendChild(n);
+    const items = byDate(ds);
+    if (items.length) {
+      const left = items.filter(t => !t.done).length;
+      const cnt = document.createElement("span");
+      cnt.className = "cnt " + (left === 0 ? "all-done" : "has-left");
+      cnt.textContent = left === 0 ? "✓" : left;
+      cell.appendChild(cnt);
+    }
+    cell.onclick = () => { selDate = ds; renderCal(); };
+    grid.appendChild(cell);
+  }
+  // 선택한 날짜 상세
+  const dd = $("dayDetail");
+  dd.innerHTML = "";
+  const [sy, sm, sd] = selDate.split("-").map(Number);
+  const title = document.createElement("div");
+  title.className = "dd-title";
+  title.textContent = `${sm}월 ${sd}일 ${DAYS[new Date(sy, sm - 1, sd).getDay()]}요일`
+    + (selDate === todayStr() ? " · 오늘" : "");
+  dd.appendChild(title);
+  const items = sortItems(byDate(selDate));
+  if (!items.length) {
+    const none = document.createElement("div");
+    none.className = "none";
+    none.textContent = "이 날은 기록이 없어요";
+    dd.appendChild(none);
+  } else {
+    const l = document.createElement("div");
+    l.className = "list";
+    // 오늘 항목은 캘린더에서도 조작 가능, 과거는 기록으로만
+    for (const t of items) l.appendChild(buildItem(t, { interactive: selDate === todayStr() }));
+    dd.appendChild(l);
+  }
+}
+
+function render() {
+  renderHead();
+  if (view === "today") renderToday();
+  else if (view === "cal") renderCal();
+}
+
+// ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
+function switchView(v) {
+  view = v;
+  $("calBtn").classList.toggle("on", v === "cal");
+  $("setBtn").classList.toggle("on", v === "set");
+  $("todayView").hidden = v !== "today";
+  $("calView").hidden = v !== "cal";
+  $("setView").hidden = v !== "set";
+  if (v === "cal") { calCursor = new Date(); selDate = todayStr(); }
+  render();
+}
+$("calBtn").onclick = () => switchView(view === "cal" ? "today" : "cal");
+$("setBtn").onclick = () => switchView(view === "set" ? "today" : "set");
+$("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); renderCal(); };
+$("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
+
+// ── 설정 ───────────────────────────────────────
+const APP_VERSION = "1.1.0";
+$("appVersion").textContent = "v" + APP_VERSION;
+let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
+
+function renderAccount(email) {
+  const el = $("setAccount");
+  el.innerHTML = "";
+  const left = document.createElement("span");
+  const right = document.createElement("button");
+  right.className = "set-btn";
+  if (email) {
+    left.textContent = email;
+    left.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+    right.textContent = "로그아웃";
+    right.classList.add("danger");
+    right.onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+  } else {
+    left.innerHTML = '게스트 모드 <span class="sub">· 이 기기에만 저장</span>';
+    right.textContent = "로그인";
+    right.classList.add("primary");
+    right.onclick = () => { if (openLoginScreen) openLoginScreen(); };
+  }
+  el.append(left, right);
+}
+
+// 데스크톱 전용: 배경 투명도 (기기별 저장)
+const UIKEY = "oharu.ui";
+const loadUI = () => { try { return JSON.parse(localStorage.getItem(UIKEY) || "{}"); } catch (_) { return {}; } };
+const saveUI = u => { try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (_) {} };
+function applyBgAlpha(p) {
+  document.documentElement.style.setProperty("--bg-alpha", p / 100);
+  $("bgAlphaVal").textContent = p + "%";
+}
+if (IS_DESKTOP) {
+  $("setDesign").hidden = false;
+  const saved = Math.min(100, Math.max(30, loadUI().bgAlpha ?? 100));
+  $("bgAlphaRange").value = saved;
+  applyBgAlpha(saved);
+  $("bgAlphaRange").addEventListener("input", e => {
+    const v = +e.target.value;
+    applyBgAlpha(v);
+    saveUI({ ...loadUI(), bgAlpha: v });
+  });
+}
+
+// ── 시간 선택 ──────────────────────────────────
+const clock = $("clock"), timeInput = $("timeInput"), clockText = $("clockText");
+let pickedTime = null;
+timeInput.addEventListener("change", () => {
+  pickedTime = timeInput.value || null;
+  clock.classList.toggle("set", !!pickedTime);
+  clockText.textContent = pickedTime ? fmtTime(pickedTime) : "";
+});
+$("clockClear").addEventListener("click", e => {
+  e.stopPropagation(); e.preventDefault();
+  pickedTime = null; timeInput.value = "";
+  clock.classList.remove("set"); clockText.textContent = "";
+});
+
+// ── 추가 ───────────────────────────────────────
+async function add() {
+  const input = $("input");
+  const text = input.value.trim();
+  if (!text) return;
+  const t = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), createdAt: new Date().toISOString() };
+  todos.push(t);
+  input.value = "";
+  pickedTime = null; timeInput.value = "";
+  clock.classList.remove("set"); clockText.textContent = "";
+  render();
+  input.focus();
+  await repo.add(t);
+}
+$("addBtn").onclick = add;
+$("input").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  // 한글(조합형 IME) 입력 중 Enter가 두 번 발화되어 중복 등록되는 버그 방지
+  if (e.isComposing || e.keyCode === 229) return;
+  add();
+});
+
+// ── 부팅 ───────────────────────────────────────
+let appStarted = false;
+let guestMode = false;
+async function startApp(r, { canLogout = false, guest = false, email = null } = {}) {
+  if (appStarted) return; // 로그인 이벤트 다중 발화 시 중복 부팅 방지
+  appStarted = true;
+  guestMode = guest;
+  repo = r;
+  $("authView").hidden = true;
+  $("mainView").hidden = false;
+  $("nudge").hidden = !guest;
+  renderAccount(canLogout ? (email || "로그인됨") : null);
+  await repo.rollover();
+  todos = await repo.load();
+  render();
+  setInterval(async () => { await repo.rollover(); todos = await repo.load(); render(); }, 60 * 1000);
+}
+
+if (!CLOUD) {
+  startApp(localRepo());
+  // 미리보기용: Supabase 연결 전에도 로그인 화면을 확인할 수 있게
+  const previewMsg = () => {
+    const m = $("authMsg");
+    m.textContent = "Supabase 연결(파일 상단 설정) 후에 실제 로그인이 활성화돼요.";
+    m.className = "msg";
+  };
+  const openPreviewLogin = () => {
+    $("mainView").hidden = true;
+    $("authView").hidden = false;
+    $("backLine").hidden = false;
+  };
+  openLoginScreen = openPreviewLogin;
+  $("loginTopBtn").hidden = false;
+  $("loginTopBtn").onclick = openPreviewLogin;
+  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  $("googleBtn").onclick = previewMsg;
+  $("emailBtn").onclick = previewMsg;
+  const sw = $("switchLink");
+  if (sw) sw.onclick = previewMsg;
+} else {
+  const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "pkce" } });
+
+  // 게스트(localStorage) 할 일을 로그인된 계정 DB로 이전
+  // 여러 경로(부팅/로그인 이벤트)에서 동시에 불려도 실제 실행은 1회, 모두 같은 완료를 기다린다
+  let migratePromise = null;
+  function migrateLocalIfAny() {
+    if (!migratePromise) migratePromise = (async () => {
+      try {
+        const raw = localStorage.getItem("oneul.v3");
+        if (!raw) return;
+        const items = (JSON.parse(raw).todos || []);
+        if (items.length) {
+          const rows = items.map(t => ({
+            id: t.id, text: t.text, time: t.time || null,
+            done: !!t.done, todo_date: t.todoDate || todayStr()
+          }));
+          const { error } = await supabase.from("todos").upsert(rows, { onConflict: "id" });
+          if (error) { console.error("게스트 데이터 이전 실패:", error); return; } // 실패 시 로컬 보존
+        }
+        localStorage.removeItem("oneul.v3"); // 이전 성공 시에만 로컬 비움
+      } catch (e) { console.error(e); }
+    })();
+    return migratePromise;
+  }
+
+  // 로그인 화면 열기/닫기 (게스트 모드에서 버튼으로 진입)
+  const openAuth = () => {
+    $("mainView").hidden = true;
+    $("authView").hidden = false;
+    $("backLine").hidden = false;
+    const msg = $("authMsg");
+    msg.textContent = "지금까지 적은 할 일은 로그인하면 계정으로 그대로 옮겨드려요.";
+    msg.className = "msg";
+  };
+  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  openLoginScreen = openAuth;
+  $("loginTopBtn").onclick = openAuth;
+  $("nudgeLoginBtn").onclick = openAuth;
+
+  const msg = $("authMsg");
+  const setMsg = (t, err) => { msg.textContent = t; msg.className = "msg" + (err ? " err" : ""); };
+
+  // 구글 로그인
+  $("googleBtn").onclick = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname }
+    });
+    if (error) setMsg("구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.", true);
+  };
+
+  if (IS_DESKTOP) {
+    // 데스크톱: 내장 창의 구글 인증은 정책상 차단되므로
+    // 시스템 브라우저에서 인증하고 딥링크(oharu://auth-callback)로 복귀한다
+    $("googleBtn").onclick = async () => {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: "oharu://auth-callback", skipBrowserRedirect: true }
+      });
+      if (error || !data || !data.url) {
+        return setMsg("구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.", true);
+      }
+      if (window.desktopBridge && window.desktopBridge.openExternal) {
+        window.desktopBridge.openExternal(data.url);
+        setMsg("브라우저에서 구글 로그인을 완료해주세요. 끝나면 자동으로 돌아와요.");
+      } else {
+        setMsg("이 버전에서는 구글 로그인을 지원하지 않아요. 이메일로 로그인해주세요.", true);
+      }
+    };
+    if (window.desktopBridge && window.desktopBridge.onAuthCode) {
+      window.desktopBridge.onAuthCode(async (code) => {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) setMsg("로그인 마무리에 실패했어요. 다시 시도해주세요.", true);
+      });
+    }
+  }
+
+  // 이메일 로그인 / 가입 토글
+  let mode = "login"; // 'login' | 'signup'
+  const applyMode = () => {
+    $("emailBtn").textContent = mode === "login" ? "로그인" : "가입하기";
+    $("switchLine").innerHTML = mode === "login"
+      ? '처음이신가요? <a id="switchLink">이메일로 가입하기</a>'
+      : '이미 계정이 있나요? <a id="switchLink">로그인하기</a>';
+    $("switchLink").onclick = () => { mode = mode === "login" ? "signup" : "login"; setMsg(""); applyMode(); };
+  };
+  applyMode();
+
+  $("emailBtn").onclick = async () => {
+    const email = $("email").value.trim();
+    const pw = $("pw").value;
+    if (!email.includes("@")) return setMsg("이메일 주소를 확인해주세요.", true);
+    if (pw.length < 6) return setMsg("비밀번호는 6자 이상이어야 해요.", true);
+    $("emailBtn").disabled = true;
+    if (mode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+      if (error) setMsg("이메일 또는 비밀번호가 맞지 않아요.", true);
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password: pw });
+      if (error) setMsg(error.message.includes("registered") ? "이미 가입된 이메일이에요. 로그인해주세요." : "가입에 실패했어요. 잠시 후 다시 시도해주세요.", true);
+      else if (!data.session) setMsg("확인 메일을 보냈어요. 메일의 링크를 눌러 가입을 완료해주세요 ✉️");
+    }
+    $("emailBtn").disabled = false;
+  };
+
+  $("pw").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.isComposing) $("emailBtn").click();
+  });
+
+  // 로그인 성공 → (게스트였다면) 데이터 이전 후 클라우드 모드 진입
+  // 주의: supabase-js는 onAuthStateChange 콜백 "안"에서 다른 Supabase 함수를 직접 await하면
+  // 교착(멈춤)될 수 있다. 공식 권장대로 setTimeout으로 콜백 밖에서 실행한다.
+  supabase.auth.onAuthStateChange((_e, sess) => {
+    if (!sess) return;
+    setTimeout(async () => {
+      if (guestMode) {
+        await migrateLocalIfAny();
+        location.reload();
+      } else if (!appStarted) {
+        // 데스크톱 로그인 게이트/OAuth 복귀 등에서 로그인한 경우
+        await migrateLocalIfAny();
+        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email });
+      }
+    }, 0);
+  });
+
+  // 구글 인증에서 막 돌아온 순간인지 감지 (?code= 또는 #access_token)
+  const isOAuthReturn = /[?#&](code|access_token)=/.test(location.search + location.hash);
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    // 구글 OAuth 복귀 등: 남아있는 게스트 데이터가 있으면 먼저 이전
+    await migrateLocalIfAny();
+    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email });
+  } else if (isOAuthReturn) {
+    // 인증 복귀 중: 세션 교환이 끝나면 onAuthStateChange가 이전 후 앱을 시작한다.
+    // 여기서 게스트 모드를 시작하면 이전 작업과 경쟁 상태가 생기므로 대기한다.
+    // 안전장치: 8초 내 세션이 안 오면(교환 실패) 게스트로 복귀
+    setTimeout(() => {
+      if (!appStarted) {
+        $("loginTopBtn").hidden = false;
+        startApp(localRepo(), { guest: true });
+      }
+    }, 8000);
+  } else if (IS_DESKTOP) {
+    // 데스크톱 앱: 로그인 필수 (게스트 모드 없음, 돌아가기 없음)
+    $("authView").hidden = false;
+  } else {
+    // 웹: 로그인 없이 바로 사용 (게스트 모드) — 로그인은 버튼/유도 카드로 진입
+    $("loginTopBtn").hidden = false;
+    startApp(localRepo(), { guest: true });
+  }
+}
+</script>
+</body>
+</html>

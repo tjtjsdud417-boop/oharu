@@ -1,0 +1,42 @@
+{
+  "name": "oharu-desktop",
+  "productName": "오하루",
+  "version": "1.1.0",
+  "description": "오하루 — 오늘 할 일 (Windows 위젯)",
+  "main": "main.js",
+  "author": "moodweb",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.moodweb.oharu",
+    "productName": "오하루",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "build/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/index.html",
+        "to": "web/index.html"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false,
+      "icon": "build/icon.ico"
+    },
+    "artifactName": "Oharu-${version}.exe"
+  }
+}
