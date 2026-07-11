@@ -445,6 +445,31 @@
   .ad-card .ad-tag { font-size: 10.5px; font-weight: 700; color: var(--text-faint); letter-spacing: .06em; margin-bottom: 8px; }
   .ad-slot { border-radius: 12px; overflow: hidden; background: transparent; height: 100px; }
 
+  /* ── PC 위젯 다운로드 카드 (웹·넓은 화면) ── */
+  .dl-card {
+    display: none;
+    position: fixed; right: 24px; bottom: 24px; z-index: 1000;
+    width: 280px; padding: 18px 18px 16px;
+    background: var(--card); border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(2,32,71,.10), 0 1px 2px rgba(2,32,71,.04);
+    align-items: flex-start; gap: 12px;
+  }
+  @media (min-width: 1080px) {
+    .dl-card:not([hidden]) { display: flex; }
+  }
+  .dl-card .dl-icon { width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; }
+  .dl-card .dl-body { flex: 1; min-width: 0; }
+  .dl-card .dl-title { font-size: 14.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+  .dl-card .dl-sub { margin-top: 4px; font-size: 12.5px; font-weight: 500; color: var(--text-sub); line-height: 1.45; }
+  .dl-card .dl-btn {
+    display: inline-block; margin-top: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 16px; border-radius: 12px;
+    text-decoration: none; transition: background .15s;
+  }
+  .dl-card .dl-btn:hover { background: #1B64DA; }
+
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
@@ -554,6 +579,9 @@
             <option value="auto">자동</option>
             <option value="ko">한국어</option>
             <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="es">Español</option>
           </select>
         </div>
         <div class="set-row" id="setBgAlphaRow" hidden>
@@ -581,6 +609,7 @@
         <div class="set-title" id="setAboutTitle">정보</div>
         <div class="set-row"><span id="setVersionLabel">버전</span><span class="sub" id="appVersion"></span></div>
         <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
+        <div class="set-row" id="setPcWidgetRow" hidden><span id="setPcWidgetLabel">PC 위젯</span><a href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe" target="_blank" rel="noopener" id="setPcWidgetLink">다운로드</a></div>
         <div class="set-row"><span id="setWebLabel">오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
       </div>
     </div>
@@ -606,6 +635,20 @@
   </div>
 
 </div>
+
+<aside class="dl-card" id="dlCard" hidden>
+  <svg class="dl-icon" viewBox="0 0 36 36" aria-hidden="true">
+    <rect x="4" y="6" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="6" width="12" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="4" y="19" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="19" width="12" height="11" rx="1.5" fill="#50E6FF"/>
+  </svg>
+  <div class="dl-body">
+    <div class="dl-title" id="dlTitle"></div>
+    <div class="dl-sub" id="dlSub"></div>
+    <a class="dl-btn" id="dlBtn" href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu.exe" target="_blank" rel="noopener"></a>
+  </div>
+</aside>
 
 <script type="module">
 /* ═══════════════════════════════════════════════
@@ -714,6 +757,13 @@ const T = {
     view: "보기",
     oharuWeb: "오하루 웹",
     logoAria: "오하루 로고",
+    installTitle: "윈도우 바탕화면에 설치하기",
+    installSub: "항상 위에 떠 있는 투두 위젯",
+    pcWidget: "PC 위젯",
+    download: "다운로드",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -780,26 +830,252 @@ const T = {
     view: "View",
     oharuWeb: "Oharu Web",
     logoAria: "Oharu logo",
+    installTitle: "Install on your Windows desktop",
+    installSub: "An always-on-top to-do widget",
+    pcWidget: "PC widget",
+    download: "Download",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+  },
+  ja: {
+    title: "Oharu — 今日のやること",
+    authBrand: "Oharu",
+    authSub: "今日のタスクだけに集中する、<br>いちばんシンプルなToDoリスト",
+    googleBtn: "Googleで続行",
+    authDivider: "またはメールで",
+    emailPh: "メールアドレス",
+    pwPh: "パスワード（6文字以上）",
+    loginBtn: "ログイン",
+    signupBtn: "登録する",
+    backLink: "← 戻る",
+    switchLogin: 'はじめての方は <a id="switchLink">メールで登録</a>',
+    switchSignup: 'アカウントをお持ちの方は <a id="switchLink">ログイン</a>',
+    migrateHint: "これまでのやることは、ログインするとアカウントに引き継がれます。",
+    errEmail: "メールアドレスをご確認ください。",
+    errPw: "パスワードは6文字以上で入力してください。",
+    errLogin: "メールアドレスまたはパスワードが正しくありません。",
+    errRegistered: "すでに登録済みのメールです。ログインしてください。",
+    errSignup: "登録に失敗しました。しばらくしてからもう一度お試しください。",
+    msgConfirm: "確認メールを送信しました。リンクを押して登録を完了してください ✉️",
+    errGoogle: "Googleログインに失敗しました。もう一度お試しください。",
+    msgGoogleBrowser: "ブラウザでGoogleログインを完了してください。終わると自動で戻ります。",
+    headlineEmpty: "今日はどんな一日ですか？",
+    headlineDone: "今日のやること、すべて完了 🎉",
+    headlineLeft: '残り<span class="num">{n}</span>件',
+    inputPh: "今日のやることを書いてみましょう",
+    addBtn: "追加",
+    clockTitle: "時間を設定（任意）",
+    clockClearTitle: "時間を解除",
+    emptyState: "まだ登録がありません。<br>いちばん大事なことから書いてみましょう。",
+    overdue: " · 時間切れ",
+    todaySuffix: " · 今日",
+    noRecords: "この日は記録がありません",
+    nudgeText: "やることはこの端末にのみ保存されています。<br>ログインするとスマホ・PCどこでも続けられます。",
+    calBtnTitle: "カレンダー",
+    calBtnAria: "カレンダー",
+    setBtnTitle: "設定",
+    setBtnAria: "設定",
+    delAria: "削除",
+    setAccount: "アカウント",
+    guestMode: 'ゲストモード <span class="sub">· この端末にのみ保存</span>',
+    logout: "ログアウト",
+    login: "ログイン",
+    signedIn: "ログイン中",
+    setDisplay: "画面",
+    bgAlpha: "背景の透明度",
+    setLang: "言語",
+    langAuto: "自動",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "ウィジェット",
+    alwaysOnTop: "常に手前に表示",
+    autoLaunch: "PC起動時に自動起動",
+    quitAppLabel: "アプリを終了",
+    quitBtn: "終了",
+    setAbout: "情報",
+    version: "バージョン",
+    privacy: "プライバシーポリシー",
+    view: "表示",
+    oharuWeb: "Oharu Web",
+    logoAria: "Oharu logo",
+    installTitle: "Windowsデスクトップにインストール",
+    installSub: "常に手前に表示されるToDoウィジェット",
+    pcWidget: "PCウィジェット",
+    download: "ダウンロード",
+  },
+  zh: {
+    title: "Oharu — 今日待办",
+    authBrand: "Oharu",
+    authSub: "只专注于今天的<br>极简待办清单",
+    googleBtn: "使用 Google 继续",
+    authDivider: "或使用邮箱",
+    emailPh: "邮箱地址",
+    pwPh: "密码（至少6位）",
+    loginBtn: "登录",
+    signupBtn: "注册",
+    backLink: "← 返回",
+    switchLogin: '第一次使用？<a id="switchLink">用邮箱注册</a>',
+    switchSignup: '已有账号？<a id="switchLink">登录</a>',
+    migrateHint: "登录后，你已写下的待办会自动转移到账号中。",
+    errEmail: "请检查邮箱地址。",
+    errPw: "密码至少需要6位。",
+    errLogin: "邮箱或密码不正确。",
+    errRegistered: "该邮箱已注册，请直接登录。",
+    errSignup: "注册失败，请稍后重试。",
+    msgConfirm: "确认邮件已发送，请点击邮件中的链接完成注册 ✉️",
+    errGoogle: "Google 登录失败，请稍后重试。",
+    msgGoogleBrowser: "请在浏览器中完成 Google 登录，完成后会自动返回。",
+    headlineEmpty: "今天过得怎么样？",
+    headlineDone: "今天的待办全部完成 🎉",
+    headlineLeft: '还剩 <span class="num">{n}</span> 项',
+    inputPh: "写下今天要做的事",
+    addBtn: "添加",
+    clockTitle: "设置时间（可选）",
+    clockClearTitle: "清除时间",
+    emptyState: "还没有待办。<br>从最重要的一件事开始吧。",
+    overdue: " · 已超时",
+    todaySuffix: " · 今天",
+    noRecords: "这一天没有记录",
+    nudgeText: "待办目前只保存在此设备上。<br>登录后可在手机和电脑间同步。",
+    calBtnTitle: "日历",
+    calBtnAria: "日历",
+    setBtnTitle: "设置",
+    setBtnAria: "设置",
+    delAria: "删除",
+    setAccount: "账号",
+    guestMode: '访客模式 <span class="sub">· 仅保存在此设备</span>',
+    logout: "退出登录",
+    login: "登录",
+    signedIn: "已登录",
+    setDisplay: "显示",
+    bgAlpha: "背景透明度",
+    setLang: "语言",
+    langAuto: "自动",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "小组件",
+    alwaysOnTop: "窗口置顶",
+    autoLaunch: "开机自动启动",
+    quitAppLabel: "退出应用",
+    quitBtn: "退出",
+    setAbout: "关于",
+    version: "版本",
+    privacy: "隐私政策",
+    view: "查看",
+    oharuWeb: "Oharu Web",
+    logoAria: "Oharu logo",
+    installTitle: "安装到 Windows 桌面",
+    installSub: "始终置顶的待办小组件",
+    pcWidget: "PC 小组件",
+    download: "下载",
+  },
+  es: {
+    title: "Oharu — Tareas de hoy",
+    authBrand: "Oharu",
+    authSub: "La lista de tareas más simple,<br>centrada solo en hoy",
+    googleBtn: "Continuar con Google",
+    authDivider: "o con tu correo",
+    emailPh: "Correo electrónico",
+    pwPh: "Contraseña (6+ caracteres)",
+    loginBtn: "Iniciar sesión",
+    signupBtn: "Registrarse",
+    backLink: "← Volver",
+    switchLogin: '¿Primera vez? <a id="switchLink">Regístrate con tu correo</a>',
+    switchSignup: '¿Ya tienes cuenta? <a id="switchLink">Inicia sesión</a>',
+    migrateHint: "Tus tareas se moverán a tu cuenta al iniciar sesión.",
+    errEmail: "Revisa tu correo electrónico.",
+    errPw: "La contraseña debe tener al menos 6 caracteres.",
+    errLogin: "Correo o contraseña incorrectos.",
+    errRegistered: "Este correo ya está registrado. Inicia sesión.",
+    errSignup: "No se pudo completar el registro. Inténtalo más tarde.",
+    msgConfirm: "Te enviamos un correo de confirmación. Haz clic en el enlace para terminar ✉️",
+    errGoogle: "Error al iniciar sesión con Google. Inténtalo de nuevo.",
+    msgGoogleBrowser: "Completa el acceso con Google en tu navegador; volverás automáticamente.",
+    headlineEmpty: "¿Cómo va tu día?",
+    headlineDone: "¡Todo listo por hoy! 🎉",
+    headlineLeft: '<span class="num">{n}</span> pendientes hoy',
+    inputPh: "Escribe una tarea para hoy",
+    addBtn: "Añadir",
+    clockTitle: "Fijar hora (opcional)",
+    clockClearTitle: "Quitar hora",
+    emptyState: "Aún no hay nada.<br>Empieza por lo más importante.",
+    overdue: " · vencida",
+    todaySuffix: " · Hoy",
+    noRecords: "Sin registros este día",
+    nudgeText: "Tus tareas solo se guardan en este dispositivo.<br>Inicia sesión para sincronizar entre móvil y PC.",
+    calBtnTitle: "Calendario",
+    calBtnAria: "Calendario",
+    setBtnTitle: "Ajustes",
+    setBtnAria: "Ajustes",
+    delAria: "Eliminar",
+    setAccount: "Cuenta",
+    guestMode: 'Modo invitado <span class="sub">· solo en este dispositivo</span>',
+    logout: "Cerrar sesión",
+    login: "Iniciar sesión",
+    signedIn: "Sesión iniciada",
+    setDisplay: "Pantalla",
+    bgAlpha: "Opacidad del fondo",
+    setLang: "Idioma",
+    langAuto: "Automático",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "Widget",
+    alwaysOnTop: "Siempre visible",
+    autoLaunch: "Iniciar con el PC",
+    quitAppLabel: "Salir de la app",
+    quitBtn: "Salir",
+    setAbout: "Información",
+    version: "Versión",
+    privacy: "Política de privacidad",
+    view: "Ver",
+    oharuWeb: "Oharu Web",
+    logoAria: "Oharu logo",
+    installTitle: "Instalar en tu escritorio de Windows",
+    installSub: "Un widget de tareas siempre visible",
+    pcWidget: "Widget para PC",
+    download: "Descargar",
   },
 };
 
+function detectLang() {
+  const nav = (navigator.language || "").toLowerCase();
+  const base = nav.slice(0, 2);
+  if (base === "ko") return "ko";
+  if (base === "ja") return "ja";
+  if (base === "es") return "es";
+  if (nav.startsWith("zh")) return "zh";
+  return "en";
+}
 function resolveLang() {
   const saved = loadUI().lang;
-  if (saved === "ko" || saved === "en") return saved;
-  return (navigator.language || "").startsWith("ko") ? "ko" : "en";
+  if (saved && saved !== "auto" && T[saved]) return saved;
+  return detectLang();
 }
 const LANG = resolveLang();
+const INTL_LOCALE = { ko: "ko", en: "en", ja: "ja", zh: "zh-CN", es: "es" };
+const intlLocale = () => INTL_LOCALE[LANG] || "en";
 const t = (key, vars) => {
-  let s = (T[LANG][key] ?? T.ko[key] ?? key);
+  let s = (T[LANG]?.[key] ?? T.en?.[key] ?? T.ko?.[key] ?? key);
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, v);
   return s;
 };
 
 const DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
-const DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS_SHORT_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MONTHS_FULL_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const getDays = () => LANG === "ko" ? DAYS_KO : DAYS_EN;
+const getDays = () => {
+  if (LANG === "ko") return DAYS_KO;
+  const fmt = new Intl.DateTimeFormat(intlLocale(), { weekday: "short" });
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2023, 0, 1 + i)));
+};
 
 function applyTexts() {
   document.documentElement.lang = LANG;
@@ -832,6 +1108,9 @@ function applyTexts() {
   $("langSelect").options[0].textContent = t("langAuto");
   $("langSelect").options[1].textContent = t("langKo");
   $("langSelect").options[2].textContent = t("langEn");
+  $("langSelect").options[3].textContent = t("langJa");
+  $("langSelect").options[4].textContent = t("langZh");
+  $("langSelect").options[5].textContent = t("langEs");
   $("langSelect").setAttribute("aria-label", t("setLang"));
   $("setBgAlphaLabel").textContent = t("bgAlpha");
   $("bgAlphaRange").setAttribute("aria-label", t("bgAlpha"));
@@ -847,6 +1126,15 @@ function applyTexts() {
   $("setPrivacyLabel").textContent = t("privacy");
   $("setPrivacyLink").textContent = t("view");
   $("setWebLabel").textContent = t("oharuWeb");
+  if (!IS_DESKTOP) {
+    $("setPcWidgetRow").hidden = false;
+    $("setPcWidgetLabel").textContent = t("pcWidget");
+    $("setPcWidgetLink").textContent = t("download");
+    $("dlCard").hidden = false;
+    $("dlTitle").textContent = t("installTitle");
+    $("dlSub").textContent = t("installSub");
+    $("dlBtn").textContent = t("download");
+  }
 }
 
 // ── 유틸 ───────────────────────────────────────
@@ -858,18 +1146,21 @@ const fmtTime = hhmm => {
   if (LANG === "ko") {
     return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}`;
   }
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+  return new Intl.DateTimeFormat(intlLocale(), { hour: "numeric", minute: "2-digit" }).format(new Date(2000, 0, 1, h, m));
 };
 const fmtDateLine = d => {
   if (LANG === "ko") return `${d.getMonth() + 1}월 ${d.getDate()}일 ${getDays()[d.getDay()]}요일`;
-  return `${getDays()[d.getDay()]}, ${MONTHS_SHORT_EN[d.getMonth()]} ${d.getDate()}`;
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: "short", month: "short", day: "numeric" }).format(d);
 };
-const fmtCalMonth = (y, m) => LANG === "ko" ? `${y}년 ${m + 1}월` : `${MONTHS_FULL_EN[m]} ${y}`;
+const fmtCalMonth = (y, m) => {
+  if (LANG === "ko") return `${y}년 ${m + 1}월`;
+  return new Intl.DateTimeFormat(intlLocale(), { month: "long", year: "numeric" }).format(new Date(y, m, 1));
+};
 const fmtDayTitle = (sy, sm, sd) => {
-  const dow = new Date(sy, sm - 1, sd).getDay();
-  if (LANG === "ko") return `${sm}월 ${sd}일 ${getDays()[dow]}요일` + (selDate === todayStr() ? t("todaySuffix") : "");
-  return `${getDays()[dow]}, ${MONTHS_SHORT_EN[sm - 1]} ${sd}` + (selDate === todayStr() ? t("todaySuffix") : "");
+  const d = new Date(sy, sm - 1, sd);
+  const suffix = selDate === todayStr() ? t("todaySuffix") : "";
+  if (LANG === "ko") return `${sm}월 ${sd}일 ${getDays()[d.getDay()]}요일` + suffix;
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: "short", month: "short", day: "numeric" }).format(d) + suffix;
 };
 const isLate = hhmm => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -1122,7 +1413,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
@@ -1212,14 +1503,14 @@ async function add() {
   const input = $("input");
   const text = input.value.trim();
   if (!text) return;
-  const t = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), createdAt: new Date().toISOString() };
-  todos.push(t);
+  const newTodo = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), createdAt: new Date().toISOString() };
+  todos.push(newTodo);
   input.value = "";
   pickedTime = null; timeInput.value = "";
   clock.classList.remove("set"); clockText.textContent = "";
   render();
   input.focus();
-  await repo.add(t);
+  await repo.add(newTodo);
 }
 $("addBtn").onclick = add;
 $("input").addEventListener("keydown", e => {

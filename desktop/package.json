@@ -1,8 +1,8 @@
 {
   "name": "oharu-desktop",
-  "productName": "오하루",
-  "version": "1.3.0",
-  "description": "오하루 — 오늘 할 일 (Windows 위젯)",
+  "productName": "Oharu",
+  "version": "1.4.0",
+  "description": "Oharu — today's to-do (Windows widget)",
   "main": "main.js",
   "author": "moodweb",
   "license": "UNLICENSED",
@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.moodweb.oharu",
-    "productName": "오하루",
+    "productName": "Oharu",
     "directories": {
       "output": "dist"
     },
@@ -37,6 +37,6 @@
       "signAndEditExecutable": false,
       "icon": "build/icon.ico"
     },
-    "artifactName": "Oharu-${version}.exe"
+    "artifactName": "Oharu.exe"
   }
 }
