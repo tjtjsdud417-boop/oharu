@@ -975,11 +975,11 @@ function renderHead() {
 }
 
 // ── 리스트 아이템 공용 렌더러 ────────────────────
-function buildItem(t, { interactive = true } = {}) {
+function buildItem(item, { interactive = true } = {}) {
   const row = document.createElement("div");
-  row.className = "item" + (t.done ? " done" : "");
+  row.className = "item" + (item.done ? " done" : "");
   row.setAttribute("role", "checkbox");
-  row.setAttribute("aria-checked", t.done);
+  row.setAttribute("aria-checked", item.done);
   if (interactive) row.tabIndex = 0;
 
   const check = document.createElement("span");
@@ -988,16 +988,16 @@ function buildItem(t, { interactive = true } = {}) {
 
   const body = document.createElement("div");
   body.className = "body";
-  if (t.time) {
+  if (item.time) {
     const chip = document.createElement("div");
-    const late = !t.done && t.todoDate === todayStr() && isLate(t.time);
+    const late = !item.done && item.todoDate === todayStr() && isLate(item.time);
     chip.className = "time" + (late ? " late" : "");
-    chip.textContent = fmtTime(t.time) + (late ? t("overdue") : "");
+    chip.textContent = fmtTime(item.time) + (late ? t("overdue") : "");
     body.appendChild(chip);
   }
   const label = document.createElement("div");
   label.className = "label";
-  label.textContent = t.text;
+  label.textContent = item.text;
   body.appendChild(label);
 
   row.append(check, body);
@@ -1009,17 +1009,17 @@ function buildItem(t, { interactive = true } = {}) {
     del.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
     del.onclick = async e => {
       e.stopPropagation();
-      todos = todos.filter(x => x.id !== t.id);
+      todos = todos.filter(x => x.id !== item.id);
       render();
-      await repo.remove(t.id);
+      await repo.remove(item.id);
     };
     const toggle = async () => {
-      t.done = !t.done;
-      row.classList.toggle("done", t.done);
-      row.setAttribute("aria-checked", t.done);
+      item.done = !item.done;
+      row.classList.toggle("done", item.done);
+      row.setAttribute("aria-checked", item.done);
       renderHead();
       setTimeout(render, 320);
-      await repo.update(t);
+      await repo.update(item);
     };
     row.onclick = toggle;
     row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
