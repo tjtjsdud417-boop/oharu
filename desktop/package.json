@@ -1,7 +1,7 @@
 {
   "name": "oharu-desktop",
   "productName": "Oharu",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Oharu — today's to-do (Windows widget)",
   "main": "main.js",
   "author": "moodweb",

@@ -229,6 +229,7 @@ function createWindow() {
     backgroundColor: "#00000000",
     skipTaskbar: false,
     show: false,
+    icon: path.join(__dirname, "build", "window.ico"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
