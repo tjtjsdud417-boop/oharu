@@ -284,6 +284,11 @@
   .set-btn.primary:hover { background: #1B64DA; }
   .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
   .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .set-row select {
+    border: 1.5px solid #E5E8EB; border-radius: 10px;
+    padding: 6px 10px; font: inherit; font-size: 13px; font-weight: 600;
+    background: var(--card); color: var(--text); cursor: pointer;
+  }
   .tog { position: relative; display: inline-flex; flex-shrink: 0; }
   .tog input { position: absolute; opacity: 0; width: 0; height: 0; }
   .tog i {
@@ -449,7 +454,7 @@
 
   <!-- ══ 로그인 화면 ══ -->
   <div class="auth" id="authView" hidden>
-    <svg class="logo" viewBox="0 0 98.55 88.94" width="44" height="40" xmlns="http://www.w3.org/2000/svg" aria-label="오하루 로고" role="img">
+    <svg class="logo" viewBox="0 0 98.55 88.94" width="44" height="40" xmlns="http://www.w3.org/2000/svg" aria-label="오하루 로고" role="img" id="authLogo">
       <g fill="#2b76f3">
         <rect x="28.75" y="1.53" width="69.8" height="15.93" rx="7.96"/>
         <rect x="0" y="37.27" width="98.55" height="15.93" rx="7.96"/>
@@ -457,14 +462,14 @@
         <circle cx="9.5" cy="9.5" r="9.5"/>
       </g>
     </svg>
-    <h2>오하루</h2>
-    <p>오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
+    <h2 id="authH2">오하루</h2>
+    <p id="authSub">오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
     <div class="row">
       <button class="btn google" id="googleBtn">
         <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
-        구글로 계속하기
+        <span id="googleBtnText">구글로 계속하기</span>
       </button>
-      <div class="divider">또는 이메일로</div>
+      <div class="divider" id="authDivider">또는 이메일로</div>
       <input id="email" type="email" placeholder="이메일 주소" autocomplete="email">
       <input id="pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
       <button class="btn primary" id="emailBtn">로그인</button>
@@ -516,7 +521,7 @@
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>
         <div class="emoji">☀️</div>
-        <p>아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.</p>
+        <p id="emptyText">아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.</p>
       </div>
     </div>
 
@@ -538,43 +543,51 @@
     <!-- 설정 보기: 설정 버튼 눌렀을 때만 -->
     <div id="setView" hidden>
       <div class="set-card">
-        <div class="set-title">계정</div>
+        <div class="set-title" id="setAccountTitle">계정</div>
         <div class="set-row" id="setAccount"></div>
       </div>
-      <div class="set-card" id="setDesign" hidden>
-        <div class="set-title">화면</div>
+      <div class="set-card" id="setDesign">
+        <div class="set-title" id="setDesignTitle">화면</div>
         <div class="set-row">
-          <span>배경 투명도</span>
+          <span id="setLangLabel">언어</span>
+          <select id="langSelect" aria-label="Language">
+            <option value="auto">자동</option>
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="set-row" id="setBgAlphaRow" hidden>
+          <span id="setBgAlphaLabel">배경 투명도</span>
           <input type="range" id="bgAlphaRange" min="30" max="100" step="5" value="100" aria-label="배경 투명도">
           <span class="pct" id="bgAlphaVal">100%</span>
         </div>
       </div>
       <div class="set-card" id="setApp" hidden>
-        <div class="set-title">앱</div>
+        <div class="set-title" id="setAppTitle">위젯</div>
         <div class="set-row">
-          <span>항상 위 고정</span>
-          <label class="tog"><input type="checkbox" id="alwaysOnTopToggle" aria-label="항상 위 고정"><i></i></label>
+          <span id="setAlwaysOnTopLabel">항상 위에 고정</span>
+          <label class="tog"><input type="checkbox" id="alwaysOnTopToggle" aria-label="항상 위에 고정"><i></i></label>
         </div>
         <div class="set-row">
-          <span>시작 시 자동 실행</span>
-          <label class="tog"><input type="checkbox" id="autoLaunchToggle" aria-label="시작 시 자동 실행"><i></i></label>
+          <span id="setAutoLaunchLabel">PC 시작 시 자동 실행</span>
+          <label class="tog"><input type="checkbox" id="autoLaunchToggle" aria-label="PC 시작 시 자동 실행"><i></i></label>
         </div>
         <div class="set-row">
-          <span>앱 종료</span>
-          <button type="button" class="set-btn danger" id="quitAppBtn">완전히 종료</button>
+          <span id="setQuitLabel">앱 종료</span>
+          <button type="button" class="set-btn danger" id="quitAppBtn">종료</button>
         </div>
       </div>
       <div class="set-card">
-        <div class="set-title">정보</div>
-        <div class="set-row"><span>버전</span><span class="sub" id="appVersion"></span></div>
-        <div class="set-row"><span>개인정보처리방침</span><a href="/privacy.html" target="_blank" rel="noopener">보기</a></div>
-        <div class="set-row"><span>오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
+        <div class="set-title" id="setAboutTitle">정보</div>
+        <div class="set-row"><span id="setVersionLabel">버전</span><span class="sub" id="appVersion"></span></div>
+        <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
+        <div class="set-row"><span id="setWebLabel">오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
       </div>
     </div>
 
     <!-- 게스트 모드에서만 노출되는 로그인 유도 -->
     <div class="nudge" id="nudge" hidden>
-      <div class="nudge-text">할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
+      <div class="nudge-text" id="nudgeText">할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
       <button class="nudge-btn" id="nudgeLoginBtn">로그인</button>
     </div>
 
@@ -619,25 +632,244 @@ if (!IS_DESKTOP) {
     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (_) {}
     // 광고가 실제 채워지면 카드 표시 (미승인·미채움이면 계속 숨김 = 빈 박스 방지)
     let n = 0;
-    const t = setInterval(() => {
+    const poll = setInterval(() => {
       const ins = document.querySelector("#adCard ins.adsbygoogle");
       if (ins && ins.getAttribute("data-ad-status") === "filled") {
         document.getElementById("adCard").hidden = false;
-        clearInterval(t);
+        clearInterval(poll);
       }
-      if (++n >= 15) clearInterval(t);
+      if (++n >= 15) clearInterval(poll);
     }, 2000);
   });
 }
 
+// ── UI 저장 / 다국어 ─────────────────────────────
+const UIKEY = "oharu.ui";
+const loadUI = () => { try { return JSON.parse(localStorage.getItem(UIKEY) || "{}"); } catch (_) { return {}; } };
+const saveUI = u => { try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (_) {} };
+
+const T = {
+  ko: {
+    title: "오하루 — 오늘 할 일",
+    authBrand: "오하루",
+    authSub: "오늘 할 일에만 집중하는<br>가장 단순한 투두리스트",
+    googleBtn: "구글로 계속하기",
+    authDivider: "또는 이메일로",
+    emailPh: "이메일 주소",
+    pwPh: "비밀번호 (6자 이상)",
+    loginBtn: "로그인",
+    signupBtn: "가입하기",
+    backLink: "← 돌아가기",
+    switchLogin: '처음이신가요? <a id="switchLink">이메일로 가입하기</a>',
+    switchSignup: '이미 계정이 있나요? <a id="switchLink">로그인하기</a>',
+    migrateHint: "지금까지 적은 할 일은 로그인하면 계정으로 그대로 옮겨드려요.",
+    errEmail: "이메일 주소를 확인해주세요.",
+    errPw: "비밀번호는 6자 이상이어야 해요.",
+    errLogin: "이메일 또는 비밀번호가 맞지 않아요.",
+    errRegistered: "이미 가입된 이메일이에요. 로그인해주세요.",
+    errSignup: "가입에 실패했어요. 잠시 후 다시 시도해주세요.",
+    msgConfirm: "확인 메일을 보냈어요. 메일의 링크를 눌러 가입을 완료해주세요 ✉️",
+    errGoogle: "구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.",
+    errGoogleStart: "구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.",
+    msgGoogleBrowser: "브라우저에서 구글 로그인을 완료해주세요. 끝나면 자동으로 돌아와요.",
+    errGoogleDesktop: "이 버전에서는 구글 로그인을 지원하지 않아요. 이메일로 로그인해주세요.",
+    errGoogleFinish: "로그인 마무리에 실패했어요. 다시 시도해주세요.",
+    previewSupabase: "Supabase 연결(파일 상단 설정) 후에 실제 로그인이 활성화돼요.",
+    headlineEmpty: "오늘은 어떤 하루인가요?",
+    headlineDone: "오늘 할 일을 다 끝냈어요 🎉",
+    headlineLeft: '할 일이 <span class="num">{n}개</span> 남았어요',
+    inputPh: "오늘 할 일을 적어보세요",
+    addBtn: "추가",
+    clockTitle: "시간 설정 (선택)",
+    clockClearTitle: "시간 해제",
+    emptyState: "아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.",
+    overdue: " · 지남",
+    todaySuffix: " · 오늘",
+    noRecords: "이 날은 기록이 없어요",
+    nudgeText: "할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.",
+    calBtnTitle: "목록 보기",
+    calBtnAria: "달력으로 전체 보기",
+    setBtnTitle: "설정",
+    setBtnAria: "설정",
+    delAria: "삭제",
+    setAccount: "계정",
+    guestMode: '게스트 모드 <span class="sub">· 이 기기에만 저장</span>',
+    logout: "로그아웃",
+    login: "로그인",
+    signedIn: "로그인됨",
+    setDisplay: "화면",
+    bgAlpha: "배경 투명도",
+    setLang: "언어",
+    langAuto: "자동",
+    langKo: "한국어",
+    langEn: "English",
+    setWidget: "위젯",
+    alwaysOnTop: "항상 위에 고정",
+    autoLaunch: "PC 시작 시 자동 실행",
+    quitAppLabel: "앱 종료",
+    quitBtn: "종료",
+    setAbout: "정보",
+    version: "버전",
+    privacy: "개인정보처리방침",
+    view: "보기",
+    oharuWeb: "오하루 웹",
+    logoAria: "오하루 로고",
+  },
+  en: {
+    title: "Oharu — Today's To-dos",
+    authBrand: "Oharu",
+    authSub: "The simplest to-do list,<br>focused only on today",
+    googleBtn: "Continue with Google",
+    authDivider: "or with email",
+    emailPh: "Email address",
+    pwPh: "Password (6+ characters)",
+    loginBtn: "Log in",
+    signupBtn: "Sign up",
+    backLink: "← Back",
+    switchLogin: 'New here? <a id="switchLink">Sign up with email</a>',
+    switchSignup: 'Already have an account? <a id="switchLink">Log in</a>',
+    migrateHint: "Your to-dos will move to your account when you log in.",
+    errEmail: "Please check your email address.",
+    errPw: "Password must be at least 6 characters.",
+    errLogin: "Email or password is incorrect.",
+    errRegistered: "This email is already registered. Please log in.",
+    errSignup: "Sign-up failed. Please try again later.",
+    msgConfirm: "We sent you a confirmation email. Click the link to finish signing up ✉️",
+    errGoogle: "Google sign-in failed. Please try again.",
+    errGoogleStart: "Couldn't start Google sign-in. Please try again.",
+    msgGoogleBrowser: "Finish signing in with Google in your browser — you'll return automatically.",
+    errGoogleDesktop: "Google sign-in isn't available in this version. Please log in with email.",
+    errGoogleFinish: "Couldn't complete sign-in. Please try again.",
+    previewSupabase: "Sign-in activates after Supabase is configured (top of this file).",
+    headlineEmpty: "How's your day going?",
+    headlineDone: "All done for today 🎉",
+    headlineLeft: '<span class="num">{n}</span> left for today',
+    inputPh: "Write today's to-do",
+    addBtn: "Add",
+    clockTitle: "Set time (optional)",
+    clockClearTitle: "Clear time",
+    emptyState: "Nothing here yet.<br>Start with the one thing that matters most.",
+    overdue: " · overdue",
+    todaySuffix: " · Today",
+    noRecords: "No records for this day",
+    nudgeText: "Your to-dos are saved only on this device.<br>Log in to sync across phone and PC.",
+    calBtnTitle: "Calendar",
+    calBtnAria: "Calendar",
+    setBtnTitle: "Settings",
+    setBtnAria: "Settings",
+    delAria: "Delete",
+    setAccount: "Account",
+    guestMode: 'Guest mode <span class="sub">· saved on this device</span>',
+    logout: "Log out",
+    login: "Log in",
+    signedIn: "Signed in",
+    setDisplay: "Display",
+    bgAlpha: "Background opacity",
+    setLang: "Language",
+    langAuto: "Auto",
+    langKo: "한국어",
+    langEn: "English",
+    setWidget: "Widget",
+    alwaysOnTop: "Always on top",
+    autoLaunch: "Launch at startup",
+    quitAppLabel: "Quit app",
+    quitBtn: "Quit",
+    setAbout: "About",
+    version: "Version",
+    privacy: "Privacy Policy",
+    view: "View",
+    oharuWeb: "Oharu Web",
+    logoAria: "Oharu logo",
+  },
+};
+
+function resolveLang() {
+  const saved = loadUI().lang;
+  if (saved === "ko" || saved === "en") return saved;
+  return (navigator.language || "").startsWith("ko") ? "ko" : "en";
+}
+const LANG = resolveLang();
+const t = (key, vars) => {
+  let s = (T[LANG][key] ?? T.ko[key] ?? key);
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, v);
+  return s;
+};
+
+const DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
+const DAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS_SHORT_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_FULL_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const getDays = () => LANG === "ko" ? DAYS_KO : DAYS_EN;
+
+function applyTexts() {
+  document.documentElement.lang = LANG;
+  document.title = t("title");
+  $("authLogo").setAttribute("aria-label", t("logoAria"));
+  $("authH2").textContent = t("authBrand");
+  $("authSub").innerHTML = t("authSub");
+  $("googleBtnText").textContent = t("googleBtn");
+  $("authDivider").textContent = t("authDivider");
+  $("email").placeholder = t("emailPh");
+  $("pw").placeholder = t("pwPh");
+  $("emailBtn").textContent = t("loginBtn");
+  $("switchLine").innerHTML = t("switchLogin");
+  $("backLink").textContent = t("backLink");
+  $("loginTopBtn").textContent = t("loginBtn");
+  $("calBtn").title = t("calBtnTitle");
+  $("calBtn").setAttribute("aria-label", t("calBtnAria"));
+  $("setBtn").title = t("setBtnTitle");
+  $("setBtn").setAttribute("aria-label", t("setBtnAria"));
+  $("input").placeholder = t("inputPh");
+  $("clock").title = t("clockTitle");
+  $("clockClear").title = t("clockClearTitle");
+  $("addBtn").textContent = t("addBtn");
+  $("emptyText").innerHTML = t("emptyState");
+  $("nudgeText").innerHTML = t("nudgeText");
+  $("nudgeLoginBtn").textContent = t("loginBtn");
+  $("setAccountTitle").textContent = t("setAccount");
+  $("setDesignTitle").textContent = t("setDisplay");
+  $("setLangLabel").textContent = t("setLang");
+  $("langSelect").options[0].textContent = t("langAuto");
+  $("langSelect").options[1].textContent = t("langKo");
+  $("langSelect").options[2].textContent = t("langEn");
+  $("langSelect").setAttribute("aria-label", t("setLang"));
+  $("setBgAlphaLabel").textContent = t("bgAlpha");
+  $("bgAlphaRange").setAttribute("aria-label", t("bgAlpha"));
+  $("setAppTitle").textContent = t("setWidget");
+  $("setAlwaysOnTopLabel").textContent = t("alwaysOnTop");
+  $("alwaysOnTopToggle").setAttribute("aria-label", t("alwaysOnTop"));
+  $("setAutoLaunchLabel").textContent = t("autoLaunch");
+  $("autoLaunchToggle").setAttribute("aria-label", t("autoLaunch"));
+  $("setQuitLabel").textContent = t("quitAppLabel");
+  $("quitAppBtn").textContent = t("quitBtn");
+  $("setAboutTitle").textContent = t("setAbout");
+  $("setVersionLabel").textContent = t("version");
+  $("setPrivacyLabel").textContent = t("privacy");
+  $("setPrivacyLink").textContent = t("view");
+  $("setWebLabel").textContent = t("oharuWeb");
+}
+
 // ── 유틸 ───────────────────────────────────────
 const $ = id => document.getElementById(id);
-const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const todayStr = () => dstr(new Date());
 const fmtTime = hhmm => {
   const [h, m] = hhmm.split(":").map(Number);
-  return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}`;
+  if (LANG === "ko") {
+    return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}`;
+  }
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+};
+const fmtDateLine = d => {
+  if (LANG === "ko") return `${d.getMonth() + 1}월 ${d.getDate()}일 ${getDays()[d.getDay()]}요일`;
+  return `${getDays()[d.getDay()]}, ${MONTHS_SHORT_EN[d.getMonth()]} ${d.getDate()}`;
+};
+const fmtCalMonth = (y, m) => LANG === "ko" ? `${y}년 ${m + 1}월` : `${MONTHS_FULL_EN[m]} ${y}`;
+const fmtDayTitle = (sy, sm, sd) => {
+  const dow = new Date(sy, sm - 1, sd).getDay();
+  if (LANG === "ko") return `${sm}월 ${sd}일 ${getDays()[dow]}요일` + (selDate === todayStr() ? t("todaySuffix") : "");
+  return `${getDays()[dow]}, ${MONTHS_SHORT_EN[sm - 1]} ${sd}` + (selDate === todayStr() ? t("todaySuffix") : "");
 };
 const isLate = hhmm => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -730,14 +962,14 @@ function sortItems(arr) {
 // ── 헤더 ───────────────────────────────────────
 function renderHead() {
   const d = new Date();
-  $("dateLine").textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${DAYS[d.getDay()]}요일`;
-  const t = byDate(todayStr());
-  const total = t.length, left = t.filter(x => !x.done).length;
+  $("dateLine").textContent = fmtDateLine(d);
+  const tday = byDate(todayStr());
+  const total = tday.length, left = tday.filter(x => !x.done).length;
   const h = $("headline"), bar = $("bar");
-  if (total === 0) { h.textContent = "오늘은 어떤 하루인가요?"; bar.style.width = "0%"; }
-  else if (left === 0) { h.textContent = "오늘 할 일을 다 끝냈어요 🎉"; bar.style.width = "100%"; }
+  if (total === 0) { h.textContent = t("headlineEmpty"); bar.style.width = "0%"; }
+  else if (left === 0) { h.textContent = t("headlineDone"); bar.style.width = "100%"; }
   else {
-    h.innerHTML = `할 일이 <span class="num">${left}개</span> 남았어요`;
+    h.innerHTML = t("headlineLeft", { n: left });
     bar.style.width = `${Math.round(((total - left) / total) * 100)}%`;
   }
 }
@@ -760,7 +992,7 @@ function buildItem(t, { interactive = true } = {}) {
     const chip = document.createElement("div");
     const late = !t.done && t.todoDate === todayStr() && isLate(t.time);
     chip.className = "time" + (late ? " late" : "");
-    chip.textContent = fmtTime(t.time) + (late ? " · 지남" : "");
+    chip.textContent = fmtTime(t.time) + (late ? t("overdue") : "");
     body.appendChild(chip);
   }
   const label = document.createElement("div");
@@ -773,7 +1005,7 @@ function buildItem(t, { interactive = true } = {}) {
   if (interactive) {
     const del = document.createElement("button");
     del.className = "del";
-    del.setAttribute("aria-label", "삭제");
+    del.setAttribute("aria-label", t("delAria"));
     del.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
     del.onclick = async e => {
       e.stopPropagation();
@@ -808,10 +1040,10 @@ function renderToday() {
 // ── 캘린더 보기 ────────────────────────────────
 function renderCal() {
   const y = calCursor.getFullYear(), m = calCursor.getMonth();
-  $("calMonth").textContent = `${y}년 ${m + 1}월`;
+  $("calMonth").textContent = fmtCalMonth(y, m);
   const grid = $("calGrid");
   grid.innerHTML = "";
-  DAYS.forEach((d, i) => {
+  getDays().forEach((d, i) => {
     const el = document.createElement("div");
     el.className = "dow" + (i === 0 ? " sun" : "");
     el.textContent = d;
@@ -850,14 +1082,13 @@ function renderCal() {
   const [sy, sm, sd] = selDate.split("-").map(Number);
   const title = document.createElement("div");
   title.className = "dd-title";
-  title.textContent = `${sm}월 ${sd}일 ${DAYS[new Date(sy, sm - 1, sd).getDay()]}요일`
-    + (selDate === todayStr() ? " · 오늘" : "");
+  title.textContent = fmtDayTitle(sy, sm, sd);
   dd.appendChild(title);
   const items = sortItems(byDate(selDate));
   if (!items.length) {
     const none = document.createElement("div");
     none.className = "none";
-    none.textContent = "이 날은 기록이 없어요";
+    none.textContent = t("noRecords");
     dd.appendChild(none);
   } else {
     const l = document.createElement("div");
@@ -891,9 +1122,18 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.2.0";
-$("appVersion").textContent = "v" + APP_VERSION;
+const APP_VERSION = "1.3.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
+
+applyTexts();
+$("appVersion").textContent = "v" + APP_VERSION;
+
+const uiSaved = loadUI();
+$("langSelect").value = uiSaved.lang || "auto";
+$("langSelect").addEventListener("change", () => {
+  saveUI({ ...loadUI(), lang: $("langSelect").value });
+  location.reload();
+});
 
 function renderAccount(email) {
   const el = $("setAccount");
@@ -904,28 +1144,24 @@ function renderAccount(email) {
   if (email) {
     left.textContent = email;
     left.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
-    right.textContent = "로그아웃";
+    right.textContent = t("logout");
     right.classList.add("danger");
     right.onclick = async () => { await supabase.auth.signOut(); location.reload(); };
   } else {
-    left.innerHTML = '게스트 모드 <span class="sub">· 이 기기에만 저장</span>';
-    right.textContent = "로그인";
+    left.innerHTML = t("guestMode");
+    right.textContent = t("login");
     right.classList.add("primary");
     right.onclick = () => { if (openLoginScreen) openLoginScreen(); };
   }
   el.append(left, right);
 }
 
-// 데스크톱 전용: 배경 투명도 (기기별 저장)
-const UIKEY = "oharu.ui";
-const loadUI = () => { try { return JSON.parse(localStorage.getItem(UIKEY) || "{}"); } catch (_) { return {}; } };
-const saveUI = u => { try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (_) {} };
 function applyBgAlpha(p) {
   document.documentElement.style.setProperty("--bg-alpha", p / 100);
   $("bgAlphaVal").textContent = p + "%";
 }
 if (IS_DESKTOP) {
-  $("setDesign").hidden = false;
+  $("setBgAlphaRow").hidden = false;
   const saved = Math.min(100, Math.max(30, loadUI().bgAlpha ?? 100));
   $("bgAlphaRange").value = saved;
   applyBgAlpha(saved);
@@ -1004,7 +1240,7 @@ async function startApp(r, { canLogout = false, guest = false, email = null } = 
   $("authView").hidden = true;
   $("mainView").hidden = false;
   $("nudge").hidden = !guest;
-  renderAccount(canLogout ? (email || "로그인됨") : null);
+  renderAccount(canLogout ? (email || t("signedIn")) : null);
   await repo.rollover();
   todos = await repo.load();
   render();
@@ -1016,7 +1252,7 @@ if (!CLOUD) {
   // 미리보기용: Supabase 연결 전에도 로그인 화면을 확인할 수 있게
   const previewMsg = () => {
     const m = $("authMsg");
-    m.textContent = "Supabase 연결(파일 상단 설정) 후에 실제 로그인이 활성화돼요.";
+    m.textContent = t("previewSupabase");
     m.className = "msg";
   };
   const openPreviewLogin = () => {
@@ -1065,7 +1301,7 @@ if (!CLOUD) {
     $("authView").hidden = false;
     $("backLine").hidden = false;
     const msg = $("authMsg");
-    msg.textContent = "지금까지 적은 할 일은 로그인하면 계정으로 그대로 옮겨드려요.";
+    msg.textContent = t("migrateHint");
     msg.className = "msg";
   };
   $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
@@ -1082,7 +1318,7 @@ if (!CLOUD) {
       provider: "google",
       options: { redirectTo: location.origin + location.pathname }
     });
-    if (error) setMsg("구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.", true);
+    if (error) setMsg(t("errGoogle"), true);
   };
 
   if (IS_DESKTOP) {
@@ -1094,19 +1330,19 @@ if (!CLOUD) {
         options: { redirectTo: "oharu://auth-callback", skipBrowserRedirect: true }
       });
       if (error || !data || !data.url) {
-        return setMsg("구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.", true);
+        return setMsg(t("errGoogleStart"), true);
       }
       if (window.desktopBridge && window.desktopBridge.openExternal) {
         window.desktopBridge.openExternal(data.url);
-        setMsg("브라우저에서 구글 로그인을 완료해주세요. 끝나면 자동으로 돌아와요.");
+        setMsg(t("msgGoogleBrowser"));
       } else {
-        setMsg("이 버전에서는 구글 로그인을 지원하지 않아요. 이메일로 로그인해주세요.", true);
+        setMsg(t("errGoogleDesktop"), true);
       }
     };
     if (window.desktopBridge && window.desktopBridge.onAuthCode) {
       window.desktopBridge.onAuthCode(async (code) => {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) setMsg("로그인 마무리에 실패했어요. 다시 시도해주세요.", true);
+        if (error) setMsg(t("errGoogleFinish"), true);
       });
     }
   }
@@ -1114,10 +1350,8 @@ if (!CLOUD) {
   // 이메일 로그인 / 가입 토글
   let mode = "login"; // 'login' | 'signup'
   const applyMode = () => {
-    $("emailBtn").textContent = mode === "login" ? "로그인" : "가입하기";
-    $("switchLine").innerHTML = mode === "login"
-      ? '처음이신가요? <a id="switchLink">이메일로 가입하기</a>'
-      : '이미 계정이 있나요? <a id="switchLink">로그인하기</a>';
+    $("emailBtn").textContent = mode === "login" ? t("loginBtn") : t("signupBtn");
+    $("switchLine").innerHTML = mode === "login" ? t("switchLogin") : t("switchSignup");
     $("switchLink").onclick = () => { mode = mode === "login" ? "signup" : "login"; setMsg(""); applyMode(); };
   };
   applyMode();
@@ -1125,16 +1359,16 @@ if (!CLOUD) {
   $("emailBtn").onclick = async () => {
     const email = $("email").value.trim();
     const pw = $("pw").value;
-    if (!email.includes("@")) return setMsg("이메일 주소를 확인해주세요.", true);
-    if (pw.length < 6) return setMsg("비밀번호는 6자 이상이어야 해요.", true);
+    if (!email.includes("@")) return setMsg(t("errEmail"), true);
+    if (pw.length < 6) return setMsg(t("errPw"), true);
     $("emailBtn").disabled = true;
     if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-      if (error) setMsg("이메일 또는 비밀번호가 맞지 않아요.", true);
+      if (error) setMsg(t("errLogin"), true);
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password: pw });
-      if (error) setMsg(error.message.includes("registered") ? "이미 가입된 이메일이에요. 로그인해주세요." : "가입에 실패했어요. 잠시 후 다시 시도해주세요.", true);
-      else if (!data.session) setMsg("확인 메일을 보냈어요. 메일의 링크를 눌러 가입을 완료해주세요 ✉️");
+      if (error) setMsg(error.message.includes("registered") ? t("errRegistered") : t("errSignup"), true);
+      else if (!data.session) setMsg(t("msgConfirm"));
     }
     $("emailBtn").disabled = false;
   };

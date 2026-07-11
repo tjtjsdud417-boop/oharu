@@ -1,7 +1,7 @@
 {
   "name": "oharu-desktop",
   "productName": "오하루",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "오하루 — 오늘 할 일 (Windows 위젯)",
   "main": "main.js",
   "author": "moodweb",
