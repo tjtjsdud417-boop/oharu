@@ -78,7 +78,8 @@ create policy "own rows only" on public.todos
 - 창 위치·크기 저장 및 재시작 시 복원
 - frameless 창 드래그 이동은 Electron preload/CSS 주입으로 해결. `web/index.html` 수정 금지
 - electron-builder로 Windows portable exe 빌드. 스크립트: `npm run dist`
-- 빌드 방법: `cd desktop && npm run dist` → `desktop/dist/Oharu-1.2.0.exe`
+- 빌드 방법: `cd desktop && npm run dist` → `desktop/dist/Oharu.exe`
+- exe 릴리스 교체: `gh release upload v1.4.0 desktop/dist/Oharu.exe --clobber -R tjtjsdud417-boop/oharu`
 - v1.1.0: `transparent: true` + `backgroundColor: "#00000000"` (Windows 투명창 — 크기 조절 불안정 가능)
 - v1.2.0: 설정 화면 앱 섹션(항상 위·자동 실행·종료) + `desktopBridge` prefs API + 시작 시 캐시 정리
 
