@@ -162,6 +162,27 @@
   .composer .add:hover { background: #1B64DA; }
   .composer .add:active { transform: scale(.96); }
 
+  .carry {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .carry-text { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.5; }
+  .carry-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  #carryBring {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  }
+  #carryDismiss {
+    border: none; background: var(--bg); color: var(--text-sub);
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 12px; border-radius: 12px; cursor: pointer;
+  }
+
   /* ── 리스트 ───────────────────────────── */
   .list {
     margin-top: 14px;
@@ -586,6 +607,13 @@
         </div>
         <button class="add" id="addBtn">추가</button>
       </div>
+      <div class="carry" id="carryCard" hidden>
+        <div class="carry-text" id="carryText"></div>
+        <div class="carry-btns">
+          <button id="carryBring"></button>
+          <button id="carryDismiss"></button>
+        </div>
+      </div>
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>
         <div class="emoji">☀️</div>
@@ -814,6 +842,9 @@ const T = {
     langEs: "Español",
     futurePh: "이 날 할 일을 적어보세요",
     seoLine: "오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원",
+    carryTitle: "지난 할 일 {n}개가 남아있어요",
+    carryBring: "오늘로 가져오기",
+    carryDismiss: "괜찮아요",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -890,6 +921,9 @@ const T = {
     langEs: "Español",
     futurePh: "Write a to-do for this day",
     seoLine: "Oharu — a free to-do list focused only on today · Web & Windows widget",
+    carryTitle: "{n} unfinished from before",
+    carryBring: "Bring to today",
+    carryDismiss: "Not now",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -962,6 +996,9 @@ const T = {
     download: "ダウンロード",
     futurePh: "この日のやることを書く",
     seoLine: "Oharu — 今日のタスクだけに集中する無料ToDo · Web & Windowsウィジェット",
+    carryTitle: "未完了のやることが{n}件あります",
+    carryBring: "今日に引き継ぐ",
+    carryDismiss: "今はしない",
   },
   zh: {
     title: "Oharu — 今日待办",
@@ -1034,6 +1071,9 @@ const T = {
     download: "下载",
     futurePh: "为这一天添加待办",
     seoLine: "Oharu — 只专注今日待办的免费清单 · 网页与 Windows 小组件",
+    carryTitle: "还有 {n} 项未完成的待办",
+    carryBring: "移到今天",
+    carryDismiss: "暂不",
   },
   es: {
     title: "Oharu — Tareas de hoy",
@@ -1105,6 +1145,9 @@ const T = {
     download: "Descargar",
     futurePh: "Añade una tarea para este día",
     seoLine: "Oharu — lista de tareas gratis solo para hoy · Web y widget de Windows",
+    carryTitle: "{n} tareas pendientes de antes",
+    carryBring: "Traer a hoy",
+    carryDismiss: "Ahora no",
   },
 };
 
@@ -1167,6 +1210,8 @@ function applyTexts() {
   $("emptyText").innerHTML = t("emptyState");
   $("nudgeText").innerHTML = t("nudgeText");
   $("nudgeLoginBtn").textContent = t("loginBtn");
+  $("carryBring").textContent = t("carryBring");
+  $("carryDismiss").textContent = t("carryDismiss");
   $("setAccountTitle").textContent = t("setAccount");
   $("setDesignTitle").textContent = t("setDisplay");
   $("setLangLabel").textContent = t("setLang");
@@ -1260,10 +1305,11 @@ function localRepo() {
     async add(t) { state.todos.push(t); write(state); },
     async update(t) { state.todos = state.todos.map(x => x.id === t.id ? t : x); write(state); },
     async remove(id) { state.todos = state.todos.filter(x => x.id !== id); write(state); },
-    async rollover() {
+    async rollover() { /* 자동 이월 제거 — carryOver로 사용자 확인 후만 이동 */ },
+    async carryOver() {
       const today = todayStr();
-      state.todos = state.todos.map(t =>
-        (!t.done && t.todoDate < today) ? { ...t, todoDate: today, time: null } : t
+      state.todos = state.todos.map(item =>
+        (!item.done && item.todoDate < today) ? { ...item, todoDate: today, time: null } : item
       );
       write(state);
     }
@@ -1291,7 +1337,8 @@ function cloudRepo() {
       const { error } = await supabase.from("todos").delete().eq("id", id);
       if (error) console.error(error);
     },
-    async rollover() {
+    async rollover() { /* 자동 이월 제거 — carryOver로 사용자 확인 후만 이동 */ },
+    async carryOver() {
       // 완료 항목은 자기 날짜에 보존(캘린더 기록), 미완료만 오늘로 이월
       const { error } = await supabase.from("todos")
         .update({ todo_date: todayStr(), time: null })
@@ -1388,12 +1435,27 @@ function buildItem(item, { interactive = true } = {}) {
 }
 
 // ── 오늘 보기 ──────────────────────────────────
+function pendingPastCount() {
+  const today = todayStr();
+  return todos.filter(item => !item.done && item.todoDate < today).length;
+}
+function checkCarry() {
+  const card = $("carryCard");
+  const n = pendingPastCount();
+  if (n > 0 && loadUI().carryDismissed !== todayStr()) {
+    $("carryText").textContent = t("carryTitle", { n });
+    card.hidden = false;
+  } else {
+    card.hidden = true;
+  }
+}
 function renderToday() {
   const list = $("list");
   list.innerHTML = "";
   const items = sortItems(byDate(todayStr()));
   $("empty").hidden = items.length !== 0;
-  for (const t of items) list.appendChild(buildItem(t));
+  for (const item of items) list.appendChild(buildItem(item));
+  checkCarry();
 }
 
 // ── 캘린더 보기 ────────────────────────────────
@@ -1561,7 +1623,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.5.3";
+const APP_VERSION = "1.6.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
@@ -1667,6 +1729,17 @@ $("input").addEventListener("keydown", e => {
   if (e.isComposing || e.keyCode === 229) return;
   add();
 });
+
+// ── 과거 미완료 가져오기 ───────────────────────
+$("carryBring").onclick = async () => {
+  await repo.carryOver();
+  todos = await repo.load();
+  render();
+};
+$("carryDismiss").onclick = () => {
+  saveUI({ ...loadUI(), carryDismissed: todayStr() });
+  $("carryCard").hidden = true;
+};
 
 // ── 부팅 ───────────────────────────────────────
 let appStarted = false;
