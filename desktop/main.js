@@ -12,6 +12,7 @@ const fs = require("fs");
 
 const APP_URL = "https://oharu.today/?desktop=1";
 const DEFAULT_BOUNDS = { width: 420, height: 640 };
+app.setAppUserModelId("com.moodweb.oharu");
 
 const DRAG_CSS = `
   body::before { content:""; position:fixed; top:0; left:0; right:110px; height:26px;

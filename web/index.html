@@ -8,6 +8,11 @@
 <meta name="naver-site-verification" content="9b85138bf4fdfd70d642d452cb54b76a4b681db8" />
 <meta name="keywords" content="투두리스트, 할일 관리, 오늘 할일, 무료 투두 앱, 할일 목록, 바탕화면 위젯, 데스크톱 위젯, 일정 관리, 갓생, to-do list, todo widget">
 <link rel="canonical" href="https://oharu.today/">
+<link rel="manifest" href="/manifest.json">
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Oharu (오하루)">
 <meta property="og:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
@@ -1426,6 +1431,53 @@ function renderHead() {
 let ignoreRowClickUntil = 0;
 let ignoreRowClickId = null;
 
+function beginDrag(row, item, e) {
+  e.preventDefault();
+  e.stopPropagation();
+  ignoreRowClickUntil = Date.now() + 500;
+  ignoreRowClickId = item.id;
+  const list = row.parentElement;
+  if (!list) return;
+  const pendingRows = () => [...list.querySelectorAll(".item")].filter(el => !el.classList.contains("done"));
+  const startIndex = pendingRows().indexOf(row);
+  const pointerId = e.pointerId;
+  row.classList.add("dragging");
+
+  const move = moveEvent => {
+    if (moveEvent.pointerId !== pointerId) return;
+    moveEvent.preventDefault();
+    const target = pendingRows()
+      .filter(el => el !== row)
+      .find(el => moveEvent.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
+    const firstDone = [...list.querySelectorAll(".item")].find(el => el.classList.contains("done"));
+    if (target) list.insertBefore(row, target);
+    else if (firstDone) list.insertBefore(row, firstDone);
+    else list.appendChild(row);
+  };
+  const end = async endEvent => {
+    if (endEvent.pointerId !== pointerId) return;
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", end);
+    document.removeEventListener("pointercancel", end);
+    row.classList.remove("dragging");
+    const newIndex = pendingRows().indexOf(row);
+    if (newIndex === startIndex || newIndex < 0) return;
+    const orderedItems = pendingRows().map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
+    const previous = orderedItems[newIndex - 1];
+    const next = orderedItems[newIndex + 1];
+    let value;
+    if (!previous) value = next.sortOrder - 1;
+    else if (!next) value = previous.sortOrder + 1;
+    else value = (previous.sortOrder + next.sortOrder) / 2;
+    item.sortOrder = value;
+    await repo.setOrder(item.id, value);
+    render();
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", end);
+  document.addEventListener("pointercancel", end);
+}
+
 function attachDragHandle(row, item) {
   const handle = document.createElement("span");
   handle.className = "grab";
@@ -1433,52 +1485,37 @@ function attachDragHandle(row, item) {
   handle.innerHTML = '<svg viewBox="0 0 14 20" aria-hidden="true"><circle cx="4" cy="3" r="1.5"/><circle cx="10" cy="3" r="1.5"/><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="4" cy="17" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg>';
   handle.addEventListener("pointerdown", e => {
     if (e.button !== 0) return;
-    e.preventDefault();
-    e.stopPropagation();
-    ignoreRowClickUntil = Date.now() + 500;
-    ignoreRowClickId = item.id;
-    const list = row.parentElement;
-    if (!list) return;
-    const pendingRows = () => [...list.querySelectorAll(".item")].filter(el => !el.classList.contains("done"));
-    const startIndex = pendingRows().indexOf(row);
-    const pointerId = e.pointerId;
-    row.classList.add("dragging");
-
-    const move = moveEvent => {
-      if (moveEvent.pointerId !== pointerId) return;
-      moveEvent.preventDefault();
-      const target = pendingRows()
-        .filter(el => el !== row)
-        .find(el => moveEvent.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
-      const firstDone = [...list.querySelectorAll(".item")].find(el => el.classList.contains("done"));
-      if (target) list.insertBefore(row, target);
-      else if (firstDone) list.insertBefore(row, firstDone);
-      else list.appendChild(row);
-    };
-    const end = async endEvent => {
-      if (endEvent.pointerId !== pointerId) return;
-      document.removeEventListener("pointermove", move);
-      document.removeEventListener("pointerup", end);
-      document.removeEventListener("pointercancel", end);
-      row.classList.remove("dragging");
-      const newIndex = pendingRows().indexOf(row);
-      if (newIndex === startIndex || newIndex < 0) return;
-      const orderedItems = pendingRows().map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
-      const previous = orderedItems[newIndex - 1];
-      const next = orderedItems[newIndex + 1];
-      let value;
-      if (!previous) value = next.sortOrder - 1;
-      else if (!next) value = previous.sortOrder + 1;
-      else value = (previous.sortOrder + next.sortOrder) / 2;
-      item.sortOrder = value;
-      await repo.setOrder(item.id, value);
-      render();
-    };
-    document.addEventListener("pointermove", move);
-    document.addEventListener("pointerup", end);
-    document.addEventListener("pointercancel", end);
+    beginDrag(row, item, e);
   });
   return handle;
+}
+
+function attachLongPress(row, item) {
+  let press = null;
+  const cancel = () => {
+    if (!press) return;
+    clearTimeout(press.timer);
+    press = null;
+  };
+  row.addEventListener("pointerdown", e => {
+    if (e.button !== 0 || e.target.closest(".grab, .del")) return;
+    press = {
+      pointerId: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      timer: setTimeout(() => {
+        if (!press) return;
+        press = null;
+        beginDrag(row, item, e);
+      }, 400),
+    };
+  });
+  row.addEventListener("pointermove", e => {
+    if (!press || e.pointerId !== press.pointerId) return;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) cancel();
+  });
+  row.addEventListener("pointerup", cancel);
+  row.addEventListener("pointercancel", cancel);
 }
 
 function buildItem(item, { interactive = true, sortable = false } = {}) {
@@ -1533,7 +1570,10 @@ function buildItem(item, { interactive = true, sortable = false } = {}) {
       toggle();
     };
     row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
-    if (sortable && !item.done && item.todoDate === todayStr()) row.append(attachDragHandle(row, item), del);
+    if (sortable && !item.done && item.todoDate === todayStr()) {
+      attachLongPress(row, item);
+      row.append(attachDragHandle(row, item), del);
+    }
     else row.appendChild(del);
   }
   return row;
@@ -1728,7 +1768,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.7.1";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();

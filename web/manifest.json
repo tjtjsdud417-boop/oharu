@@ -1,0 +1,23 @@
+{
+  "name": "오하루 — 오늘 할 일에 집중하는 무료 투두리스트",
+  "short_name": "오하루",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F2F4F6",
+  "theme_color": "#3182F6",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
