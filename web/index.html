@@ -247,7 +247,7 @@
   @media (hover: none) { .del { opacity: .6; } }
   .grab {
     position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
-    border-radius: 0 14px 14px 0;
+    border-radius: 0;
     background: #F4F6F8;
     display: grid; place-items: center;
     color: #C4CBD4; cursor: grab;
@@ -256,6 +256,9 @@
   }
   .grab:active { cursor: grabbing; }
   .grab svg { width: 4px; height: 14px; fill: currentColor; }
+  .item.grab-first .grab { border-radius: 0 var(--radius) 0 0; }
+  .item.grab-last .grab { border-radius: 0 0 var(--radius) 0; }
+  .item.grab-first.grab-last .grab { border-radius: 0 var(--radius) var(--radius) 0; }
   @media (hover: hover) {
     .grab { color: #D8DDE4; }
     .item:hover .grab { color: #8B95A1; background: #E9EDF1; }
@@ -1489,9 +1492,9 @@ function beginDrag(row, item, e, onCancel = null) {
     document.removeEventListener("pointerup", end);
     document.removeEventListener("pointercancel", end);
     const changed = endEvent.type === "pointerup" && targetIndex !== startIndex;
-    resetPreview();
-    row.classList.remove("dragging");
     if (!changed) {
+      resetPreview();
+      row.classList.remove("dragging");
       if (endEvent.type !== "pointerup" && onCancel) onCancel();
       return;
     }
@@ -1504,9 +1507,24 @@ function beginDrag(row, item, e, onCancel = null) {
     else if (!next) value = previous.sortOrder + 1;
     else value = (previous.sortOrder + next.sortOrder) / 2;
     item.sortOrder = value;
+    const previewRows = [...otherRows];
+    previewRows.splice(targetIndex, 0, row);
+    const previewIds = new Set(previewRows.map(itemRow => itemRow.dataset.todoId));
+    const previewItems = previewRows
+      .map(itemRow => todos.find(todo => todo.id === itemRow.dataset.todoId)).filter(Boolean);
+    let previewIndex = 0;
+    todos = todos.map(todo => previewIds.has(todo.id) ? previewItems[previewIndex++] : todo);
+    const firstDone = list.querySelector(".item.done");
+    rows.forEach(itemRow => {
+      itemRow.style.transition = "none";
+      itemRow.style.transform = "";
+    });
+    previewRows.forEach(itemRow => list.insertBefore(itemRow, firstDone));
+    row.classList.remove("dragging");
+    rows.forEach(itemRow => { itemRow.style.transition = ""; });
+    updateGrabEdges(list);
     await repo.setOrder(item.id, value);
     rememberLoadedState();
-    render();
   };
   document.addEventListener("pointermove", move);
   document.addEventListener("pointerup", end);
@@ -1656,12 +1674,22 @@ function checkCarry() {
     card.hidden = true;
   }
 }
+function updateGrabEdges(list) {
+  const grabRows = [...list.querySelectorAll(".item")].filter(row => row.querySelector(".grab"));
+  grabRows.forEach(row => row.classList.remove("grab-first", "grab-last"));
+  if (!grabRows.length) return;
+  if (grabRows[0] === list.firstElementChild) grabRows[0].classList.add("grab-first");
+  if (grabRows[grabRows.length - 1] === list.lastElementChild) {
+    grabRows[grabRows.length - 1].classList.add("grab-last");
+  }
+}
 function renderToday() {
   const list = $("list");
   list.innerHTML = "";
   const items = sortItems(byDate(todayStr()));
   $("empty").hidden = items.length !== 0;
   for (const item of items) list.appendChild(buildItem(item, { sortable: true }));
+  updateGrabEdges(list);
   checkCarry();
 }
 
@@ -1831,7 +1859,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.7.5";
+const APP_VERSION = "1.7.6";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
@@ -1954,8 +1982,11 @@ $("carryDismiss").onclick = () => {
 // ── 부팅 ───────────────────────────────────────
 let appStarted = false;
 let guestMode = false;
+function todosSnapshot(items) {
+  return JSON.stringify([...items].sort((a, b) => String(a.id).localeCompare(String(b.id))));
+}
 function rememberLoadedState() {
-  lastLoadedTodosJson = JSON.stringify(todos);
+  lastLoadedTodosJson = todosSnapshot(todos);
   lastLoadedDate = todayStr();
 }
 async function startApp(r, { canLogout = false, guest = false, email = null } = {}) {
@@ -1975,7 +2006,7 @@ async function startApp(r, { canLogout = false, guest = false, email = null } = 
   setInterval(async () => {
     await repo.rollover();
     const loaded = await repo.load();
-    const loadedJson = JSON.stringify(loaded);
+    const loadedJson = todosSnapshot(loaded);
     const dateChanged = todayStr() !== lastLoadedDate;
     if (loadedJson === lastLoadedTodosJson && !dateChanged) return;
     todos = loaded;
