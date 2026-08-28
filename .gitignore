@@ -1,3 +1,4 @@
 node_modules/
 desktop/dist/
 web/.env.local
+.tmp.driveupload/
