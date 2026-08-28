@@ -12,7 +12,8 @@
   },
   "devDependencies": {
     "electron": "^33.2.1",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "rcedit": "^5.0.2"
   },
   "build": {
     "appId": "com.moodweb.oharu",
@@ -27,6 +28,7 @@
       "package.json",
       "build/**"
     ],
+    "afterPack": "afterPack.js",
     "extraResources": [
       {
         "from": "../web/index.html",
@@ -45,7 +47,10 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Oharu (오하루)",
       "artifactName": "Oharu-Setup.exe",
-      "uninstallDisplayName": "Oharu — To-Do Widget"
+      "uninstallDisplayName": "Oharu — To-Do Widget",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "perMachine": false
     },
     "artifactName": "Oharu.exe"
   }

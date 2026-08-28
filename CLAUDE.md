@@ -86,6 +86,16 @@ create policy "own rows only" on public.todos
 - v1.1.0: `transparent: true` + `backgroundColor: "#00000000"` (Windows 투명창 — 크기 조절 불안정 가능)
 - v1.2.0: 설정 화면 앱 섹션(항상 위·자동 실행·종료) + `desktopBridge` prefs API + 시작 시 캐시 정리
 
+## 데스크톱 빌드 체크리스트
+
+□ `win.icon` 파일 존재
+□ ICO 멀티프레임(16, 24, 32, 48, 64, 128, 256) 검증
+□ 빌드 로그에 `default Electron icon` 경고 없음
+□ 내장 아이콘 추출 검증
+□ `appId` 불변 (`com.moodweb.oharu`)
+□ `perMachine: false`
+□ 구 산출물 삭제 후 릴리스
+
 ## Electron 완료 기준 (전부 증거로 보고)
 
 - [x] `npm start`로 위젯이 뜨고 앱이 로드됨
