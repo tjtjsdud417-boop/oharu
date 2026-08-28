@@ -193,7 +193,8 @@
   .list:empty { display: none; }
   .item {
     display: flex; align-items: center; gap: 14px;
-    padding: 15px 18px;
+    position: relative;
+    padding: 15px 22px 15px 18px;
     cursor: pointer;
     transition: background .12s;
     animation: slideIn .25s cubic-bezier(.22,1,.36,1);
@@ -245,20 +246,22 @@
   .del:hover { background: var(--danger-soft); color: var(--danger); }
   @media (hover: none) { .del { opacity: .6; } }
   .grab {
-    width: 30px; height: 30px; border-radius: 10px;
-    background: var(--bg);
+    position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
+    border-radius: 0 14px 14px 0;
+    background: #F4F6F8;
     display: grid; place-items: center;
     color: #C4CBD4; cursor: grab;
     touch-action: none; user-select: none;
     flex-shrink: 0;
-    transition: color .12s, background .12s;
   }
   .grab:active { cursor: grabbing; }
-  .grab svg { width: 12px; height: 12px; fill: currentColor; }
-  .grab + .del { margin-left: -8px; }
+  .grab svg { width: 4px; height: 14px; fill: currentColor; }
   @media (hover: hover) {
     .grab { color: #D8DDE4; }
     .item:hover .grab { color: #8B95A1; background: #E9EDF1; }
+  }
+  @media (hover: none) {
+    .grab { color: #C4CBD4; background: #F4F6F8; }
   }
   .item.dragging {
     position: relative; z-index: 2;
@@ -1442,7 +1445,7 @@ function renderHead() {
 let ignoreRowClickUntil = 0;
 let ignoreRowClickId = null;
 
-function beginDrag(row, item, e) {
+function beginDrag(row, item, e, onCancel = null) {
   e.preventDefault();
   e.stopPropagation();
   ignoreRowClickUntil = Date.now() + 500;
@@ -1488,7 +1491,10 @@ function beginDrag(row, item, e) {
     const changed = endEvent.type === "pointerup" && targetIndex !== startIndex;
     resetPreview();
     row.classList.remove("dragging");
-    if (!changed) return;
+    if (!changed) {
+      if (endEvent.type !== "pointerup" && onCancel) onCancel();
+      return;
+    }
     const remainingItems = otherRows
       .map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
     const previous = remainingItems[targetIndex - 1];
@@ -1507,19 +1513,21 @@ function beginDrag(row, item, e) {
   document.addEventListener("pointercancel", end);
 }
 
-function attachDragHandle(row, item) {
+function attachDragHandle(row, item, onGrab, onCancel) {
   const handle = document.createElement("span");
   handle.className = "grab";
   handle.setAttribute("aria-label", "순서 변경");
-  handle.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="3" cy="2" r="1"/><circle cx="9" cy="2" r="1"/><circle cx="3" cy="6" r="1"/><circle cx="9" cy="6" r="1"/><circle cx="3" cy="10" r="1"/><circle cx="9" cy="10" r="1"/></svg>';
+  handle.innerHTML = '<svg viewBox="0 0 4 14" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="2" cy="7" r="1"/><circle cx="2" cy="12" r="1"/></svg>';
   handle.addEventListener("pointerdown", e => {
     if (e.button !== 0) return;
-    beginDrag(row, item, e);
+    onGrab();
+    e.stopPropagation();
+    beginDrag(row, item, e, onCancel);
   });
   return handle;
 }
 
-function attachLongPress(row, item) {
+function attachLongPress(row, item, onGrab, onCancel) {
   let press = null;
   const cancel = () => {
     if (!press) return;
@@ -1535,7 +1543,8 @@ function attachLongPress(row, item) {
       timer: setTimeout(() => {
         if (!press) return;
         press = null;
-        beginDrag(row, item, e);
+        onGrab();
+        beginDrag(row, item, e, onCancel);
       }, 400),
     };
   });
@@ -1576,6 +1585,27 @@ function buildItem(item, { interactive = true, sortable = false } = {}) {
   row.append(check, body);
 
   if (interactive) {
+    let suppressNextClick = false;
+    let suppressClickTimer = null;
+    const clearSuppressedClick = () => {
+      suppressNextClick = false;
+      ignoreRowClickUntil = 0;
+      ignoreRowClickId = null;
+      clearTimeout(suppressClickTimer);
+      suppressClickTimer = null;
+    };
+    const suppressGrabClick = () => {
+      suppressNextClick = true;
+      clearTimeout(suppressClickTimer);
+      suppressClickTimer = setTimeout(clearSuppressedClick, 1000);
+    };
+    row.addEventListener("click", e => {
+      if (!suppressNextClick) return;
+      clearSuppressedClick();
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+    row.addEventListener("pointercancel", clearSuppressedClick, true);
     const del = document.createElement("button");
     del.className = "del";
     del.setAttribute("aria-label", t("delAria"));
@@ -1596,14 +1626,15 @@ function buildItem(item, { interactive = true, sortable = false } = {}) {
       await repo.update(item);
       rememberLoadedState();
     };
-    row.onclick = () => {
+    row.onclick = e => {
+      if (!e.target.closest(".check, .body")) return;
       if (item.id === ignoreRowClickId && Date.now() < ignoreRowClickUntil) return;
       toggle();
     };
     row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
     if (sortable && !item.done && item.todoDate === todayStr()) {
-      attachLongPress(row, item);
-      row.append(attachDragHandle(row, item), del);
+      attachLongPress(row, item, suppressGrabClick, clearSuppressedClick);
+      row.append(attachDragHandle(row, item, suppressGrabClick, clearSuppressedClick), del);
     }
     else row.appendChild(del);
   }
@@ -1800,7 +1831,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.7.3";
+const APP_VERSION = "1.7.5";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
