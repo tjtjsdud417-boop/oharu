@@ -245,18 +245,26 @@
   .del:hover { background: var(--danger-soft); color: var(--danger); }
   @media (hover: none) { .del { opacity: .6; } }
   .grab {
-    width: 22px; height: 28px; flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: 10px;
+    background: var(--bg);
     display: grid; place-items: center;
-    color: var(--text-faint); cursor: grab;
+    color: #C4CBD4; cursor: grab;
     touch-action: none; user-select: none;
+    flex-shrink: 0;
+    transition: color .12s, background .12s;
   }
   .grab:active { cursor: grabbing; }
-  .grab svg { width: 14px; height: 20px; }
+  .grab svg { width: 12px; height: 12px; fill: currentColor; }
+  .grab + .del { margin-left: -8px; }
+  @media (hover: hover) {
+    .grab { color: #D8DDE4; }
+    .item:hover .grab { color: #8B95A1; background: #E9EDF1; }
+  }
   .item.dragging {
     position: relative; z-index: 2;
     box-shadow: 0 8px 20px rgba(2,32,71,.14);
     transform: scale(1.02);
-    transition: transform .15s, box-shadow .15s;
+    transition: none;
   }
   .item:not(.dragging) { transition: transform .15s, background .12s; }
 
@@ -1375,6 +1383,8 @@ let todos = [];                 // 전체 (모든 날짜)
 let view = "today";             // 'today' | 'cal'
 let calCursor = new Date();     // 캘린더가 보고 있는 달
 let selDate = todayStr();       // 캘린더에서 선택한 날짜
+let lastLoadedTodosJson = "";
+let lastLoadedDate = "";
 
 const byDate = date => todos.filter(t => t.todoDate === date);
 
@@ -1405,10 +1415,11 @@ async function backfillTodaySortOrder() {
   }
 }
 
-function nextSortOrder(date) {
+function nextSortOrder(date, time = null) {
   const values = todos
     .filter(item => item.todoDate === date && !item.done && Number.isFinite(item.sortOrder))
     .map(item => item.sortOrder);
+  if (time) return (values.length ? Math.min(...values) : 1) - 1;
   return (values.length ? Math.max(...values) : 0) + 1;
 }
 
@@ -1438,39 +1449,57 @@ function beginDrag(row, item, e) {
   ignoreRowClickId = item.id;
   const list = row.parentElement;
   if (!list) return;
-  const pendingRows = () => [...list.querySelectorAll(".item")].filter(el => !el.classList.contains("done"));
-  const startIndex = pendingRows().indexOf(row);
+  const rows = [...list.querySelectorAll(".item")].filter(el => !el.classList.contains("done"));
+  const startIndex = rows.indexOf(row);
+  const otherRows = rows.filter(itemRow => itemRow !== row);
   const pointerId = e.pointerId;
+  const startY = e.clientY;
+  const rowHeight = row.offsetHeight;
+  const centers = new Map(rows.map(itemRow => [
+    itemRow, itemRow.getBoundingClientRect().top + itemRow.offsetHeight / 2,
+  ]));
+  let targetIndex = startIndex;
   row.classList.add("dragging");
 
+  const resetPreview = () => {
+    rows.forEach(itemRow => { itemRow.style.transform = ""; });
+  };
   const move = moveEvent => {
     if (moveEvent.pointerId !== pointerId) return;
     moveEvent.preventDefault();
-    const target = pendingRows()
-      .filter(el => el !== row)
-      .find(el => moveEvent.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
-    const firstDone = [...list.querySelectorAll(".item")].find(el => el.classList.contains("done"));
-    if (target) list.insertBefore(row, target);
-    else if (firstDone) list.insertBefore(row, firstDone);
-    else list.appendChild(row);
+    targetIndex = otherRows.findIndex(itemRow => moveEvent.clientY < centers.get(itemRow));
+    if (targetIndex < 0) targetIndex = otherRows.length;
+    rows.forEach((itemRow, index) => {
+      if (itemRow === row) {
+        itemRow.style.transform = `translateY(${moveEvent.clientY - startY}px) scale(1.02)`;
+        return;
+      }
+      let shift = 0;
+      if (targetIndex > startIndex && index > startIndex && index <= targetIndex) shift = -rowHeight;
+      if (targetIndex < startIndex && index >= targetIndex && index < startIndex) shift = rowHeight;
+      itemRow.style.transform = shift ? `translateY(${shift}px)` : "";
+    });
   };
   const end = async endEvent => {
     if (endEvent.pointerId !== pointerId) return;
     document.removeEventListener("pointermove", move);
     document.removeEventListener("pointerup", end);
     document.removeEventListener("pointercancel", end);
+    const changed = endEvent.type === "pointerup" && targetIndex !== startIndex;
+    resetPreview();
     row.classList.remove("dragging");
-    const newIndex = pendingRows().indexOf(row);
-    if (newIndex === startIndex || newIndex < 0) return;
-    const orderedItems = pendingRows().map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
-    const previous = orderedItems[newIndex - 1];
-    const next = orderedItems[newIndex + 1];
+    if (!changed) return;
+    const remainingItems = otherRows
+      .map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
+    const previous = remainingItems[targetIndex - 1];
+    const next = remainingItems[targetIndex];
     let value;
     if (!previous) value = next.sortOrder - 1;
     else if (!next) value = previous.sortOrder + 1;
     else value = (previous.sortOrder + next.sortOrder) / 2;
     item.sortOrder = value;
     await repo.setOrder(item.id, value);
+    rememberLoadedState();
     render();
   };
   document.addEventListener("pointermove", move);
@@ -1482,7 +1511,7 @@ function attachDragHandle(row, item) {
   const handle = document.createElement("span");
   handle.className = "grab";
   handle.setAttribute("aria-label", "순서 변경");
-  handle.innerHTML = '<svg viewBox="0 0 14 20" aria-hidden="true"><circle cx="4" cy="3" r="1.5"/><circle cx="10" cy="3" r="1.5"/><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="4" cy="17" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg>';
+  handle.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="3" cy="2" r="1"/><circle cx="9" cy="2" r="1"/><circle cx="3" cy="6" r="1"/><circle cx="9" cy="6" r="1"/><circle cx="3" cy="10" r="1"/><circle cx="9" cy="10" r="1"/></svg>';
   handle.addEventListener("pointerdown", e => {
     if (e.button !== 0) return;
     beginDrag(row, item, e);
@@ -1556,6 +1585,7 @@ function buildItem(item, { interactive = true, sortable = false } = {}) {
       todos = todos.filter(x => x.id !== item.id);
       render();
       await repo.remove(item.id);
+      rememberLoadedState();
     };
     const toggle = async () => {
       item.done = !item.done;
@@ -1564,6 +1594,7 @@ function buildItem(item, { interactive = true, sortable = false } = {}) {
       renderHead();
       setTimeout(render, 320);
       await repo.update(item);
+      rememberLoadedState();
     };
     row.onclick = () => {
       if (item.id === ignoreRowClickId && Date.now() < ignoreRowClickUntil) return;
@@ -1656,10 +1687,11 @@ function buildFutureComposer() {
   async function addFuture() {
     const text = input.value.trim();
     if (!text) return;
-    const newTodo = { id: newId(), text, time: localTime, done: false, todoDate: selDate, sortOrder: nextSortOrder(selDate), createdAt: new Date().toISOString() };
+    const newTodo = { id: newId(), text, time: localTime, done: false, todoDate: selDate, sortOrder: nextSortOrder(selDate, localTime), createdAt: new Date().toISOString() };
     todos.push(newTodo);
     render();
     await repo.add(newTodo);
+    rememberLoadedState();
     input.focus();
   }
   addBtn.onclick = addFuture;
@@ -1768,7 +1800,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.7.1";
+const APP_VERSION = "1.7.3";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
@@ -1858,7 +1890,7 @@ async function add() {
   const input = $("input");
   const text = input.value.trim();
   if (!text) return;
-  const newTodo = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), sortOrder: nextSortOrder(todayStr()), createdAt: new Date().toISOString() };
+  const newTodo = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), sortOrder: nextSortOrder(todayStr(), pickedTime), createdAt: new Date().toISOString() };
   todos.push(newTodo);
   input.value = "";
   pickedTime = null; timeInput.value = "";
@@ -1866,6 +1898,7 @@ async function add() {
   render();
   input.focus();
   await repo.add(newTodo);
+  rememberLoadedState();
 }
 $("addBtn").onclick = add;
 $("input").addEventListener("keydown", e => {
@@ -1880,6 +1913,7 @@ $("carryBring").onclick = async () => {
   await repo.carryOver();
   todos = await repo.load();
   render();
+  rememberLoadedState();
 };
 $("carryDismiss").onclick = () => {
   saveUI({ ...loadUI(), carryDismissed: todayStr() });
@@ -1889,6 +1923,10 @@ $("carryDismiss").onclick = () => {
 // ── 부팅 ───────────────────────────────────────
 let appStarted = false;
 let guestMode = false;
+function rememberLoadedState() {
+  lastLoadedTodosJson = JSON.stringify(todos);
+  lastLoadedDate = todayStr();
+}
 async function startApp(r, { canLogout = false, guest = false, email = null } = {}) {
   if (appStarted) return; // 로그인 이벤트 다중 발화 시 중복 부팅 방지
   appStarted = true;
@@ -1902,11 +1940,17 @@ async function startApp(r, { canLogout = false, guest = false, email = null } = 
   todos = await repo.load();
   await backfillTodaySortOrder();
   render();
+  rememberLoadedState();
   setInterval(async () => {
     await repo.rollover();
-    todos = await repo.load();
+    const loaded = await repo.load();
+    const loadedJson = JSON.stringify(loaded);
+    const dateChanged = todayStr() !== lastLoadedDate;
+    if (loadedJson === lastLoadedTodosJson && !dateChanged) return;
+    todos = loaded;
     await backfillTodaySortOrder();
     render();
+    rememberLoadedState();
   }, 60 * 1000);
 }
 
