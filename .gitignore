@@ -2,3 +2,4 @@ node_modules/
 desktop/dist/
 web/.env.local
 .tmp.driveupload/
+web/_diag.mjs

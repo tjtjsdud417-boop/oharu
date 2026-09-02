@@ -1,0 +1,13 @@
+project_id = "oharu"
+
+# daily-report: pg_cron이 Authorization 헤더 없이 net.http_post로 호출하므로
+# JWT 검증을 꺼둔 상태로 이미 배포돼 있음(2026-09-01). 여기 명시해서
+# 앞으로 `supabase functions deploy`(함수명 생략, 전체 배포)를 실행해도
+# 이 설정이 실수로 verify_jwt=true(기본값)로 되돌아가지 않게 고정한다.
+[functions.daily-report]
+verify_jwt = false
+
+# mcp: 클로드/챗지피티/제미나이 같은 외부 AI 클라이언트가 Supabase Auth
+# JWT 없이(오하루 자체 발급 토큰만 들고) 호출하는 공개 엔드포인트라 반드시 꺼야 함.
+[functions.mcp]
+verify_jwt = false

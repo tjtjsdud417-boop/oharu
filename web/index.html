@@ -13,6 +13,46 @@
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script>
+  // 관리자페이지용 방문 로그 — 기존 앱 로직과 완전히 분리된 별도 스크립트.
+  // 실패해도 앱 동작에 영향 없음(fire-and-forget). 2026-09 admin.oharu.today 구축.
+  (function () {
+    try {
+      var SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY";
+      var params = new URLSearchParams(location.search);
+      if (params.get("exclude_stats") === "1") {
+        localStorage.setItem("oharu_exclude_stats", "1");
+      }
+      if (localStorage.getItem("oharu_exclude_stats") === "1") {
+        return; // 관리자(선영님) 본인 방문 — 통계 제외 처리된 브라우저
+      }
+      var sid = sessionStorage.getItem("oharu_sid");
+      if (!sid) {
+        sid = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+        sessionStorage.setItem("oharu_sid", sid);
+      }
+      fetch(SUPABASE_URL + "/rest/v1/page_visits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          path: location.pathname,
+          referrer: document.referrer || null,
+          utm_source: params.get("utm_source"),
+          utm_medium: params.get("utm_medium"),
+          utm_campaign: params.get("utm_campaign"),
+          session_id: sid
+        }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Oharu (오하루)">
 <meta property="og:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
@@ -386,6 +426,18 @@
   .tog input:checked + i { background: var(--blue); }
   .tog input:checked + i::after { transform: translateX(18px); }
 
+  /* ── AI 연동(MCP) ──────────────────────── */
+  .mcp-reveal { margin: 0 18px 12px; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 12px; }
+  .mcp-warn { color: var(--danger); font-weight: 600; font-size: 12px; margin-bottom: 6px; }
+  .mcp-reveal .mcp-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .mcp-reveal .mcp-val { flex: 1; min-width: 0; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--card); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; }
+  .mcp-reveal .mcp-copy { flex-shrink: 0; border: none; background: var(--blue); color: #fff; font-weight: 700; font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  .mcp-reveal .mcp-copy:active { transform: scale(.96); }
+  .mcp-token-item { padding: 10px 18px; font-size: 13px; }
+  .mcp-token-item + .mcp-token-item { border-top: 1px solid var(--line); }
+  .mcp-token-item .mcp-token-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .mcp-token-item .mcp-token-meta { color: var(--text-sub); font-size: 11.5px; margin-top: 2px; }
+
   /* ── 캘린더 보기 ──────────────────────── */
   .cal {
     margin-top: 14px;
@@ -525,16 +577,7 @@
   .auth .msg { margin-top: 14px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--blue); min-height: 1em; }
   .auth .msg.err { color: var(--danger); }
 
-  /* ── 광고 영역 ────────────────────────── */
   .spacer { flex: 1; min-height: 20px; }
-  .ad-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: 0 1px 2px rgba(2,32,71,.04);
-    padding: 14px 16px 12px;
-  }
-  .ad-card .ad-tag { font-size: 10.5px; font-weight: 700; color: var(--text-faint); letter-spacing: .06em; margin-bottom: 8px; }
-  .ad-slot { border-radius: 12px; overflow: hidden; background: transparent; height: 100px; }
   .seo-line { margin-top: 12px; text-align: center; font-size: 11px; color: var(--text-faint); }
 
   /* ── PC 위젯 다운로드 카드 (웹·넓은 화면) ── */
@@ -670,6 +713,11 @@
         <div class="set-title" id="setAccountTitle">계정</div>
         <div class="set-row" id="setAccount"></div>
       </div>
+      <div class="set-card" id="setMcp">
+        <div class="set-title" id="setMcpTitle">AI 연동</div>
+        <div id="mcpReveal" class="mcp-reveal" hidden></div>
+        <div id="mcpRows"></div>
+      </div>
       <div class="set-card" id="setDesign">
         <div class="set-title" id="setDesignTitle">화면</div>
         <div class="set-row">
@@ -722,16 +770,6 @@
 
     <div class="spacer"></div>
 
-    <!-- 광고: 애드센스가 실제 광고를 채웠을 때만 카드 표시 -->
-    <footer class="ad-card" id="adCard" hidden>
-      <div class="ad-tag">AD</div>
-      <div class="ad-slot">
-        <ins class="adsbygoogle"
-             style="display:block;width:100%;height:100px"
-             data-ad-client="ca-pub-9388248558941306"
-             data-ad-slot="4023111265"></ins>
-      </div>
-    </footer>
     <p class="seo-line" id="seoLine">오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원</p>
   </div>
 
@@ -766,28 +804,6 @@ const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
 const URL_LANGS = new Set(["ko", "en", "ja", "zh", "es"]);
 const urlLangParam = new URLSearchParams(location.search).get("lang");
-
-// 애드센스: 웹에서만 로드 (데스크톱 앱 내 로드는 정책 위반)
-if (!IS_DESKTOP) {
-  const ad = document.createElement("script");
-  ad.async = true;
-  ad.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9388248558941306";
-  ad.crossOrigin = "anonymous";
-  document.head.appendChild(ad);
-  window.addEventListener("load", () => {
-    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (_) {}
-    // 광고가 실제 채워지면 카드 표시 (미승인·미채움이면 계속 숨김 = 빈 박스 방지)
-    let n = 0;
-    const poll = setInterval(() => {
-      const ins = document.querySelector("#adCard ins.adsbygoogle");
-      if (ins && ins.getAttribute("data-ad-status") === "filled") {
-        document.getElementById("adCard").hidden = false;
-        clearInterval(poll);
-      }
-      if (++n >= 15) clearInterval(poll);
-    }, 2000);
-  });
-}
 
 // ── UI 저장 / 다국어 ─────────────────────────────
 const UIKEY = "oharu.ui";
@@ -873,6 +889,28 @@ const T = {
     carryTitle: "지난 할 일 {n}개가 남아있어요",
     carryBring: "오늘로 가져오기",
     carryDismiss: "괜찮아요",
+    setMcpTitle: "AI 연동",
+    mcpLoginRequired: "로그인하면 클로드·챗지피티·제미나이 같은 AI에서 오하루로 할 일을 바로 추가할 수 있어요.",
+    mcpDesc: "AI의 MCP(커넥터) 설정에 아래 연결 정보를 등록하면, 대화 중에 오하루로 할 일이 자동으로 추가돼요. AI마다 따로 발급하는 걸 권해요.",
+    mcpCreateBtn: "토큰 발급",
+    mcpRevokeBtn: "폐기",
+    mcpRevokeConfirm: "이 토큰을 폐기할까요? 연결된 AI에서 더 이상 오하루에 접근할 수 없어요.",
+    mcpRevokeFailed: "폐기에 실패했어요. 잠시 후 다시 시도해주세요.",
+    mcpCreateFailed: "발급에 실패했어요. 잠시 후 다시 시도해주세요.",
+    mcpCreatedAt: "발급",
+    mcpLastUsed: "최근 사용",
+    mcpNamePh: "연동할 AI",
+    mcpTokenWarn: "이 화면을 벗어나면 다시 볼 수 없어요. 지금 복사해서 안전한 곳에 붙여넣으세요.",
+    mcpUrlWithTokenLabel: "전체 주소 (클로드·제미나이 등 — URL 하나만 입력할 때)",
+    mcpUrlLabel: "서버 주소 (챗지피티 등 — URL/토큰을 따로 입력할 때)",
+    mcpTokenLabel: "토큰",
+    mcpCopyBtn: "복사",
+    mcpCopied: "복사됨",
+    mcpCloseBtn: "닫기",
+    mcpOptClaude: "클로드",
+    mcpOptChatgpt: "챗지피티",
+    mcpOptGemini: "제미나이",
+    mcpOptOther: "기타 AI",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -952,6 +990,28 @@ const T = {
     carryTitle: "{n} unfinished from before",
     carryBring: "Bring to today",
     carryDismiss: "Not now",
+    setMcpTitle: "AI connection",
+    mcpLoginRequired: "Log in to let AI assistants like Claude, ChatGPT, or Gemini add to-dos to Oharu directly.",
+    mcpDesc: "Add the connection info below to your AI's MCP (connector) settings, and to-dos will be added to Oharu automatically during chats. We recommend issuing a separate token per AI.",
+    mcpCreateBtn: "Issue token",
+    mcpRevokeBtn: "Revoke",
+    mcpRevokeConfirm: "Revoke this token? The connected AI will no longer be able to access Oharu.",
+    mcpRevokeFailed: "Failed to revoke. Please try again.",
+    mcpCreateFailed: "Failed to issue. Please try again.",
+    mcpCreatedAt: "Issued",
+    mcpLastUsed: "Last used",
+    mcpNamePh: "AI to connect",
+    mcpTokenWarn: "You won't be able to see this again after leaving this screen. Copy it now and store it somewhere safe.",
+    mcpUrlWithTokenLabel: "Full URL (Claude, Gemini, etc. — when only one URL field is provided)",
+    mcpUrlLabel: "Server URL (ChatGPT, etc. — when URL and token are entered separately)",
+    mcpTokenLabel: "Token",
+    mcpCopyBtn: "Copy",
+    mcpCopied: "Copied",
+    mcpCloseBtn: "Close",
+    mcpOptClaude: "Claude",
+    mcpOptChatgpt: "ChatGPT",
+    mcpOptGemini: "Gemini",
+    mcpOptOther: "Other AI",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -1241,6 +1301,7 @@ function applyTexts() {
   $("carryBring").textContent = t("carryBring");
   $("carryDismiss").textContent = t("carryDismiss");
   $("setAccountTitle").textContent = t("setAccount");
+  $("setMcpTitle").textContent = t("setMcpTitle");
   $("setDesignTitle").textContent = t("setDisplay");
   $("setLangLabel").textContent = t("setLang");
   $("langSelect").options[0].textContent = t("langAuto");
@@ -1312,7 +1373,7 @@ const newId = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" +
 
 // ── 저장소: local / cloud 동일 인터페이스 ─────────
 // todo: { id, text, time|null, done, todoDate, createdAt }
-let repo = null, supabase = null;
+let repo = null, supabase = null, currentUserId = null;
 
 function localRepo() {
   const KEY = "oneul.v3";
@@ -1930,6 +1991,177 @@ if (IS_DESKTOP) {
   }
 }
 
+// ── AI 연동(MCP) ─────────────────────────────
+// 클로드/챗지피티/제미나이 같은 AI가 개인 토큰으로 오하루에 할 일을 추가할
+// 수 있게 하는 기능. 기존 todos CRUD 흐름과는 완전히 분리된 애드온이며,
+// public.todos 테이블/RLS는 이 코드에서 전혀 건드리지 않는다.
+const MCP_BASE_URL = SUPABASE_URL + "/functions/v1/mcp";
+
+function mcpB64urlFromBytes(bytes) {
+  let bin = "";
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function mcpSha256Hex(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function mcpGenToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return "oharu_mcp_" + mcpB64urlFromBytes(bytes);
+}
+async function mcpCopyToClipboard(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch { return false; }
+}
+function mcpFmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+async function mcpLoadTokens() {
+  const { data, error } = await supabase
+    .from("mcp_tokens")
+    .select("id,name,token_prefix,created_at,last_used_at,revoked_at")
+    .is("revoked_at", null)
+    .order("created_at", { ascending: false });
+  if (error) { console.error("MCP 토큰 목록 조회 실패:", error.message); return []; }
+  return data || [];
+}
+function mcpShowReveal(plainToken) {
+  const box = $("mcpReveal");
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = "";
+  const fullUrl = MCP_BASE_URL + "/" + plainToken;
+
+  const warn = document.createElement("div");
+  warn.className = "mcp-warn";
+  warn.textContent = t("mcpTokenWarn");
+  box.appendChild(warn);
+
+  const mkRow = (label, value) => {
+    const wrap = document.createElement("div");
+    const lab = document.createElement("div");
+    lab.className = "sub";
+    lab.textContent = label;
+    const row = document.createElement("div");
+    row.className = "mcp-row";
+    const val = document.createElement("div");
+    val.className = "mcp-val";
+    val.textContent = value;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mcp-copy";
+    btn.textContent = t("mcpCopyBtn");
+    btn.onclick = async () => {
+      const ok = await mcpCopyToClipboard(value);
+      btn.textContent = ok ? t("mcpCopied") : t("mcpCopyBtn");
+      setTimeout(() => { btn.textContent = t("mcpCopyBtn"); }, 1500);
+    };
+    row.append(val, btn);
+    wrap.append(lab, row);
+    return wrap;
+  };
+
+  box.appendChild(mkRow(t("mcpUrlWithTokenLabel"), fullUrl));
+  box.appendChild(mkRow(t("mcpUrlLabel"), MCP_BASE_URL));
+  box.appendChild(mkRow(t("mcpTokenLabel"), plainToken));
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "set-btn";
+  closeBtn.style.marginTop = "8px";
+  closeBtn.textContent = t("mcpCloseBtn");
+  closeBtn.onclick = () => { box.hidden = true; };
+  box.appendChild(closeBtn);
+}
+async function renderMcp(loggedIn) {
+  const root = $("mcpRows");
+  if (!root) return;
+  root.innerHTML = "";
+
+  if (!loggedIn || !supabase) {
+    const row = document.createElement("div");
+    row.className = "set-row";
+    row.innerHTML = `<span class="sub">${t("mcpLoginRequired")}</span>`;
+    root.appendChild(row);
+    return;
+  }
+
+  const descRow = document.createElement("div");
+  descRow.className = "set-row";
+  descRow.innerHTML = `<span class="sub">${t("mcpDesc")}</span>`;
+  root.appendChild(descRow);
+
+  const tokens = await mcpLoadTokens();
+  tokens.forEach(tok => {
+    const item = document.createElement("div");
+    item.className = "mcp-token-item";
+    const head = document.createElement("div");
+    head.className = "mcp-token-head";
+    const left = document.createElement("span");
+    left.textContent = `${tok.name} · ${tok.token_prefix}…`;
+    const revokeBtn = document.createElement("button");
+    revokeBtn.type = "button";
+    revokeBtn.className = "set-btn danger";
+    revokeBtn.textContent = t("mcpRevokeBtn");
+    revokeBtn.onclick = async () => {
+      if (!confirm(t("mcpRevokeConfirm"))) return;
+      revokeBtn.disabled = true;
+      const { error } = await supabase
+        .from("mcp_tokens")
+        .update({ revoked_at: new Date().toISOString() })
+        .eq("id", tok.id);
+      if (error) { alert(t("mcpRevokeFailed")); revokeBtn.disabled = false; return; }
+      renderMcp(true);
+    };
+    head.append(left, revokeBtn);
+    const meta = document.createElement("div");
+    meta.className = "mcp-token-meta";
+    meta.textContent = `${t("mcpCreatedAt")} ${mcpFmtDate(tok.created_at)}` +
+      (tok.last_used_at ? ` · ${t("mcpLastUsed")} ${mcpFmtDate(tok.last_used_at)}` : "");
+    item.append(head, meta);
+    root.appendChild(item);
+  });
+
+  const createRow = document.createElement("div");
+  createRow.className = "set-row";
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", t("mcpNamePh"));
+  [["클로드", "mcpOptClaude"], ["챗지피티", "mcpOptChatgpt"], ["제미나이", "mcpOptGemini"], ["기타", "mcpOptOther"]].forEach(([v, k]) => {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = t(k);
+    select.appendChild(o);
+  });
+  const createBtn = document.createElement("button");
+  createBtn.type = "button";
+  createBtn.className = "set-btn primary";
+  createBtn.textContent = t("mcpCreateBtn");
+  createBtn.onclick = async () => {
+    if (!currentUserId) return;
+    createBtn.disabled = true;
+    try {
+      const plain = mcpGenToken();
+      const hash = await mcpSha256Hex(plain);
+      const { error } = await supabase.from("mcp_tokens").insert({
+        user_id: currentUserId,
+        name: select.value,
+        token_hash: hash,
+        token_prefix: plain.slice(0, 18),
+      });
+      if (error) { alert(t("mcpCreateFailed")); return; }
+      mcpShowReveal(plain);
+      await renderMcp(true);
+    } finally {
+      createBtn.disabled = false;
+    }
+  };
+  createRow.append(select, createBtn);
+  root.appendChild(createRow);
+}
+
 // ── 시간 선택 ──────────────────────────────────
 const clock = $("clock"), timeInput = $("timeInput"), clockText = $("clockText");
 let pickedTime = null;
@@ -1989,15 +2221,17 @@ function rememberLoadedState() {
   lastLoadedTodosJson = todosSnapshot(todos);
   lastLoadedDate = todayStr();
 }
-async function startApp(r, { canLogout = false, guest = false, email = null } = {}) {
+async function startApp(r, { canLogout = false, guest = false, email = null, userId = null } = {}) {
   if (appStarted) return; // 로그인 이벤트 다중 발화 시 중복 부팅 방지
   appStarted = true;
   guestMode = guest;
   repo = r;
+  currentUserId = userId;
   $("authView").hidden = true;
   $("mainView").hidden = false;
   $("nudge").hidden = !guest;
   renderAccount(canLogout ? (email || t("signedIn")) : null);
+  renderMcp(!!canLogout); // 별도 애드온 — 실패해도 메인 투두 흐름에 영향 없음(fire-and-forget)
   await repo.rollover();
   todos = await repo.load();
   await backfillTodaySortOrder();
@@ -2158,7 +2392,7 @@ if (!CLOUD) {
       } else if (!appStarted) {
         // 데스크톱 로그인 게이트/OAuth 복귀 등에서 로그인한 경우
         await migrateLocalIfAny();
-        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email });
+        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email, userId: sess.user && sess.user.id });
       }
     }, 0);
   });
@@ -2170,7 +2404,7 @@ if (!CLOUD) {
   if (session) {
     // 구글 OAuth 복귀 등: 남아있는 게스트 데이터가 있으면 먼저 이전
     await migrateLocalIfAny();
-    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email });
+    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email, userId: session.user && session.user.id });
   } else if (isOAuthReturn) {
     // 인증 복귀 중: 세션 교환이 끝나면 onAuthStateChange가 이전 후 앱을 시작한다.
     // 여기서 게스트 모드를 시작하면 이전 작업과 경쟁 상태가 생기므로 대기한다.

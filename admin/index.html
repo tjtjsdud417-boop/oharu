@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오하루 관리자</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { --blue:#2b76f3; --bg:#F2F4F6; --line:#E5E8EB; --text:#191F28; --sub:#6B7684; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 20px; margin: 8px 0 24px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  .card h2 { font-size:14px; color:var(--sub); margin:0 0 12px; font-weight:600; }
+  .big { font-size:28px; font-weight:700; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row .card { flex:1; min-width:140px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--sub); font-weight:600; }
+  input, select { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; margin-bottom:8px; }
+  .btn { padding:10px 16px; border-radius:8px; border:none; background:var(--blue); color:#fff; font-size:14px; cursor:pointer; }
+  .btn:disabled { opacity:0.5; cursor:default; }
+  .btn.ghost { background:#fff; border:1px solid var(--line); color:var(--text); }
+  .linkbox { display:flex; gap:8px; align-items:center; background:var(--bg); border-radius:8px; padding:10px 12px; font-size:12px; word-break:break-all; }
+  .linkbox button { flex-shrink:0; }
+  .muted { color:var(--sub); font-size:12px; }
+  #loginView { max-width: 360px; margin: 80px auto; text-align:center; }
+  #loginView .card { text-align:left; }
+  .err { color:#e53939; font-size:13px; margin-top:8px; }
+  .hidden { display:none !important; }
+  .linklist li { margin-bottom:8px; list-style:none; }
+</style>
+</head>
+<body>
+
+<div id="loginView" class="wrap">
+  <h1 style="text-align:center">오하루 관리자</h1>
+  <div class="card">
+    <input id="email" type="email" placeholder="이메일">
+    <input id="password" type="password" placeholder="비밀번호">
+    <button class="btn" id="loginBtn" style="width:100%">로그인</button>
+    <div id="loginMsg" class="err"></div>
+    <p class="muted" style="margin-top:12px;">오하루(oharu.today)에 로그인할 때 쓰는 계정으로 로그인하세요. 관리자 계정이 아니면 접근이 거부됩니다.</p>
+  </div>
+</div>
+
+<div id="dashView" class="wrap hidden">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>오하루 관리자</h1>
+    <button class="btn ghost" id="logoutBtn">로그아웃</button>
+  </div>
+
+  <div id="deniedMsg" class="card hidden">
+    <p class="err" id="deniedText">이 계정은 관리자 권한이 없습니다. (로그인은 됐지만 admins 테이블에 등록되지 않음)</p>
+  </div>
+
+  <div id="dashBody" class="hidden">
+    <div class="row">
+      <div class="card"><h2>총 가입자</h2><div class="big" id="totalUsers">—</div></div>
+      <div class="card"><h2>오늘 방문(세션)</h2><div class="big" id="todaySessions">—</div></div>
+      <div class="card"><h2>최근 7일 방문(세션)</h2><div class="big" id="week7Sessions">—</div></div>
+      <div class="card"><h2>최근 30일 방문(세션)</h2><div class="big" id="week30Sessions">—</div></div>
+    </div>
+
+    <div class="card">
+      <h2>최근 30일 가입 추이 (일별)</h2>
+      <table id="signupTable"><thead><tr><th>날짜</th><th>가입자 수</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="card">
+      <h2>유입 경로 (최근 30일, referrer 도메인 기준)</h2>
+      <table id="referrerTable"><thead><tr><th>유입 경로</th><th>세션 수</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="card">
+      <h2>UTM 캠페인별 유입 (최근 30일)</h2>
+      <table id="campaignTable"><thead><tr><th>source</th><th>medium</th><th>campaign</th><th>세션 수</th></tr></thead><tbody></tbody></table>
+      <p class="muted">아래에서 만든 링크로 들어온 방문만 집계됩니다. (utm_ 파라미터가 없는 방문은 위 "유입 경로" 표에서 확인)</p>
+    </div>
+
+    <div class="card">
+      <h2>내 방문은 통계에서 제외하기</h2>
+      <p class="muted">아래 링크를 한 번 클릭해서 oharu.today를 열면, 그 브라우저에서는 이후 방문이 통계에 잡히지 않습니다. (오하루 앱을 쓰는 브라우저/기기마다 한 번씩 필요)</p>
+      <a class="btn ghost" style="display:inline-block; text-decoration:none;" href="https://oharu.today/?exclude_stats=1" target="_blank" rel="noopener">oharu.today 열어서 제외 처리하기</a>
+    </div>
+
+    <div class="card">
+      <h2>홍보 링크 생성</h2>
+      <input id="linkSource" placeholder="어디 (예: instagram, threads, kakao)">
+      <input id="linkMedium" placeholder="종류 (예: sns, story, dm)">
+      <input id="linkCampaign" placeholder="캠페인명 (예: 0901-런칭)">
+      <button class="btn" id="genLinkBtn">링크 생성</button>
+      <div id="genResult" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>최근 생성한 링크</h2>
+      <ul id="linkHistory" class="linklist"></ul>
+      <p class="muted">이 목록은 이 브라우저에만 저장됩니다(서버 저장 안 함). 다른 기기에서 만든 링크는 안 보입니다.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// 오하루 web/index.html과 동일한 값(공개용 anon key — RLS가 실제 방어선).
+// 별도 파일/프로젝트라 모듈 스코프를 공유할 수 없어 의도적으로 중복 기재함.
+const SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY";
+const OHARU_BASE_URL = "https://oharu.today/";
+
+const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "pkce" } });
+
+const $ = (id) => document.getElementById(id);
+
+function showLogin() {
+  $("loginView").classList.remove("hidden");
+  $("dashView").classList.add("hidden");
+}
+function showDenied() {
+  $("loginView").classList.add("hidden");
+  $("dashView").classList.remove("hidden");
+  $("deniedMsg").classList.remove("hidden");
+  $("dashBody").classList.add("hidden");
+}
+function showDash() {
+  $("loginView").classList.add("hidden");
+  $("dashView").classList.remove("hidden");
+  $("deniedMsg").classList.add("hidden");
+  $("dashBody").classList.remove("hidden");
+}
+
+$("loginBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  $("loginMsg").textContent = "";
+  $("loginBtn").disabled = true;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  $("loginBtn").disabled = false;
+  if (error) $("loginMsg").textContent = "로그인 실패: " + error.message;
+};
+
+$("logoutBtn").onclick = async () => {
+  await supabase.auth.signOut();
+  showLogin();
+};
+
+async function loadDashboard() {
+  // admin_total_users()가 실패(not authorized)하면 = 관리자 아님
+  const totalRes = await supabase.rpc("admin_total_users");
+  if (totalRes.error) {
+    const code = totalRes.error.code || "";
+    const msg = code === "PGRST202"
+      ? "schema.sql이 아직 Supabase에 적용되지 않았습니다. 먼저 마이그레이션을 실행하세요."
+      : "이 계정은 관리자 권한이 없습니다. (로그인은 됐지만 admins 테이블에 등록되지 않음)";
+    $("deniedText").textContent = msg;
+    showDenied();
+    return;
+  }
+  showDash();
+  $("totalUsers").textContent = totalRes.data ?? "—";
+
+  // 일별 가입자 (최근 30일)
+  const signupRes = await supabase.rpc("admin_signups_by_day", { days_back: 30 });
+  const signupBody = document.querySelector("#signupTable tbody");
+  signupBody.innerHTML = "";
+  if (!signupRes.error && signupRes.data) {
+    signupRes.data.slice().reverse().forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${row.day}</td><td>${row.signups}</td>`;
+      signupBody.appendChild(tr);
+    });
+  }
+
+  // 방문 로그 (최근 30일, 최대 5000행)
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const visitsRes = await supabase
+    .from("page_visits")
+    .select("visited_at, referrer, utm_source, utm_medium, utm_campaign, session_id")
+    .gte("visited_at", since)
+    .order("visited_at", { ascending: false })
+    .limit(5000);
+
+  if (visitsRes.error) {
+    console.error("방문 로그 조회 실패:", visitsRes.error);
+    return;
+  }
+  const rows = visitsRes.data || [];
+
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const sessionsInWindow = (ms) => {
+    const set = new Set();
+    rows.forEach(r => {
+      if (now - new Date(r.visited_at).getTime() <= ms) {
+        set.add(r.session_id || r.visited_at); // session_id 없으면 개별 방문으로 취급
+      }
+    });
+    return set.size;
+  };
+  $("todaySessions").textContent = sessionsInWindow(dayMs);
+  $("week7Sessions").textContent = sessionsInWindow(7 * dayMs);
+  $("week30Sessions").textContent = sessionsInWindow(30 * dayMs);
+
+  // referrer 도메인별 집계 (utm 파라미터 없는 순수 리퍼러만)
+  const refCount = new Map();
+  const seenSessionsRef = new Set();
+  rows.forEach(r => {
+    if (r.utm_source) return; // UTM 있는 건 캠페인 표에서 따로 집계
+    const key = r.session_id || r.visited_at;
+    const dedupeKey = key + "|" + (r.referrer || "");
+    if (seenSessionsRef.has(dedupeKey)) return;
+    seenSessionsRef.add(dedupeKey);
+    let label = "직접 방문 / 앱";
+    if (r.referrer) {
+      try { label = new URL(r.referrer).hostname; } catch { label = r.referrer; }
+    }
+    refCount.set(label, (refCount.get(label) || 0) + 1);
+  });
+  const refBody = document.querySelector("#referrerTable tbody");
+  refBody.innerHTML = "";
+  [...refCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).forEach(([label, count]) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${label}</td><td>${count}</td>`;
+    refBody.appendChild(tr);
+  });
+
+  // UTM 캠페인별 집계
+  const campCount = new Map();
+  const seenSessionsCamp = new Set();
+  rows.forEach(r => {
+    if (!r.utm_source) return;
+    const key = (r.session_id || r.visited_at) + "|" + r.utm_source + "|" + r.utm_medium + "|" + r.utm_campaign;
+    if (seenSessionsCamp.has(key)) return;
+    seenSessionsCamp.add(key);
+    const label = [r.utm_source || "-", r.utm_medium || "-", r.utm_campaign || "-"].join("␟");
+    campCount.set(label, (campCount.get(label) || 0) + 1);
+  });
+  const campBody = document.querySelector("#campaignTable tbody");
+  campBody.innerHTML = "";
+  [...campCount.entries()].sort((a, b) => b[1] - a[1]).forEach(([label, count]) => {
+    const [source, medium, campaign] = label.split("␟");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${source}</td><td>${medium}</td><td>${campaign}</td><td>${count}</td>`;
+    campBody.appendChild(tr);
+  });
+}
+
+// 링크 생성기 (서버 저장 없음 — 링크 자체가 필요한 정보를 모두 담고 있음)
+$("genLinkBtn").onclick = () => {
+  const source = $("linkSource").value.trim();
+  const medium = $("linkMedium").value.trim();
+  const campaign = $("linkCampaign").value.trim();
+  if (!source || !campaign) {
+    $("genResult").innerHTML = `<p class="err">"어디"와 "캠페인명"은 꼭 입력하세요.</p>`;
+    return;
+  }
+  const url = new URL(OHARU_BASE_URL);
+  url.searchParams.set("utm_source", source);
+  if (medium) url.searchParams.set("utm_medium", medium);
+  url.searchParams.set("utm_campaign", campaign);
+  const link = url.toString();
+
+  $("genResult").innerHTML = `
+    <div class="linkbox">
+      <span id="newLinkText">${link}</span>
+      <button class="btn ghost" id="copyBtn">복사</button>
+    </div>`;
+  $("copyBtn").onclick = () => {
+    navigator.clipboard.writeText(link);
+    $("copyBtn").textContent = "복사됨";
+    setTimeout(() => { $("copyBtn").textContent = "복사"; }, 1500);
+  };
+
+  const history = JSON.parse(localStorage.getItem("oharu_admin_links") || "[]");
+  history.unshift({ link, source, medium, campaign, createdAt: new Date().toISOString() });
+  localStorage.setItem("oharu_admin_links", JSON.stringify(history.slice(0, 50)));
+  renderLinkHistory();
+
+  $("linkSource").value = ""; $("linkMedium").value = ""; $("linkCampaign").value = "";
+};
+
+function renderLinkHistory() {
+  const history = JSON.parse(localStorage.getItem("oharu_admin_links") || "[]");
+  const ul = $("linkHistory");
+  ul.innerHTML = "";
+  if (!history.length) {
+    ul.innerHTML = `<p class="muted">아직 생성한 링크가 없습니다.</p>`;
+    return;
+  }
+  history.forEach(item => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="muted">${item.campaign} · ${new Date(item.createdAt).toLocaleDateString("ko-KR")}</div>
+      <div class="linkbox"><span>${item.link}</span></div>`;
+    ul.appendChild(li);
+  });
+}
+
+// 부팅
+supabase.auth.getSession().then(({ data }) => {
+  if (data.session) { loadDashboard(); renderLinkHistory(); }
+  else showLogin();
+});
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session) { loadDashboard(); renderLinkHistory(); }
+  else showLogin();
+});
+</script>
+</body>
+</html>
