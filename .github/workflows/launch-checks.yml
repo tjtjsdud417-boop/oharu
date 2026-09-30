@@ -1,0 +1,36 @@
+name: Oharu launch checks
+on:
+  push:
+    branches: [main, 'release/**']
+    paths: ['web/**', 'desktop/**', 'mobile/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
+  pull_request:
+    paths: ['web/**', 'desktop/**', 'mobile/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - name: Web module syntax deployment gate
+        working-directory: web
+        run: |
+          node extract-diag.mjs
+          node --check _diag.mjs
+          node --check reminders.js
+          node --check theme-system.js
+          node --check sw.js
+      - name: Desktop module syntax
+        run: |
+          node --check desktop/main.js
+          node --check desktop/preload.js
+          node --check desktop/reminders.js
+          node --check desktop/security.js

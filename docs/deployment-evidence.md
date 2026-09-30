@@ -2,10 +2,10 @@
 
 ## 웹 운영 배포 완료
 
-- 소스 커밋 `9a2d433`, 브랜치 `release/launch-hardening-20260930`.
+- 최초 소스 `9a2d433`, 오프라인 예약 보호 후속 `926bd4f`, 브랜치 `release/launch-hardening-20260930`.
 - Vercel project `moodweb/oharu`, project ID `prj_LfIMV5Vk0OpSAaz1hjH71J2pbCc0`.
-- Deployment ID `dpl_13FkJjHe6d7FWnvArpuoa7r2vXU7`, 상태 `READY`, target `production`.
-- URL: https://oharu-o224ha046-moodweb.vercel.app → https://oharu.today .
+- 최신 Deployment ID `dpl_BcFvnoKeAzdLYUdV5TkQkKEC1maK`, 상태 `READY`, target `production`.
+- URL: https://oharu-qjoj4tm31-moodweb.vercel.app → https://oharu.today .
 - 배포 직전 `web/extract-diag.mjs`와 `node --check web/_diag.mjs` 통과.
 - 배포 후 index, theme-system JS/CSS, reminders.js, sw.js, theme-schema.json, privacy.html 모두 HTTP 200 / 작업본 SHA256 일치.
 - admin 배포 결과가 아닌 별도의 실제 프런트엔드 배포 확인이다.
@@ -19,7 +19,7 @@
 
 ## 테스트
 
-`npm test` 45/45 통과. 별도 Chrome 회귀 10개 흐름 통과 및 페이지 JS 오류 0. UI 캡처와 결과 JSON은 로컬 `output/playwright/`에 있다. 알림 허용/거부/단일 표시 검사는 모의 Notification API이며 실제 OS 수신 증거는 아니다.
+`npm test` 47/47 통과(오프라인 알 수 없는 목록이 기존 예약을 지우지 않는 회귀 포함). 별도 Chrome 회귀 10개 흐름 재실행 통과 및 페이지 JS 오류 0. UI 캡처와 결과 JSON은 로컬 `output/playwright/`에 있다. 알림 허용/거부/단일 표시 검사는 모의 Notification API이며 실제 OS 수신 증거는 아니다.
 
 ## 복구
 

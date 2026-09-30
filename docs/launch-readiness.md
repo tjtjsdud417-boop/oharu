@@ -19,7 +19,7 @@
 | PC·모바일 웹 | Notifications API, ServiceWorker 표시 | 서버 Web Push 예약 인프라 미연결 | 홈 화면 바로가기만, native 위젯 아님 | HTTPS/사용자 권한 필요; 탭 중단·절전 정시 보장 불가 |
 | Windows | Electron OS 알림, main-process 예약 | 앱/트레이 완전 종료 후 미지원 | 기존 독립 데스크톱 창 | 서명/신뢰도/실제 GUI 별도 검증 |
 | iPhone 앱 | Expo OS local notification | 예약된 항목 가능 | WidgetKit extension 필요 | native 새 빌드, 실기기, entitlement/provisioning 검증 필요 |
-| Galaxy 앱 | Expo OS local notification | OS 제한 내 예약 | AppWidget/Glance 구현 필요 | 권한/절전/정확 알람 제한; 잠금 위젯 OEM 차이 |
+| Galaxy 앱 | Expo OS local notification | OS 제한 내 예약 | Android 홈 AppWidget 구현·Kotlin 컴파일 완료 | 실기기 미검증; 잠금 위젯 OEM 차이, 정시 제한 |
 
 시간은 기존 모델의 날짜+시간을 **현재 기기 시간대의 벽시계 시간**으로 해석한다. 여행 시 앱 재개 후 재조정한다. 시간대가 다른 기기는 동일한 현지 시각에 알린다. 절대시각 동기화 모델로 오해하지 않는다. 다른 기기/MCP에서 수정한 일정은 해당 앱이 열려 동기화되어야 예약이 바뀐다. 네트워크가 끊겨도 이미 native에 예약된 알림은 OS가 담당하지만 원격 변경은 반영되지 않는다. 브라우저·Windows 재개 시 5분 이내만 보충하고 오래 지난 알림은 폭주시키지 않는다.
 

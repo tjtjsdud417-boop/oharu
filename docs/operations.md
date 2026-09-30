@@ -34,4 +34,4 @@ GitHub keepalive 최근 7회가 실패했고, [최신 실패 로그](https://git
 3. 새 keepalive workflow를 수동 실행하고 성공 로그를 기록한다. 일정 실행은 09:00 KST를 목표로 하지만 GitHub 스케줄 지연이 가능하며 예약 알림 엔진으로 쓰면 안 된다.
 4. 시크릿 불일치가 확인될 때만 승인된 기존 자격증명으로 정정한다. URL을 추측하거나 DNS 실패를 성공으로 처리하지 않는다.
 
-현재 판정: 배포 대상 식별 및 진단 코드 검증 가능. Supabase 실제 서비스 정상화와 새 CI 실행 성공은 아직 미검증/차단 상태다.
+업데이트: 상위 담당자가 기존 프로젝트를 복구해 2026-09-30 09:18:57 UTC ACTIVE_HEALTHY/SELECT 1을 확인했다. 본 작업에서 기존 공개 앱 키로 REST HEAD HTTP 200을 확인했고, 새 keepalive CI [36696466703](https://github.com/tjtjsdud417-boop/oharu/actions/runs/36696466703)가 success로 끝났다. 위 1번의 복구와 3번 수동 CI는 완료됐다. 실제 사용자 로그인·기존 개인 데이터 동기화는 별도 세션 검증이 남는다. 키/URL 변경 없음.
