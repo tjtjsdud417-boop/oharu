@@ -14,6 +14,16 @@ test('optimistic UI append never duplicates persisted IDs after reload', async (
   const reloaded=await createRepository(storage,identity,today);
   assert.equal((await reloaded.load()).length,2);
 });
+test('queued add/update own their inputs and never flush later caller mutations', async () => {
+  const storage=memory(), repo=await createRepository(storage,identity,today);
+  const first=todo('A');first.text='original';
+  const saving=repo.add(first);first.text='changed after enqueue';await saving;
+  const edit={...first,text:'saved edit'};
+  const updating=repo.update(edit);edit.text='unsaved change';await updating;
+  await repo.add(todo('B'));
+  const stored=JSON.parse(await storage.getItem('oharu.toss.v1:test-owner:todos')).todos;
+  assert.equal(stored.length,2);assert.equal(stored[0].text,'saved edit');
+});
 test('concurrent writes, reload, completion, carryover and deletion persist', async () => {
   const storage = memory(), repo = await createRepository(storage, identity, today);
   await Promise.all([repo.add(todo('a')), repo.add(todo('b', true))]);

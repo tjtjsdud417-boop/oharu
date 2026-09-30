@@ -7,8 +7,9 @@
 - Windows x64 `packagedClassicApp` manifest 템플릿. `oharu` 프로토콜, 한국어·영어, 44/150 타일과 StoreLogo 슬롯 포함.
 - `Identity.Name`, `Publisher`, `PublisherDisplayName`, 예약한 표시 이름을 명시적으로 입력해야 한다. 빈값·자리표시자·미확인 identity는 거절한다. 실제 값은 Partner Center의 해당 제품 identity 화면에서 대소문자·공백까지 그대로 가져와야 한다. [Microsoft 패키지 요구사항](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msix/app-package-requirements)
 - 기존 검증된 `desktop/build/icon.ico`를 `desktop/store/Assets/source-icon.ico`에 바이트 그대로 복사했다. SHA256 `0FF88410C94FB1B0786A89EEE931CF5BAAF92B357583B9C9E9A206C9E36F137D`.
+- `generate-assets.ps1`로 원본 ICO의 256px 32-bit BGRA 프레임을 정확히 읽어 44·50·150px PNG를 생성했다. 색상/구성/자르기 변경 없이 투명 배경을 보존한 전체 영역 축소다. 원본·생성 스크립트·산출물 해시는 `Assets/provenance.json`에 기록한다. 스크립트 해시는 Git 줄바꿈 변환에 영향받지 않도록 UTF-8/LF로 정규화한다.
 - `prepare.cjs`는 기본 읽기 전용이며 실제 identity, SDK, PNG 크기, unpacked payload, 패키지 환경 검증 상태를 검사한다. 계정 로그인이나 도메인 검증을 대신하지 않으며 결과에 `identityVerifiedByTool:false`를 명시한다.
-- `node --test desktop/store/prepare.test.cjs`: **6/6 통과**. 문법 검사도 통과. 기본 준비 검사는 예상대로 `blocked` / exit 1이다.
+- `node --test desktop/store/prepare.test.cjs`: **7/7 통과**. 문법 검사도 통과. PNG 크기·원본/스크립트/산출물 해시를 검사한다. 기본 준비 검사는 identity/SDK/패키지 런타임 문제로 여전히 `blocked` / exit 1이다.
 
 ## 현재 차단 요인
 
@@ -16,12 +17,18 @@
 |---|---|
 | Partner Center 실제 identity / publisher | 제공되지 않음. 추정값 생성하지 않음 |
 | MakeAppx.exe / SDK | PATH 및 일반 Windows Kits 10 bin 경로에서 발견되지 않음 |
-| Store용 PNG | 기존 ICO 원본만 보존. StoreLogo 50×50, 타일 44×44/150×150 파생 PNG 미준비 |
+| Store용 PNG | **완료**: StoreLogo 50×50, 타일 44×44/150×150, 투명 PNG |
 | MSIX 런타임 | 패키지 AUMID·알림·프로토콜·시작프로그램·사용자 데이터 이전 미검증 |
 | Windows App Certification Kit | 실행하지 않음 |
 | 인증서/Store 등록 | 생성·구매·발급·로그인·게시하지 않음 |
 
-아이콘 파생 파일은 검증된 원본에서 크기만 맞춰 만들고 실제 렌더링을 확인해야 한다. 현재 검사기는 PNG 헤더와 선언된 크기만 확인하며 이미지 전체 디코딩/시각 검증을 대신하지 않는다. 원본 스타일을 새 그림으로 대체하지 않는다.
+생성은 `.\desktop\store\generate-assets.ps1`로 재현한다. 같은 Windows 환경에서 연속 실행하여 세 PNG와 provenance가 바이트 단위로 같음을 확인했고, 150px 파일을 열어 파란 목록 아이콘의 배치/투명 배경을 확인했다. 기존 GDI Icon API가 256px 요청에도 128px 프레임을 선택하는 문제가 있어 검증된 ICO의 256px 프레임을 명시적으로 디코딩한다. 패키징 준비 검사기는 PNG 헤더·크기만 검사하므로 실제 Store 타일/작업표시줄의 다양한 배율·밝은/어두운 배경 외관 검증은 여전히 필요하다.
+
+| 파일 | SHA256 |
+|---|---|
+| Square44x44Logo.png | `B59421C7A1B0689465B93351E9932798B65C1FCD7A47F538847B25A39C087131` |
+| StoreLogo.png | `BF3F806650BEC7F802AEB699EE3A79785DA3648B5828B25F639BB65607400756` |
+| Square150x150Logo.png | `3BAD7218D450C7C31D2A8646B57AC4A31B044E6A6D96BF827098D0C3D318899D` |
 
 ## 이후 사용 방법
 

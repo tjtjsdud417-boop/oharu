@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {validateIdentity,renderManifest,preflight}=require('./prepare.cjs');
+const {validateIdentity,renderManifest,preflight,pngDimensions,REQUIRED_ASSETS}=require('./prepare.cjs');
 // Synthetic in-memory test data only. Never written as a real package identity.
 const identity=()=>({source:'partner-center-product-identity',confirmedFromPartnerCenter:true,
   name:'UnitOnly.Oharu',publisher:'CN=8da6cc10-8832-4124-8419-09997c1455fd',publisherDisplayName:'Unit & Only',displayName:'Oharu',version:'1.8.0.0',maxVersionTested:'10.0.26200.0',runtimeChecks:{}});
@@ -28,4 +28,19 @@ test('preflight stays blocked without SDK, assets and packaged runtime verificat
 });
 test('verified Windows icon source is reused byte-for-byte',()=>{
   assert.ok(fs.readFileSync(path.join(__dirname,'Assets/source-icon.ico')).equals(fs.readFileSync(path.join(__dirname,'../build/icon.ico'))));
+});
+test('all Store PNG derivatives have exact dimensions and recorded source/output provenance',()=>{
+  const crypto=require('node:crypto');
+  const digest=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex').toUpperCase();
+  const assets=path.join(__dirname,'Assets');
+  const provenance=JSON.parse(fs.readFileSync(path.join(assets,'provenance.json'),'utf8').replace(/^\uFEFF/,''));
+  assert.equal(digest(path.join(assets,provenance.source)),provenance.sourceSHA256);
+  const script=fs.readFileSync(path.join(__dirname,provenance.generator),'utf8').replace(/\r\n/g,'\n');
+  assert.equal(crypto.createHash('sha256').update(script,'utf8').digest('hex').toUpperCase(),provenance.generatorSHA256);
+  assert.equal(provenance.outputs.length,Object.keys(REQUIRED_ASSETS).length);
+  for(const [file,size] of Object.entries(REQUIRED_ASSETS)) {
+    const recorded=provenance.outputs.find(x=>x.file===file);assert.ok(recorded);
+    assert.deepEqual(pngDimensions(path.join(assets,file)),[size,size]);
+    assert.equal(recorded.sha256,digest(path.join(assets,file)));
+  }
 });

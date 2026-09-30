@@ -18,8 +18,8 @@ export async function createRepository(storage, identity, today) {
   };
   return {
     load: async () => { await queue; return structuredClone(state.todos); },
-    add: t => mutate(items => [...items, t]),
-    update: t => mutate(items => items.map(x => x.id === t.id ? t : x)),
+    add: t => { const value=structuredClone(t); return mutate(items => [...items, value]); },
+    update: t => { const value=structuredClone(t); return mutate(items => items.map(x => x.id === value.id ? value : x)); },
     remove: id => mutate(items => items.filter(x => x.id !== id)),
     setOrder: (id, sortOrder) => mutate(items => items.map(x => x.id === id ? { ...x, sortOrder } : x)),
     rollover: async () => {},
