@@ -1,0 +1,15 @@
+{
+  "status": "disabled-source-draft",
+  "enabled": false,
+  "hostBundleIdentifier": "com.oharu.today",
+  "proposedExtensionBundleIdentifier": "com.oharu.today.widgets",
+  "appGroupIdentifier": "__APP_GROUP_ID__",
+  "targetName": "OharuWidgets",
+  "deploymentTarget": "16.4",
+  "extensionSourceFiles": ["swift/OharuWidgetSnapshot.swift", "swift/OharuUpcomingWidget.swift"],
+  "hostModuleSourceFiles": ["swift/OharuWidgetSnapshot.swift", "swift/OharuWidgetModule.swift"],
+  "supportedFamilies": ["systemSmall", "systemMedium", "accessoryCircular", "accessoryRectangular", "accessoryInline"],
+  "requires": ["approved-app-group", "provisioned-host-and-extension", "xcode-target-and-embed-phase", "expo-local-module-registration", "ios-device-verification"],
+  "pushNotifications": false,
+  "networkAccessFromWidget": false
+}

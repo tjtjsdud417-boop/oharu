@@ -23,7 +23,7 @@
     "plugins": [
       "expo-asset",
       "./plugins/withOharuWidget.js",
-      ["expo-notifications", {"defaultChannel": "todo-reminders"}]
+      "./plugins/withLocalNotifications.js"
     ],
     "extra": {
       "eas": {

@@ -5,8 +5,13 @@ const path=require('node:path');
 const os=require('node:os');
 const {widgetSnapshot,createWidgetService}=require('./widget.cjs');
 const {registerPackage,registerReceiver,writeWidgetFiles}=require('./plugins/withOharuWidget');
+const withLocalNotifications=require('./plugins/withLocalNotifications');
 const task=(id='a',dueAt=2000)=>({id,title:'제목',dueAt,done:false});
 const msg=(tasks,enabled=true)=>JSON.stringify({type:'oharu:widgets:sync',version:1,requestId:'w1',enabled,tasks});
+test('local notification plugin never creates iOS push capability mods',()=>{
+ const c=withLocalNotifications({name:'oharu',slug:'oharu',android:{package:'com.oharu.today'}});
+ assert.ok(c.mods.android);assert.equal(c.mods.ios,undefined);
+});
 test('widget sanitizes titles and only exposes upcoming incomplete fields',()=>{
  const result=widgetSnapshot(msg([{...task(),title:'A\n\u202eB',secret:'never'},task('past',999),{...task('done'),done:true}]),1000);
  assert.deepEqual(result,[{id:'a',title:'A  B',dueAt:2000}]);

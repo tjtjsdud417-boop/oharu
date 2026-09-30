@@ -5,7 +5,7 @@
 !App.js
 !reminders.cjs
 !widget.cjs
-!plugins/
+!plugins
 !plugins/**
 !index.js
 !app.json
@@ -13,10 +13,10 @@
 !metro.config.js
 !package.json
 !package-lock.json
-!assets/
+!assets
 assets/*
 !assets/oharu-icon-1024.png
 !assets/oharu-icon-512.png
-!assets/web/
+!assets/web
 assets/web/*
 !assets/web/app.html

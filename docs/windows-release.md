@@ -29,7 +29,7 @@ await desktopBridge.getNotificationStatus();
 - `npm test`: 10/10 통과. 정시 1회, 스냅샷 반복 중복, 삭제·완료, 시간·제목 수정, 절전 복귀 5분 경계, 시간대, 잘못된 입력, 앱 재시작 원장, 악성 외부 링크, IPC URL 검증.
 - `node --check main.js`, `node --check preload.js`: 통과.
 - `npm run dist`: NSIS 빌드 성공. Windows 빌드 도구의 macOS 심볼릭 링크 압축 해제 문제는 임시 캐시에 Windows용 파일만 추출해 해결. 관리자 권한/개발자 모드/보안 설정 변경 없음.
-- 최종 1.8.0 빌드(설정 중복 방지·개인정보 안내 최종 수정 포함): `dist/Oharu-Setup.exe`, 82,197,233 바이트. SHA256 `B53895880D9D8939307437E05F9AE7B90B557EE704125B98164BC5258BA140FB`. 설치 파일과 포함된 Oharu.exe 모두 `NotSigned`. PE 제품명 Oharu / 회사 moodweb / 파일 버전 1.8.0 확인. `dist/build-verification.json`에 기계 판독용 결과 저장.
+- 최종 1.8.0 빌드(설정 중복 방지·개인정보 안내·오프라인 예약 보존 수정 포함): `dist/Oharu-Setup.exe`, 82,197,403 바이트. SHA256 `60944889F1E12D109A4BC003F675DB18D9AB5F3F67C56D3BFC2184DCE1FC9D95`. 설치 파일과 포함된 Oharu.exe 모두 `NotSigned`. PE 제품명 Oharu / 회사 moodweb / 파일 버전 1.8.0 확인. `dist/build-verification.json`에 기계 판독용 결과 저장.
 - 최종 패키지의 index.html, theme-system.js/CSS, reminders.js가 통합된 작업본과 바이트 단위로 일치함을 확인.
 - 원본 설치 파일 `Get-AuthenticodeSignature`: `NotSigned`. 현재 사용자 인증서 저장소에 코드 서명 인증서 발견되지 않음. 환경 변수에 기존 서명 설정 이름도 발견되지 않음.
 - 서명 필수 빌드 경로를 별도 `dist/signed-check`에서 실행하여 `App is not signed and forceCodeSigning is set to true` 오류와 exit 1 확인. 무서명 파일을 서명 완료로 통과시키지 않음.
