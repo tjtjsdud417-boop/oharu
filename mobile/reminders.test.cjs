@@ -36,6 +36,21 @@ test('past reminders never replay; capacity reports omitted and schedules neares
 test('serialized rapid snapshots preserve final state',async()=>{
  const f=fixture();await Promise.all([f.service.handle(msg([task()])),f.service.handle(msg([task('a',4000)])),f.service.handle(msg([]))]);assert.equal(f.pending.size,0);
 });
+
+test('cancel queued during an in-flight OS schedule remains final after delayed completion',async()=>{
+ const f=fixture();let release,entered;
+ const started=new Promise(resolve=>{entered=resolve});
+ const blocked=new Promise(resolve=>{release=resolve});
+ const schedule=f.api.scheduleNotificationAsync;
+ f.api.scheduleNotificationAsync=async n=>{entered();await blocked;return schedule(n)};
+ const initial=f.service.handle(msg([task()]));
+ await started;
+ const cancel=f.service.handle(msg([],false));
+ release();
+ await Promise.all([initial,cancel]);
+ assert.equal(f.pending.size,0);
+ assert.deepEqual(f.calls,['schedule','cancel']);
+});
 test('iOS granular permissions and schedule failure are explicit',async()=>{
  assert.equal(permitted({ios:{status:3}}),true);assert.equal(permitted({granted:true,ios:{status:1}}),false);
  const f=fixture();f.api.scheduleNotificationAsync=async()=>{throw Error('denied exact alarm')};assert.equal((await f.service.handle(msg([task()]))).status,'schedule-error');

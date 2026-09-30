@@ -2,6 +2,8 @@
 
 ## Final source verification (2026-09-30)
 
+Independent security-final review: 18 groups passed, no reproduced external trust escalation. `requestId` correlates responses; it is not a signed or monotonic anti-replay revision. Deliberately replaying a valid old command from already-trusted bundled JavaScript can schedule it again. Normal sync posts synchronously, retries reconstruct the current snapshot, and native operations use one FIFO promise queue. A regression test holds an OS scheduling promise open, queues cancellation, then releases the old operation and verifies zero remaining reservations. No normal asynchronous cancellation overwrite was reproduced; no runtime rewrite or extra cloud build was needed for this test.
+
 This section supersedes the historical hashes and counts below. Source `bbe77f9a4fdd804247b56fd300608dd416fdafab`: 92/92 local tests pass; GitHub runs 36704804638 and 36704800099 pass. `73d383f` also copies `repo.update` inputs at the storage boundary, preventing a caller's later object mutation from being silently flushed by another write. No existing user records were deleted or deduplicated.
 
 Final native HTML SHA256: `87C31B68E3E585C4FAC5B42A45E6BE83112BB562062675496EB878147D00A134`. Android bridge patch `2e69a0d` requires original opaque source origin, main-frame provenance and a local file document, followed by the app's exact document URI check. Unsupported legacy callbacks cannot forward privileged commands. Actual Android 14/WebView 113 tests verified offline cold start, denial/retry, two OS reservations, iframe message rejection, cancellation and home-widget add/open/clear.
