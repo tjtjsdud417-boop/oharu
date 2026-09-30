@@ -22,8 +22,12 @@ for(const file of ['../web/index.html','../mobile/assets/web/app.html']){
     const beforeReload=data.get('oneul.v3');
     vm.runInContext('globalThis.repo=localRepo();',context);
     assert.equal((await context.repo.load()).length,3);assert.equal(data.get('oneul.v3'),beforeReload);
-    await context.repo.update({...ui[1],done:true});
+    const edited={...ui[1],done:true};
+    await context.repo.update(edited);
+    edited.text='unsaved post-update mutation';
+    await context.repo.add({id:'next',text:'next',todoDate:'2026-09-30',done:false});
     const saved=JSON.parse(data.get('oneul.v3')).todos;
-    assert.equal(saved.length,3);assert.equal(saved.find(x=>x.id==='B').done,true);
+    assert.equal(saved.length,4);assert.equal(saved.find(x=>x.id==='B').done,true);
+    assert.equal(saved.find(x=>x.id==='B').text,'B');
   });
 }
