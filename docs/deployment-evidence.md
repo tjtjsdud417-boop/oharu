@@ -1,3 +1,5 @@
+> Current corrected release evidence: [QA corrections](qa-corrections.md), core snapshot 8c58b86. The deployment and 47-test results below are historical checkpoints, not the latest release.
+
 # 2026-09-30 배포/복구 증거
 
 ## 웹 운영 배포 완료
