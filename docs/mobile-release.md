@@ -65,7 +65,7 @@ Android 14 격리 에뮬레이터에서 최초 guest 화면 실패를 재현했�
 
 `mobile/bootstrap.test.cjs`는 실제 모바일 HTML과 번들 SDK를 실행하고 외부 요청을 전부 차단하여 cold bootstrap, native ready, guest 할 일 생성, reload 저장 복원을 검증했다. 통과. 실제 계정 로그인/OAuth/deeplink는 별도 미검증이며 guest 통과로 전체 인증 흐름을 보증하지 않는다.
 
-최종 HTML SHA256: `925E951622833D21F862FE4F9C78E0FEBC8A3B829DEE1C973FDEDDBA2B352CE8`. 두 플랫폼 Expo export와 모바일 unit 15개 통과. 변형 APK 재패키징은 최소 HTML에서도 blank가 발생하여 최종 native 판정 근거에서 제외하고, 실제 EAS 재빌드 산출물을 다시 설치해 검증한다. 기존 포함 빌드 크레딧은 재확인 시 4500 중 900 사용, 추가 과금 0이었다.
+중간 Android5/iOS9 HTML SHA256 (최종 아님): `925E951622833D21F862FE4F9C78E0FEBC8A3B829DEE1C973FDEDDBA2B352CE8`. 두 플랫폼 Expo export와 모바일 unit 15개 통과. 변형 APK 재패키징은 최소 HTML에서도 blank가 발생하여 최종 native 판정 근거에서 제외하고, 실제 EAS 재빌드 산출물을 다시 설치해 검증한다. 기존 포함 빌드 크레딧은 재확인 시 4500 중 900 사용, 추가 과금 0이었다.
 
 ### 실제 Android 검증 및 최종 빌드 추적
 
@@ -85,3 +85,13 @@ Android 14 격리 에뮬레이터(WebView 113.0.5672.136)에서 파일 WebView�
 위 런타임은 실제 컴파일한 격리 x86_64 APK에서 검증했다. 보안 검증 일부는 Temp 테스트 APK에서만 WebView 진단 접속을 켰으며 제품 App에는 디버깅 옵션이 없다. 영어 모드의 기존 Android 상단 제목과 로그인 버튼 겹침은 남아 있다. 실제 계정 OAuth/deeplink, iPhone, Galaxy Doze/재부팅/잠금 화면은 미검증이다.
 
 Android5/iOS9도 위 수정 전 검증 빌드이므로 공개 제출 대상에서 제외한다. 최종 클라우드 빌드: [Android6](https://expo.dev/accounts/saiapp/projects/oharu/builds/2b90d55c-656c-4197-bac0-cd4dd313dcae), [iOS10](https://expo.dev/accounts/saiapp/projects/oharu/builds/fc6e32c7-9f73-4f14-a33a-791fe8c538aa). 시작 전 포함 크레딧 4500 중 1200 사용/추가 과금 0을 확인했으며 새 credentials/capability는 생성하지 않았다. 빌드 완료, 실제 산출물 검증, 스토어 업로드/심사/공개 상태는 별개로 추적한다.
+
+
+### 최종 산출물 확인 (2026-09-30)
+
+- Android6 EAS FINISHED: 2b90d55c-656c-4197-bac0-cd4dd313dcae. AAB 49,798,031 bytes, SHA256 `4B82DBC689A5515519E63E27C5596616E959F259618FDFDE3B7F4E56CFF57569`. 내장 HTML SHA256은 최종 87C31B68…D00A134와 일치한다. jarsigner 무결성 검증 성공; 일반 Android 자체서명 인증서이므로 public PKI 체인/타임스탬프 경고가 있다.
+- AAB 업로드 서명 인증서 SHA256: `C6:31:84:66:6E:A7:91:B2:65:26:C9:1E:1E:9C:E3:E6:EF:F5:AC:BE:5C:E2:8C:80:60:8C:6F:44:77:EA:CC:C0`. Google Play App Signing 배포 인증서와 동일하다고 검증하지 않았다. Galaxy/Huawei 이전 시 해당 스토어의 기존 배포 인증서와 별도 대조해야 한다.
+- 최종 AAB를 공식 bundletool 1.18.3으로 universal APK로 변환하고 표준 디버그 키로 검증용 서명하여 격리 emulator-5580에 설치 성공. 이는 production AAB 서명을 바꾸거나 스토어에 검증용 APK를 올린 작업이 아니다. 앱 데이터 초기화·네트워크 차단 후 30초 이상 정상 첫 실행 확인, native 알림 채널 중요도 4(HIGH) 확인. 이 결과는 최종 산출물에 bridge 패치와 HIGH 변경이 들어갔음을 실제 실행으로 확인한다. [최종 Android6 오프라인 화면](../mobile/validation/android-final6-offline.png). 실제 로그인/실기기는 검증 범위가 아니다.
+- iOS10 EAS FINISHED: fc6e32c7-9f73-4f14-a33a-791fe8c538aa. IPA 9,584,197 bytes, SHA256 `16542456FC65DC7FD6B7DBF2590D1476CA85D75E3244CC87A4DD97848B608B04`. Info.plist com.oharu.today / 1.0.0 / build10 / minimum16.4, 내장 HTML 최종87C 해시 일치.
+- [iOS10 업로드](https://expo.dev/accounts/saiapp/projects/oharu/submissions/d7acba8f-cb12-4511-b873-b3aac7458ad1) FINISHED, ASC 앱6807312683, error=null. 기존 APP_MANAGER 키만 사용. Expo의 appStoreConnectBuildUpload 조회는 null이어서 Apple processingState 및 build10 export-compliance 상태는 확인하지 못했다. 과거 build8의 VALID/MISSING_EXPORT_COMPLIANCE를 build10 상태로 대신 표시하지 않는다. 수출규정 답변·테스터 그룹·심사 제출·공개 출시는 수행하지 않았다.
+- Android Play 제출 자격 증명은 기존 프로젝트에서 발견되지 않아 제출하지 않았다. 새 계정·키·유료 한도 확대는 하지 않았다. iPhone 실기기 인증/deeplink/알림 및 native 위젯, Galaxy 실기기 절전/잠금 지원은 남은 검증/작업이다.
