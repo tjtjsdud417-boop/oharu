@@ -11,6 +11,14 @@ function fixture(permission={granted:true}) {
 test('rejects malicious/malformed/duplicate snapshots atomically',()=>{
  for(const raw of ['{}', msg([task(),task()]),msg([{...task(),dueAt:'tomorrow'}]),msg([{...task(),id:'../x'}]),msg([{...task(),title:'x'.repeat(501)}])]) assert.throws(()=>validateMessage(raw));
 });
+test('Android channel uses Expo HIGH enum, not Android native numeric LOW mismatch', async()=>{
+ const f=fixture();let channel;
+ f.api.AndroidImportance={HIGH:6};f.api.setNotificationChannelAsync=async(id,settings)=>{channel={id,...settings}};
+ const service=createReminderService(f.api,'android',()=>1000);
+ await service.handle(msg([task()]));
+ assert.deepEqual(channel,{id:'todo-reminders',name:'할 일 알림',importance:6,sound:'default'});
+ assert.equal(f.pending.size,1);
+});
 test('edit replaces; unchanged sync deduplicates; complete/delete cancel',async()=>{
  const f=fixture();await f.service.handle(msg([task()]));await f.service.handle(msg([task()]));assert.equal(f.calls.filter(x=>x==='schedule').length,1);
  await f.service.handle(msg([task('a',3000)]));assert.deepEqual(f.calls,['schedule','cancel','schedule']);

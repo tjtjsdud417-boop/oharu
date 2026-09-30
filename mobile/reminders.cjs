@@ -19,7 +19,7 @@ function permitted(p) {
 function createReminderService(api, platform, now = Date.now) {
   let queue = Promise.resolve();
   const run = async (m) => {
-    if (platform === 'android') await api.setNotificationChannelAsync('todo-reminders', {name: '할 일 알림', importance: 4, sound: 'default'});
+    if (platform === 'android') await api.setNotificationChannelAsync('todo-reminders', {name: '할 일 알림', importance: api.AndroidImportance.HIGH, sound: 'default'});
     if (m.type === 'oharu:reminders:permission') {
       const current = await api.getPermissionsAsync();
       const permission = permitted(current) || current.canAskAgain === false ? current : await api.requestPermissionsAsync({ios: {allowAlert: true, allowSound: true, allowBadge: false}});
