@@ -2,9 +2,9 @@ name: Oharu launch checks
 on:
   push:
     branches: [main, 'release/**']
-    paths: ['web/**', 'desktop/**', 'mobile/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
+    paths: ['web/**', 'desktop/**', 'mobile/**', 'apps-in-toss/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
   pull_request:
-    paths: ['web/**', 'desktop/**', 'mobile/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
+    paths: ['web/**', 'desktop/**', 'mobile/**', 'apps-in-toss/**', 'scripts/**', 'tests/**', 'package*.json', '.github/workflows/launch-checks.yml']
   workflow_dispatch:
 permissions:
   contents: read

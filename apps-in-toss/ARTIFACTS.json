@@ -1,0 +1,57 @@
+{
+  "createdAt": "2026-09-30T10:24:21.801Z",
+  "distInputBytes": 131097,
+  "files": [
+    {
+      "file": "oharu.ait",
+      "bytes": 45177,
+      "sha256": "e230ad7f75f4c0dcf25d187e43db5c9310eed9f36e34af45cd896d225fd1aae5"
+    },
+    {
+      "file": "package-lock.json",
+      "bytes": 103025,
+      "sha256": "ea10d20b486c5c0ad2df355e61f0bbfb94e3927ec5478ffe6533b6cc305788c7"
+    },
+    {
+      "file": "index.html",
+      "bytes": 31090,
+      "sha256": "97f01545dba9655ee27c71014ff567a84dffbe3f58c7c4091f7ed32773ff99d2"
+    },
+    {
+      "file": "src/app.js",
+      "bytes": 52532,
+      "sha256": "6ee212d4e2bd7d3f2cb284188e0ddb573118276a163e29c3a9a94c50b94373c6"
+    },
+    {
+      "file": "src/adapter.js",
+      "bytes": 2003,
+      "sha256": "fe3bc8ad053692c578d286be1aa29f1e0470dc1975a7cf50cd29235751a48df0"
+    },
+    {
+      "file": "src/repository.mjs",
+      "bytes": 1531,
+      "sha256": "b55fae03ee4c48a892acb436bce9d99c328b3a4545e582c7b7579bf14cd12404"
+    },
+    {
+      "file": "submission/01-today.png",
+      "bytes": 23636,
+      "sha256": "d99dae39e2e96636d6604ad78a18165d9babe9171d17d7faa06d92c1bee5b3c4"
+    },
+    {
+      "file": "submission/02-calendar.png",
+      "bytes": 33881,
+      "sha256": "50c891bc8eb1d9974f6186752538603a85a3173002c421bfaeb2ad84eac54ca0"
+    },
+    {
+      "file": "submission/03-settings.png",
+      "bytes": 24223,
+      "sha256": "8302e2d7c46a53adc478f13722e22c3e39e4ead899bf19bc528d22c59e36e08a"
+    },
+    {
+      "file": "submission/logo-600.png",
+      "bytes": 6887,
+      "sha256": "e74b78f2662901ad783ecad237c039ee4e217a1a4471c9b8738e6cf46672e679"
+    }
+  ],
+  "integrationBuild": "Local rebuild after isolated main-tree import; no upload"
+}

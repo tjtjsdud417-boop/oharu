@@ -1,0 +1,12 @@
+{
+  "source": "C:/Users/pbuny/Documents/Codex/2026-09-30/task-8/oharu",
+  "commit": "8c58b86f12ff0bb02c935bdcfc0f87d6bc256ae5",
+  "capturedAt": "2026-09-30T10:11:34.644Z",
+  "method": "git show explicit immutable commit, no working-tree file reads or source writes",
+  "previousCommit": "0e9ef40e8628401714b96d76dd7b411e7c0b1def",
+  "sha256": {
+    "web/index.html": "29f0204a43c64c03b063653977ece39b5f0ca1f84211ba8ee44e25e306a399f5",
+    "web/icon-512.png": "017dd552393db82a7d862d2079f03e11963e47a887b7777dfa906b55915c5e43",
+    "web/theme-system.css": "6d0dc3b41c12969be8705639895c59c44f9d8e9e97799927d83079ad81279483"
+  }
+}

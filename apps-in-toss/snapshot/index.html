@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오하루 - 오늘 할 일에 집중하는 무료 투두리스트</title>
+<meta name="description" content="오늘 할 일을 적고 완료한 일을 체크하는 무료 투두리스트, 오하루. 웹에서는 가입 없이 시작하고, 로그인하면 PC와 모바일에서 동기화할 수 있어요. 윈도우 바탕화면 위젯도 지원해요.">
+<meta name="naver-site-verification" content="9b85138bf4fdfd70d642d452cb54b76a4b681db8" />
+<meta name="keywords" content="투두리스트, 할일 관리, 오늘 할일, 무료 투두 앱, 할일 목록, 바탕화면 위젯, 데스크톱 위젯, 일정 관리, 갓생, to-do list, todo widget">
+<link rel="canonical" href="https://oharu.today/">
+<link rel="manifest" href="/manifest.json">
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+  // 관리자페이지용 방문 로그 — 기존 앱 로직과 완전히 분리된 별도 스크립트.
+  // 실패해도 앱 동작에 영향 없음(fire-and-forget). 2026-09 admin.oharu.today 구축.
+  (function () {
+    try {
+      var SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY";
+      var params = new URLSearchParams(location.search);
+      if (params.get("exclude_stats") === "1") {
+        localStorage.setItem("oharu_exclude_stats", "1");
+      }
+      if (localStorage.getItem("oharu_exclude_stats") === "1") {
+        return; // 관리자(선영님) 본인 방문 — 통계 제외 처리된 브라우저
+      }
+      var sid = sessionStorage.getItem("oharu_sid");
+      if (!sid) {
+        sid = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+        sessionStorage.setItem("oharu_sid", sid);
+      }
+      fetch(SUPABASE_URL + "/rest/v1/page_visits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          path: location.pathname,
+          referrer: document.referrer || null,
+          utm_source: params.get("utm_source"),
+          utm_medium: params.get("utm_medium"),
+          utm_campaign: params.get("utm_campaign"),
+          session_id: sid
+        }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+</script>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Oharu (오하루)">
+<meta property="og:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
+<meta property="og:description" content="오늘 할 일 입력과 완료 체크 · 웹에서 가입 없이 시작 · 로그인 후 기기 간 동기화 · 윈도우 바탕화면 위젯">
+<meta property="og:url" content="https://oharu.today/">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://oharu.today/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
+<meta name="twitter:description" content="오늘 할 일 입력과 완료 체크 · 웹에서 가입 없이 시작 · 로그인 후 기기 간 동기화 · 윈도우 바탕화면 위젯">
+<meta name="twitter:image" content="https://oharu.today/og-image.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Oharu (오하루)",
+"url":"https://oharu.today/","applicationCategory":"ProductivityApplication",
+"operatingSystem":"Web, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+"inLanguage":["ko","en","ja","zh","es"],
+"description":"오늘 할 일을 적고 완료한 일을 체크하는 무료 투두리스트, 오하루. 웹에서는 가입 없이 시작하고, 로그인하면 PC와 모바일에서 동기화할 수 있어요. 윈도우 바탕화면 위젯도 지원해요.",
+"downloadUrl":"https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu-Setup.exe"}
+</script>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<meta name="theme-color" content="#F2F4F6">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --bg: #F2F4F6;
+    --card: #FFFFFF;
+    --text: #191F28;
+    --text-sub: #8B95A1;
+    --text-faint: #B0B8C1;
+    --blue: #3182F6;
+    --blue-soft: #E8F3FF;
+    --line: #F2F4F6;
+    --danger: #F04452;
+    --danger-soft: #FEECEE;
+    --radius: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: rgb(242 244 246 / var(--bg-alpha, 1));
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  /* ── 헤더 ─────────────────────────────── */
+  .head { padding: 4px 4px 20px; position: relative; }
+  .head .date { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: -0.01em; }
+  .head h1 { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+  .head h1 .num { color: var(--blue); }
+  .progress { margin-top: 16px; height: 6px; border-radius: 3px; background: #E5E8EB; overflow: hidden; }
+  .progress > i {
+    display: block; height: 100%; width: 0%; border-radius: 3px;
+    background: var(--blue);
+    transition: width .45s cubic-bezier(.22,1,.36,1);
+  }
+  .topbtns { position: absolute; top: 2px; right: 0; display: flex; gap: 6px; }
+  .iconbtn {
+    width: 36px; height: 36px;
+    border: none; border-radius: 12px;
+    background: var(--card);
+    color: var(--text-sub);
+    cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .12s, color .12s, transform .1s;
+  }
+  .iconbtn:hover { color: var(--text); }
+  .iconbtn:active { transform: scale(.94); }
+  .iconbtn.on { background: var(--blue); color: #fff; }
+  .iconbtn svg { width: 18px; height: 18px; }
+  .textbtn {
+    height: 36px; padding: 0 14px;
+    border: none; border-radius: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .15s, transform .1s;
+  }
+  .textbtn:hover { background: #1B64DA; }
+  .textbtn:active { transform: scale(.96); }
+
+  /* ── 입력 ─────────────────────────────── */
+  .composer {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 6px 6px 6px 18px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    border: 1.5px solid transparent;
+    transition: border-color .15s;
+  }
+  .composer:focus-within { border-color: var(--blue); }
+  .composer input[type="text"] {
+    flex: 1; border: none; outline: none;
+    font: inherit; font-size: 15.5px; font-weight: 500;
+    color: var(--text); background: transparent; min-width: 0;
+  }
+  .composer input[type="text"]::placeholder { color: var(--text-faint); }
+  .clock {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    border-radius: 12px;
+    color: var(--text-faint);
+    cursor: pointer; flex-shrink: 0;
+    transition: background .12s, color .12s;
+    padding: 0 4px; gap: 4px;
+  }
+  .clock:hover { background: var(--bg); color: var(--text-sub); }
+  .clock.set { color: var(--blue); background: var(--blue-soft); font-size: 12.5px; font-weight: 700; padding: 0 10px; }
+  .clock svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .clock .t { white-space: nowrap; letter-spacing: -0.01em; }
+  .clock input[type="time"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .clock .clear {
+    display: none; width: 15px; height: 15px; border-radius: 50%;
+    background: #C9D8F0; color: #fff;
+    align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    position: relative; z-index: 2; flex-shrink: 0;
+  }
+  .clock.set .clear { display: flex; }
+  .clock .clear:hover { background: var(--blue); }
+  .composer .add {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 14px; font-weight: 700;
+    padding: 10px 16px; border-radius: 14px;
+    cursor: pointer; flex-shrink: 0;
+    transition: transform .1s, background .15s;
+  }
+  .composer .add:hover { background: #1B64DA; }
+  .composer .add:active { transform: scale(.96); }
+
+  .carry {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .carry-text { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.5; }
+  .carry-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  #carryBring {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  }
+  #carryDismiss {
+    border: none; background: var(--bg); color: var(--text-sub);
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 12px; border-radius: 12px; cursor: pointer;
+  }
+
+  /* ── 리스트 ───────────────────────────── */
+  .list {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    overflow: hidden;
+  }
+  .list:empty { display: none; }
+  .item {
+    display: flex; align-items: center; gap: 14px;
+    position: relative;
+    padding: 15px 22px 15px 18px;
+    cursor: pointer;
+    transition: background .12s;
+    animation: slideIn .25s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .item + .item { border-top: 1px solid var(--line); }
+  .item:hover { background: #FAFBFC; }
+  .check {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid #D1D6DB;
+    flex-shrink: 0; display: grid; place-items: center;
+    transition: border-color .15s, background .15s;
+  }
+  .check svg {
+    width: 13px; stroke: #fff; stroke-width: 3.2; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 20; stroke-dashoffset: 20;
+  }
+  .item.done .check { background: var(--blue); border-color: var(--blue); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+  .item.done .check svg { animation: draw .25s .05s ease-out forwards; }
+  @keyframes pop { 50% { transform: scale(1.15); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .body { flex: 1; min-width: 0; }
+  .body .time {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--blue); background: var(--blue-soft);
+    padding: 2px 7px; border-radius: 6px;
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .body .time.late { color: var(--danger); background: var(--danger-soft); }
+  .item.done .body .time { color: var(--text-faint); background: var(--bg); }
+  .body .label {
+    font-size: 15.5px; font-weight: 500; letter-spacing: -0.01em;
+    line-height: 1.45; word-break: break-all;
+    transition: color .2s;
+  }
+  .item.done .label { color: var(--text-faint); text-decoration: line-through; text-decoration-color: #D1D6DB; }
+  .del {
+    border: none; background: none; cursor: pointer;
+    color: var(--text-faint);
+    width: 28px; height: 28px; border-radius: 8px;
+    display: grid; place-items: center;
+    opacity: 0;
+    transition: opacity .12s, background .12s, color .12s;
+    flex-shrink: 0;
+  }
+  .item:hover .del { opacity: 1; }
+  .del:hover { background: var(--danger-soft); color: var(--danger); }
+  @media (hover: none) { .del { opacity: .6; } }
+  .grab {
+    position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
+    border-radius: 0;
+    background: #F4F6F8;
+    display: grid; place-items: center;
+    color: #C4CBD4; cursor: grab;
+    touch-action: none; user-select: none;
+    flex-shrink: 0;
+  }
+  .grab:active { cursor: grabbing; }
+  .grab svg { width: 4px; height: 14px; fill: currentColor; }
+  .item.grab-first .grab { border-radius: 0 var(--radius) 0 0; }
+  .item.grab-last .grab { border-radius: 0 0 var(--radius) 0; }
+  .item.grab-first.grab-last .grab { border-radius: 0 var(--radius) var(--radius) 0; }
+  @media (hover: hover) {
+    .grab { color: #D8DDE4; }
+    .item:hover .grab { color: #8B95A1; background: #E9EDF1; }
+  }
+  @media (hover: none) {
+    .grab { color: #C4CBD4; background: #F4F6F8; }
+  }
+  .item.dragging {
+    position: relative; z-index: 2;
+    box-shadow: 0 8px 20px rgba(2,32,71,.14);
+    transform: scale(1.02);
+    transition: none;
+  }
+  .item:not(.dragging) { transition: transform .15s, background .12s; }
+
+  .empty {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 44px 20px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+  }
+  .empty .emoji { font-size: 34px; }
+  .empty p { margin-top: 10px; font-size: 14.5px; color: var(--text-sub); font-weight: 500; line-height: 1.5; }
+
+  /* ── 로그인 유도 카드 (게스트 모드) ─────────── */
+  .nudge {
+    margin-top: 14px;
+    background: var(--blue-soft);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge .nudge-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1B64DA;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+  .nudge .nudge-btn {
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s, transform .1s;
+  }
+  .nudge .nudge-btn:hover { background: #1B64DA; }
+  .nudge .nudge-btn:active { transform: scale(.96); }
+
+  /* ── 설정 보기 ─────────────────────────── */
+  .set-card {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 4px 0 6px;
+  }
+  .set-card .set-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-faint);
+    padding: 12px 18px 6px;
+    letter-spacing: .02em;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+  .set-row + .set-row { border-top: 1px solid var(--line); }
+  .set-row .sub { color: var(--text-sub); font-size: 13px; font-weight: 500; }
+  .set-row a { color: var(--blue); text-decoration: none; font-weight: 600; font-size: 13.5px; }
+  .set-btn {
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .12s, transform .1s;
+  }
+  .set-btn:hover { background: #E5E8EB; }
+  .set-btn:active { transform: scale(.96); }
+  .set-btn.danger { color: var(--danger); }
+  .set-btn.primary { background: var(--blue); color: #fff; }
+  .set-btn.primary:hover { background: #1B64DA; }
+  .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
+  .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .set-row select {
+    border: 1.5px solid #E5E8EB; border-radius: 10px;
+    padding: 6px 10px; font: inherit; font-size: 13px; font-weight: 600;
+    background: var(--card); color: var(--text); cursor: pointer;
+  }
+  .tog { position: relative; display: inline-flex; flex-shrink: 0; }
+  .tog input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tog i {
+    display: block; width: 44px; height: 26px; border-radius: 13px;
+    background: #D1D6DB; cursor: pointer; transition: background .2s;
+    position: relative;
+  }
+  .tog i::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: transform .2s;
+  }
+  .tog input:checked + i { background: var(--blue); }
+  .tog input:checked + i::after { transform: translateX(18px); }
+
+  /* ── AI 연동(MCP) ──────────────────────── */
+  .mcp-reveal { margin: 0 18px 12px; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 12px; }
+  .mcp-warn { color: var(--danger); font-weight: 600; font-size: 12px; margin-bottom: 6px; }
+  .mcp-reveal .mcp-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .mcp-reveal .mcp-val { flex: 1; min-width: 0; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--card); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; }
+  .mcp-reveal .mcp-copy { flex-shrink: 0; border: none; background: var(--blue); color: #fff; font-weight: 700; font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  .mcp-reveal .mcp-copy:active { transform: scale(.96); }
+  .mcp-token-item { padding: 10px 18px; font-size: 13px; }
+  .mcp-token-item + .mcp-token-item { border-top: 1px solid var(--line); }
+  .mcp-token-item .mcp-token-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .mcp-token-item .mcp-token-meta { color: var(--text-sub); font-size: 11.5px; margin-top: 2px; }
+
+  /* ── 캘린더 보기 ──────────────────────── */
+  .cal {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 18px 16px 14px;
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px 14px;
+  }
+  .cal-head .month { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .cal-head .nav { display: flex; gap: 4px; }
+  .cal-head .nav button {
+    border: none; background: var(--bg); color: var(--text-sub);
+    width: 30px; height: 30px; border-radius: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 700;
+    display: grid; place-items: center;
+    transition: background .12s, color .12s;
+  }
+  .cal-head .nav button:hover { color: var(--text); background: #E5E8EB; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-grid .dow {
+    text-align: center;
+    font-size: 11px; font-weight: 700; color: var(--text-faint);
+    padding: 4px 0 8px;
+  }
+  .cal-grid .dow.sun { color: #F08085; }
+  .day {
+    aspect-ratio: 1;
+    border: none; background: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text);
+    transition: background .12s;
+    position: relative;
+  }
+  .day:hover { background: var(--bg); }
+  .day .n { font-size: 13px; font-weight: 600; line-height: 1; }
+  .day.other { color: var(--text-faint); }
+  .day.today .n {
+    background: var(--blue); color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .day.sel { background: var(--blue-soft); }
+  .day .cnt {
+    font-size: 9px; font-weight: 800;
+    min-width: 14px; height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: #E5E8EB; color: var(--text-sub);
+    display: grid; place-items: center;
+    line-height: 1;
+  }
+  .day .cnt.all-done { background: var(--blue); color: #fff; }
+  .day .cnt.has-left { background: var(--danger-soft); color: var(--danger); }
+  .day .cnt.future { background: var(--blue-soft); color: var(--blue); }
+
+  .day-detail { margin-top: 14px; }
+  .day-detail .composer {
+    margin-bottom: 10px;
+    padding: 4px 4px 4px 14px;
+  }
+  .day-detail .composer input[type="text"] { font-size: 14px; }
+  .day-detail .composer .clock { min-width: 32px; height: 32px; }
+  .day-detail .composer .clock svg { width: 16px; height: 16px; }
+  .day-detail .composer .add { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
+  .day-detail .dd-title {
+    font-size: 13px; font-weight: 700; color: var(--text-sub);
+    padding: 0 6px 8px;
+  }
+  .day-detail .list { margin-top: 0; }
+  .day-detail .none {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 22px;
+    text-align: center;
+    font-size: 13.5px; font-weight: 500; color: var(--text-faint);
+  }
+
+  /* ── 로그인 화면 ──────────────────────── */
+  .auth {
+    margin: auto 0;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 36px 28px 28px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    text-align: center;
+  }
+  .auth .emoji { font-size: 40px; }
+  .auth .logo { width: 44px; height: 40px; display: block; margin: 0 auto; }
+  .auth h2 { margin-top: 14px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .auth p { margin-top: 8px; font-size: 14px; color: var(--text-sub); font-weight: 500; line-height: 1.55; }
+  .auth .row { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .auth input {
+    border: 1.5px solid #E5E8EB; border-radius: 14px;
+    padding: 14px 16px;
+    font: inherit; font-size: 15px; font-weight: 500;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .auth input:focus { border-color: var(--blue); }
+  .btn {
+    border: none; border-radius: 14px;
+    padding: 14px;
+    font: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  .btn.primary:hover { background: #1B64DA; }
+  .btn.google { background: #fff; color: var(--text); border: 1.5px solid #E5E8EB; }
+  .btn.google:hover { background: #FAFBFC; }
+  .btn.google svg { width: 18px; height: 18px; }
+  .divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 18px 0 0;
+    color: var(--text-faint);
+    font-size: 12px; font-weight: 600;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E5E8EB; }
+  .auth .switch {
+    margin-top: 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-sub);
+  }
+  .auth .switch a { color: var(--blue); cursor: pointer; text-decoration: none; }
+  .auth .msg { margin-top: 14px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--blue); min-height: 1em; }
+  .auth .msg.err { color: var(--danger); }
+
+  .spacer { flex: 1; min-height: 20px; }
+  .seo-line { margin-top: 12px; text-align: center; font-size: 11px; color: var(--text-faint); }
+
+  /* ── PC 위젯 다운로드 카드 (웹·넓은 화면) ── */
+  .dl-card {
+    display: none;
+    position: fixed; right: 24px; bottom: 24px; z-index: 1000;
+    width: 280px; padding: 18px 18px 16px;
+    background: var(--card); border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(2,32,71,.10), 0 1px 2px rgba(2,32,71,.04);
+    align-items: flex-start; gap: 12px;
+  }
+  @media (min-width: 1080px) {
+    .dl-card:not([hidden]) { display: flex; }
+  }
+  .dl-card .dl-icon { width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; }
+  .dl-card .dl-body { flex: 1; min-width: 0; }
+  .dl-card .dl-title { font-size: 14.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+  .dl-card .dl-sub { margin-top: 4px; font-size: 12.5px; font-weight: 500; color: var(--text-sub); line-height: 1.45; }
+  .dl-card .dl-btn {
+    display: inline-block; margin-top: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 16px; border-radius: 12px;
+    text-decoration: none; transition: background .15s;
+  }
+  .dl-card .dl-btn:hover { background: #1B64DA; }
+
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ 로그인 화면 ══ -->
+  <div class="auth" id="authView" hidden>
+    <svg class="logo" viewBox="0 0 98.55 88.94" width="44" height="40" xmlns="http://www.w3.org/2000/svg" aria-label="오하루 로고" role="img" id="authLogo">
+      <g fill="#2b76f3">
+        <rect x="28.75" y="1.53" width="69.8" height="15.93" rx="7.96"/>
+        <rect x="0" y="37.27" width="98.55" height="15.93" rx="7.96"/>
+        <rect x="0" y="73.01" width="98.55" height="15.93" rx="7.96"/>
+        <circle cx="9.5" cy="9.5" r="9.5"/>
+      </g>
+    </svg>
+    <h2 id="authH2">오하루</h2>
+    <p id="authSub">오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
+    <div class="row">
+      <button class="btn google" id="googleBtn">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+        <span id="googleBtnText">구글로 계속하기</span>
+      </button>
+      <div class="divider" id="authDivider">또는 이메일로</div>
+      <input id="email" type="email" placeholder="이메일 주소" autocomplete="email">
+      <input id="pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+      <button class="btn primary" id="emailBtn">로그인</button>
+    </div>
+    <div class="switch" id="switchLine">
+      처음이신가요? <a id="switchLink">이메일로 가입하기</a>
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div class="switch" id="backLine" hidden><a id="backLink">← 돌아가기</a></div>
+  </div>
+
+  <!-- ══ 메인 화면 ══ -->
+  <div id="mainView" hidden style="display:flex;flex-direction:column;flex:1;">
+    <header class="head">
+      <div class="date" id="dateLine"></div>
+      <div class="topbtns">
+        <button class="textbtn" id="loginTopBtn" hidden>로그인</button>
+        <button class="iconbtn" id="calBtn" title="목록 보기" aria-label="달력으로 전체 보기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="5" width="18" height="16" rx="3"/>
+            <path d="M3 10h18M8 3v4M16 3v4"/>
+          </svg>
+        </button>
+        <button class="iconbtn" id="setBtn" title="설정" aria-label="설정">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+      <h1 id="headline"></h1>
+      <div class="progress"><i id="bar"></i></div>
+    </header>
+
+    <!-- 기본: 오늘 투두 -->
+    <div id="todayView">
+      <div class="composer">
+        <input id="input" type="text" maxlength="80" placeholder="오늘 할 일을 적어보세요" autocomplete="off">
+        <div class="clock" id="clock" title="시간 설정 (선택)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span class="t" id="clockText"></span>
+          <span class="clear" id="clockClear" title="시간 해제">×</span>
+          <input type="time" id="timeInput">
+        </div>
+        <button class="add" id="addBtn">추가</button>
+      </div>
+      <div class="carry" id="carryCard" hidden>
+        <div class="carry-text" id="carryText"></div>
+        <div class="carry-btns">
+          <button id="carryBring"></button>
+          <button id="carryDismiss"></button>
+        </div>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty" hidden>
+        <div class="emoji">☀️</div>
+        <p id="emptyText">아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.</p>
+      </div>
+    </div>
+
+    <!-- 목록(캘린더) 보기: 버튼 눌렀을 때만 -->
+    <div id="calView" hidden>
+      <div class="cal">
+        <div class="cal-head">
+          <div class="month" id="calMonth"></div>
+          <div class="nav">
+            <button id="prevM" aria-label="이전 달">‹</button>
+            <button id="nextM" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="day-detail" id="dayDetail"></div>
+    </div>
+
+    <!-- 설정 보기: 설정 버튼 눌렀을 때만 -->
+    <div id="setView" hidden>
+      <div class="set-card">
+        <div class="set-title" id="setAccountTitle">계정</div>
+        <div class="set-row" id="setAccount"></div>
+      </div>
+      <div class="set-card" id="setMcp">
+        <div class="set-title" id="setMcpTitle">AI 연동</div>
+        <div id="mcpReveal" class="mcp-reveal" hidden></div>
+        <div id="mcpRows"></div>
+      </div>
+      <div class="set-card" id="setDesign">
+        <div class="set-title" id="setDesignTitle">화면</div>
+        <div class="set-row">
+          <span id="setLangLabel">언어</span>
+          <select id="langSelect" aria-label="Language">
+            <option value="auto">자동</option>
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div class="set-row" id="setBgAlphaRow" hidden>
+          <span id="setBgAlphaLabel">배경 투명도</span>
+          <input type="range" id="bgAlphaRange" min="30" max="100" step="5" value="100" aria-label="배경 투명도">
+          <span class="pct" id="bgAlphaVal">100%</span>
+        </div>
+      </div>
+      <div class="set-card" id="setApp" hidden>
+        <div class="set-title" id="setAppTitle">위젯</div>
+        <div class="set-row">
+          <span id="setAlwaysOnTopLabel">항상 위에 고정</span>
+          <label class="tog"><input type="checkbox" id="alwaysOnTopToggle" aria-label="항상 위에 고정"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span id="setAutoLaunchLabel">PC 시작 시 자동 실행</span>
+          <label class="tog"><input type="checkbox" id="autoLaunchToggle" aria-label="PC 시작 시 자동 실행"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span id="setQuitLabel">앱 종료</span>
+          <button type="button" class="set-btn danger" id="quitAppBtn">종료</button>
+        </div>
+      </div>
+      <div class="set-card">
+        <div class="set-title" id="setAboutTitle">정보</div>
+        <div class="set-row"><span id="setVersionLabel">버전</span><span class="sub" id="appVersion"></span></div>
+        <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
+        <div class="set-row" id="setPcWidgetRow" hidden><span id="setPcWidgetLabel">PC 위젯</span><a href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu-Setup.exe" target="_blank" rel="noopener" id="setPcWidgetLink">다운로드</a></div>
+        <div class="set-row"><span id="setWebLabel">오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
+        <div class="set-row"><span data-i18n="contact">문의</span><a href="mailto:ceo@moodweb.co.kr">ceo@moodweb.co.kr</a></div>
+      </div>
+    </div>
+
+    <!-- 게스트 모드에서만 노출되는 로그인 유도 -->
+    <div class="nudge" id="nudge" hidden>
+      <div class="nudge-text" id="nudgeText">오하루는 오늘 할 일에만 집중하는 투두리스트예요.<br>할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
+      <button class="nudge-btn" id="nudgeLoginBtn">로그인</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <p class="seo-line" id="seoLine">오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원</p>
+  </div>
+
+</div>
+
+<aside class="dl-card" id="dlCard" hidden>
+  <svg class="dl-icon" viewBox="0 0 36 36" aria-hidden="true">
+    <rect x="4" y="6" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="6" width="12" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="4" y="19" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="19" width="12" height="11" rx="1.5" fill="#50E6FF"/>
+  </svg>
+  <div class="dl-body">
+    <div class="dl-title" id="dlTitle"></div>
+    <div class="dl-sub" id="dlSub"></div>
+    <a class="dl-btn" id="dlBtn" href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu-Setup.exe" target="_blank" rel="noopener"></a>
+  </div>
+</aside>
+
+<!-- oharu-launch-assets:start -->
+<link rel="stylesheet" href="./theme-system.css">
+<script src="./theme-system.js"></script>
+<script src="./reminders.js"></script>
+<!-- oharu-launch-assets:end -->
+<script type="module">
+/* ═══════════════════════════════════════════════
+   설정 — Supabase 프로젝트의 두 값을 채우면
+   "로그인 필수 + 클라우드 저장" 서비스 모드가 됩니다.
+   비워두면 로그인 없는 로컬 모드(개발 미리보기용).
+   anon key는 클라이언트 공개용 키 — RLS가 진짜 잠금장치.
+   ═══════════════════════════════════════════════ */
+const SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";      // 예: "https://xxxx.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY"; // Project Settings > API > anon public
+
+const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+// 데스크톱(Electron) 앱은 URL에 ?desktop=1을 붙여 로드한다: 로그인 필수 + 구글 버튼 숨김
+const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
+const URL_LANGS = new Set(["ko", "en", "ja", "zh", "es"]);
+const urlLangParam = new URLSearchParams(location.search).get("lang");
+
+// ── UI 저장 / 다국어 ─────────────────────────────
+const UIKEY = "oharu.ui";
+const loadUI = () => { try { return JSON.parse(localStorage.getItem(UIKEY) || "{}"); } catch (_) { return {}; } };
+const saveUI = u => { try { localStorage.setItem(UIKEY, JSON.stringify(u)); } catch (_) {} };
+
+const T = {
+  ko: {
+    title: "오하루 — 오늘 할 일",
+    authBrand: "오하루",
+    authSub: "오늘 할 일에만 집중하는<br>가장 단순한 투두리스트",
+    googleBtn: "구글로 계속하기",
+    authDivider: "또는 이메일로",
+    emailPh: "이메일 주소",
+    pwPh: "비밀번호 (6자 이상)",
+    loginBtn: "로그인",
+    signupBtn: "가입하기",
+    backLink: "← 돌아가기",
+    switchLogin: '처음이신가요? <a id="switchLink">이메일로 가입하기</a>',
+    switchSignup: '이미 계정이 있나요? <a id="switchLink">로그인하기</a>',
+    migrateHint: "지금까지 적은 할 일은 로그인하면 계정으로 그대로 옮겨드려요.",
+    errEmail: "이메일 주소를 확인해주세요.",
+    errPw: "비밀번호는 6자 이상이어야 해요.",
+    errLogin: "이메일 또는 비밀번호가 맞지 않아요.",
+    errRegistered: "이미 가입된 이메일이에요. 로그인해주세요.",
+    errSignup: "가입에 실패했어요. 잠시 후 다시 시도해주세요.",
+    msgConfirm: "확인 메일을 보냈어요. 메일의 링크를 눌러 가입을 완료해주세요 ✉️",
+    errGoogle: "구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.",
+    errGoogleStart: "구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.",
+    msgGoogleBrowser: "브라우저에서 구글 로그인을 완료해주세요. 끝나면 자동으로 돌아와요.",
+    errGoogleDesktop: "이 버전에서는 구글 로그인을 지원하지 않아요. 이메일로 로그인해주세요.",
+    errGoogleFinish: "로그인 마무리에 실패했어요. 다시 시도해주세요.",
+    previewSupabase: "Supabase 연결(파일 상단 설정) 후에 실제 로그인이 활성화돼요.",
+    headlineEmpty: "오늘은 어떤 하루인가요?",
+    headlineDone: "오늘 할 일을 다 끝냈어요 🎉",
+    headlineLeft: '할 일이 <span class="num">{n}개</span> 남았어요',
+    inputPh: "오늘 할 일을 적어보세요",
+    addBtn: "추가",
+    clockTitle: "시간 설정 (선택)",
+    clockClearTitle: "시간 해제",
+    emptyState: "아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.",
+    overdue: " · 지남",
+    todaySuffix: " · 오늘",
+    noRecords: "이 날은 기록이 없어요",
+    nudgeText: "오하루는 오늘 할 일에만 집중하는 투두리스트예요.<br>할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.",
+    calBtnTitle: "목록 보기",
+    calBtnAria: "달력으로 전체 보기",
+    setBtnTitle: "설정",
+    setBtnAria: "설정",
+    delAria: "삭제",
+    setAccount: "계정",
+    guestMode: '게스트 모드 <span class="sub">· 이 기기에만 저장</span>',
+    logout: "로그아웃",
+    login: "로그인",
+    signedIn: "로그인됨",
+    setDisplay: "화면",
+    bgAlpha: "배경 투명도",
+    setLang: "언어",
+    langAuto: "자동",
+    langKo: "한국어",
+    langEn: "English",
+    setWidget: "위젯",
+    alwaysOnTop: "항상 위에 고정",
+    autoLaunch: "PC 시작 시 자동 실행",
+    quitAppLabel: "앱 종료",
+    quitBtn: "종료",
+    setAbout: "정보",
+    version: "버전",
+    privacy: "개인정보처리방침",
+    view: "보기",
+    oharuWeb: "오하루 웹",
+    contact: "문의",
+    logoAria: "오하루 로고",
+    installTitle: "윈도우 바탕화면에 설치하기",
+    installSub: "항상 위에 떠 있는 투두 위젯",
+    pcWidget: "PC 위젯",
+    download: "다운로드",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    futurePh: "이 날 할 일을 적어보세요",
+    seoLine: "오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원",
+    carryTitle: "지난 할 일 {n}개가 남아있어요",
+    carryBring: "오늘로 가져오기",
+    carryDismiss: "괜찮아요",
+    setMcpTitle: "AI 연동",
+    mcpLoginRequired: "로그인하면 호환되는 MCP 클라이언트용 개인 토큰을 관리할 수 있어요. 서비스별 연결 지원 범위를 먼저 확인해주세요. 테마 JSON 만들기는 로그인 없이 아래에서 사용할 수 있어요.",
+    mcpDesc: "개인 토큰 발급은 AI 연결 성공을 뜻하지 않아요. 호환되는 MCP 클라이언트에서만 사용하고, 토큰이 들어간 주소를 공개하지 마세요. ChatGPT 공개 앱용 OAuth 연결은 아직 준비 중이에요. 별도 API 키 없는 테마 JSON 방식은 아래에서 사용할 수 있어요.",
+    mcpCreateBtn: "토큰 발급",
+    mcpRevokeBtn: "폐기",
+    mcpRevokeConfirm: "이 토큰을 폐기할까요? 연결된 AI에서 더 이상 오하루에 접근할 수 없어요.",
+    mcpRevokeFailed: "폐기에 실패했어요. 잠시 후 다시 시도해주세요.",
+    mcpCreateFailed: "발급에 실패했어요. 잠시 후 다시 시도해주세요.",
+    mcpCreatedAt: "발급",
+    mcpLastUsed: "최근 사용",
+    mcpNamePh: "연동할 AI",
+    mcpTokenWarn: "이 화면을 벗어나면 다시 볼 수 없어요. 지금 복사해서 안전한 곳에 붙여넣으세요.",
+    mcpUrlWithTokenLabel: "개인 토큰 포함 주소 (호환성을 확인한 클라이언트 전용)",
+    mcpUrlLabel: "서버 주소 (클라이언트의 공식 인증 방식을 확인하세요)",
+    mcpTokenLabel: "토큰",
+    mcpCopyBtn: "복사",
+    mcpCopied: "복사됨",
+    mcpCloseBtn: "닫기",
+    mcpOptClaude: "클로드",
+    mcpOptChatgpt: "챗지피티",
+    mcpOptGemini: "제미나이",
+    mcpOptOther: "호환 MCP 클라이언트",
+  },
+  en: {
+    title: "Oharu — Today's To-dos",
+    authBrand: "Oharu",
+    authSub: "The simplest to-do list,<br>focused only on today",
+    googleBtn: "Continue with Google",
+    authDivider: "or with email",
+    emailPh: "Email address",
+    pwPh: "Password (6+ characters)",
+    loginBtn: "Log in",
+    signupBtn: "Sign up",
+    backLink: "← Back",
+    switchLogin: 'New here? <a id="switchLink">Sign up with email</a>',
+    switchSignup: 'Already have an account? <a id="switchLink">Log in</a>',
+    migrateHint: "Your to-dos will move to your account when you log in.",
+    errEmail: "Please check your email address.",
+    errPw: "Password must be at least 6 characters.",
+    errLogin: "Email or password is incorrect.",
+    errRegistered: "This email is already registered. Please log in.",
+    errSignup: "Sign-up failed. Please try again later.",
+    msgConfirm: "We sent you a confirmation email. Click the link to finish signing up ✉️",
+    errGoogle: "Google sign-in failed. Please try again.",
+    errGoogleStart: "Couldn't start Google sign-in. Please try again.",
+    msgGoogleBrowser: "Finish signing in with Google in your browser — you'll return automatically.",
+    errGoogleDesktop: "Google sign-in isn't available in this version. Please log in with email.",
+    errGoogleFinish: "Couldn't complete sign-in. Please try again.",
+    previewSupabase: "Sign-in activates after Supabase is configured (top of this file).",
+    headlineEmpty: "How's your day going?",
+    headlineDone: "All done for today 🎉",
+    headlineLeft: '<span class="num">{n}</span> left for today',
+    inputPh: "Write today's to-do",
+    addBtn: "Add",
+    clockTitle: "Set time (optional)",
+    clockClearTitle: "Clear time",
+    emptyState: "Nothing here yet.<br>Start with the one thing that matters most.",
+    overdue: " · overdue",
+    todaySuffix: " · Today",
+    noRecords: "No records for this day",
+    nudgeText: "Oharu is a to-do list focused only on today.<br>Your to-dos are saved only on this device.<br>Log in to sync across phone and PC.",
+    calBtnTitle: "Calendar",
+    calBtnAria: "Calendar",
+    setBtnTitle: "Settings",
+    setBtnAria: "Settings",
+    delAria: "Delete",
+    setAccount: "Account",
+    guestMode: 'Guest mode <span class="sub">· saved on this device</span>',
+    logout: "Log out",
+    login: "Log in",
+    signedIn: "Signed in",
+    setDisplay: "Display",
+    bgAlpha: "Background opacity",
+    setLang: "Language",
+    langAuto: "Auto",
+    langKo: "한국어",
+    langEn: "English",
+    setWidget: "Widget",
+    alwaysOnTop: "Always on top",
+    autoLaunch: "Launch at startup",
+    quitAppLabel: "Quit app",
+    quitBtn: "Quit",
+    setAbout: "About",
+    version: "Version",
+    privacy: "Privacy Policy",
+    view: "View",
+    oharuWeb: "Oharu Web",
+    contact: "Contact",
+    logoAria: "Oharu logo",
+    installTitle: "Install on your Windows desktop",
+    installSub: "An always-on-top to-do widget",
+    pcWidget: "PC widget",
+    download: "Download",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    futurePh: "Write a to-do for this day",
+    seoLine: "Oharu — a free to-do list focused only on today · Web & Windows widget",
+    carryTitle: "{n} unfinished from before",
+    carryBring: "Bring to today",
+    carryDismiss: "Not now",
+    setMcpTitle: "AI connection",
+    mcpLoginRequired: "Sign in to manage personal tokens for compatible MCP clients. Check each service's supported connection method first. Theme JSON works below without signing in.",
+    mcpDesc: "Issuing a personal token does not confirm an AI connection. Use only compatible MCP clients and never publish token-bearing URLs. OAuth for a public ChatGPT app is not available yet. The theme JSON flow below needs no separate API key.",
+    mcpCreateBtn: "Issue token",
+    mcpRevokeBtn: "Revoke",
+    mcpRevokeConfirm: "Revoke this token? The connected AI will no longer be able to access Oharu.",
+    mcpRevokeFailed: "Failed to revoke. Please try again.",
+    mcpCreateFailed: "Failed to issue. Please try again.",
+    mcpCreatedAt: "Issued",
+    mcpLastUsed: "Last used",
+    mcpNamePh: "AI to connect",
+    mcpTokenWarn: "You won't be able to see this again after leaving this screen. Copy it now and store it somewhere safe.",
+    mcpUrlWithTokenLabel: "Personal token URL (only for clients with verified support)",
+    mcpUrlLabel: "Server URL (check the client's official authentication method)",
+    mcpTokenLabel: "Token",
+    mcpCopyBtn: "Copy",
+    mcpCopied: "Copied",
+    mcpCloseBtn: "Close",
+    mcpOptClaude: "Claude",
+    mcpOptChatgpt: "ChatGPT",
+    mcpOptGemini: "Gemini",
+    mcpOptOther: "Compatible MCP client",
+  },
+  ja: {
+    title: "Oharu — 今日のやること",
+    authBrand: "Oharu",
+    authSub: "今日のタスクだけに集中する、<br>いちばんシンプルなToDoリスト",
+    googleBtn: "Googleで続行",
+    authDivider: "またはメールで",
+    emailPh: "メールアドレス",
+    pwPh: "パスワード（6文字以上）",
+    loginBtn: "ログイン",
+    signupBtn: "登録する",
+    backLink: "← 戻る",
+    switchLogin: 'はじめての方は <a id="switchLink">メールで登録</a>',
+    switchSignup: 'アカウントをお持ちの方は <a id="switchLink">ログイン</a>',
+    migrateHint: "これまでのやることは、ログインするとアカウントに引き継がれます。",
+    errEmail: "メールアドレスをご確認ください。",
+    errPw: "パスワードは6文字以上で入力してください。",
+    errLogin: "メールアドレスまたはパスワードが正しくありません。",
+    errRegistered: "すでに登録済みのメールです。ログインしてください。",
+    errSignup: "登録に失敗しました。しばらくしてからもう一度お試しください。",
+    msgConfirm: "確認メールを送信しました。リンクを押して登録を完了してください ✉️",
+    errGoogle: "Googleログインに失敗しました。もう一度お試しください。",
+    msgGoogleBrowser: "ブラウザでGoogleログインを完了してください。終わると自動で戻ります。",
+    headlineEmpty: "今日はどんな一日ですか？",
+    headlineDone: "今日のやること、すべて完了 🎉",
+    headlineLeft: '残り<span class="num">{n}</span>件',
+    inputPh: "今日のやることを書いてみましょう",
+    addBtn: "追加",
+    clockTitle: "時間を設定（任意）",
+    clockClearTitle: "時間を解除",
+    emptyState: "まだ登録がありません。<br>いちばん大事なことから書いてみましょう。",
+    overdue: " · 時間切れ",
+    todaySuffix: " · 今日",
+    noRecords: "この日は記録がありません",
+    nudgeText: "Oharuは今日のやることだけに集中するToDoリストです。<br>やることはこの端末にのみ保存されています。<br>ログインするとスマホ・PCどこでも続けられます。",
+    calBtnTitle: "カレンダー",
+    calBtnAria: "カレンダー",
+    setBtnTitle: "設定",
+    setBtnAria: "設定",
+    delAria: "削除",
+    setAccount: "アカウント",
+    guestMode: 'ゲストモード <span class="sub">· この端末にのみ保存</span>',
+    logout: "ログアウト",
+    login: "ログイン",
+    signedIn: "ログイン中",
+    setDisplay: "画面",
+    bgAlpha: "背景の透明度",
+    setLang: "言語",
+    langAuto: "自動",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "ウィジェット",
+    alwaysOnTop: "常に手前に表示",
+    autoLaunch: "PC起動時に自動起動",
+    quitAppLabel: "アプリを終了",
+    quitBtn: "終了",
+    setAbout: "情報",
+    version: "バージョン",
+    privacy: "プライバシーポリシー",
+    view: "表示",
+    oharuWeb: "Oharu Web",
+    contact: "お問い合わせ",
+    logoAria: "Oharu logo",
+    installTitle: "Windowsデスクトップにインストール",
+    installSub: "常に手前に表示されるToDoウィジェット",
+    pcWidget: "PCウィジェット",
+    download: "ダウンロード",
+    futurePh: "この日のやることを書く",
+    seoLine: "Oharu — 今日のタスクだけに集中する無料ToDo · Web & Windowsウィジェット",
+    carryTitle: "未完了のやることが{n}件あります",
+    carryBring: "今日に引き継ぐ",
+    carryDismiss: "今はしない",
+  },
+  zh: {
+    title: "Oharu — 今日待办",
+    authBrand: "Oharu",
+    authSub: "只专注于今天的<br>极简待办清单",
+    googleBtn: "使用 Google 继续",
+    authDivider: "或使用邮箱",
+    emailPh: "邮箱地址",
+    pwPh: "密码（至少6位）",
+    loginBtn: "登录",
+    signupBtn: "注册",
+    backLink: "← 返回",
+    switchLogin: '第一次使用？<a id="switchLink">用邮箱注册</a>',
+    switchSignup: '已有账号？<a id="switchLink">登录</a>',
+    migrateHint: "登录后，你已写下的待办会自动转移到账号中。",
+    errEmail: "请检查邮箱地址。",
+    errPw: "密码至少需要6位。",
+    errLogin: "邮箱或密码不正确。",
+    errRegistered: "该邮箱已注册，请直接登录。",
+    errSignup: "注册失败，请稍后重试。",
+    msgConfirm: "确认邮件已发送，请点击邮件中的链接完成注册 ✉️",
+    errGoogle: "Google 登录失败，请稍后重试。",
+    msgGoogleBrowser: "请在浏览器中完成 Google 登录，完成后会自动返回。",
+    headlineEmpty: "今天过得怎么样？",
+    headlineDone: "今天的待办全部完成 🎉",
+    headlineLeft: '还剩 <span class="num">{n}</span> 项',
+    inputPh: "写下今天要做的事",
+    addBtn: "添加",
+    clockTitle: "设置时间（可选）",
+    clockClearTitle: "清除时间",
+    emptyState: "还没有待办。<br>从最重要的一件事开始吧。",
+    overdue: " · 已超时",
+    todaySuffix: " · 今天",
+    noRecords: "这一天没有记录",
+    nudgeText: "Oharu 是一款只专注今日待办的清单。<br>待办目前只保存在此设备上。<br>登录后可在手机和电脑间同步。",
+    calBtnTitle: "日历",
+    calBtnAria: "日历",
+    setBtnTitle: "设置",
+    setBtnAria: "设置",
+    delAria: "删除",
+    setAccount: "账号",
+    guestMode: '访客模式 <span class="sub">· 仅保存在此设备</span>',
+    logout: "退出登录",
+    login: "登录",
+    signedIn: "已登录",
+    setDisplay: "显示",
+    bgAlpha: "背景透明度",
+    setLang: "语言",
+    langAuto: "自动",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "小组件",
+    alwaysOnTop: "窗口置顶",
+    autoLaunch: "开机自动启动",
+    quitAppLabel: "退出应用",
+    quitBtn: "退出",
+    setAbout: "关于",
+    version: "版本",
+    privacy: "隐私政策",
+    view: "查看",
+    oharuWeb: "Oharu Web",
+    contact: "联系我们",
+    logoAria: "Oharu logo",
+    installTitle: "安装到 Windows 桌面",
+    installSub: "始终置顶的待办小组件",
+    pcWidget: "PC 小组件",
+    download: "下载",
+    futurePh: "为这一天添加待办",
+    seoLine: "Oharu — 只专注今日待办的免费清单 · 网页与 Windows 小组件",
+    carryTitle: "还有 {n} 项未完成的待办",
+    carryBring: "移到今天",
+    carryDismiss: "暂不",
+  },
+  es: {
+    title: "Oharu — Tareas de hoy",
+    authBrand: "Oharu",
+    authSub: "La lista de tareas más simple,<br>centrada solo en hoy",
+    googleBtn: "Continuar con Google",
+    authDivider: "o con tu correo",
+    emailPh: "Correo electrónico",
+    pwPh: "Contraseña (6+ caracteres)",
+    loginBtn: "Iniciar sesión",
+    signupBtn: "Registrarse",
+    backLink: "← Volver",
+    switchLogin: '¿Primera vez? <a id="switchLink">Regístrate con tu correo</a>',
+    switchSignup: '¿Ya tienes cuenta? <a id="switchLink">Inicia sesión</a>',
+    migrateHint: "Tus tareas se moverán a tu cuenta al iniciar sesión.",
+    errEmail: "Revisa tu correo electrónico.",
+    errPw: "La contraseña debe tener al menos 6 caracteres.",
+    errLogin: "Correo o contraseña incorrectos.",
+    errRegistered: "Este correo ya está registrado. Inicia sesión.",
+    errSignup: "No se pudo completar el registro. Inténtalo más tarde.",
+    msgConfirm: "Te enviamos un correo de confirmación. Haz clic en el enlace para terminar ✉️",
+    errGoogle: "Error al iniciar sesión con Google. Inténtalo de nuevo.",
+    msgGoogleBrowser: "Completa el acceso con Google en tu navegador; volverás automáticamente.",
+    headlineEmpty: "¿Cómo va tu día?",
+    headlineDone: "¡Todo listo por hoy! 🎉",
+    headlineLeft: '<span class="num">{n}</span> pendientes hoy',
+    inputPh: "Escribe una tarea para hoy",
+    addBtn: "Añadir",
+    clockTitle: "Fijar hora (opcional)",
+    clockClearTitle: "Quitar hora",
+    emptyState: "Aún no hay nada.<br>Empieza por lo más importante.",
+    overdue: " · vencida",
+    todaySuffix: " · Hoy",
+    noRecords: "Sin registros este día",
+    nudgeText: "Oharu es una lista de tareas centrada solo en hoy.<br>Tus tareas solo se guardan en este dispositivo.<br>Inicia sesión para sincronizar entre móvil y PC.",
+    calBtnTitle: "Calendario",
+    calBtnAria: "Calendario",
+    setBtnTitle: "Ajustes",
+    setBtnAria: "Ajustes",
+    delAria: "Eliminar",
+    setAccount: "Cuenta",
+    guestMode: 'Modo invitado <span class="sub">· solo en este dispositivo</span>',
+    logout: "Cerrar sesión",
+    login: "Iniciar sesión",
+    signedIn: "Sesión iniciada",
+    setDisplay: "Pantalla",
+    bgAlpha: "Opacidad del fondo",
+    setLang: "Idioma",
+    langAuto: "Automático",
+    langKo: "한국어",
+    langEn: "English",
+    langJa: "日本語",
+    langZh: "中文",
+    langEs: "Español",
+    setWidget: "Widget",
+    alwaysOnTop: "Siempre visible",
+    autoLaunch: "Iniciar con el PC",
+    quitAppLabel: "Salir de la app",
+    quitBtn: "Salir",
+    setAbout: "Información",
+    version: "Versión",
+    privacy: "Política de privacidad",
+    view: "Ver",
+    oharuWeb: "Oharu Web",
+    contact: "Contacto",
+    logoAria: "Oharu logo",
+    installSub: "Un widget de tareas siempre visible",
+    pcWidget: "Widget para PC",
+    download: "Descargar",
+    futurePh: "Añade una tarea para este día",
+    seoLine: "Oharu — lista de tareas gratis solo para hoy · Web y widget de Windows",
+    carryTitle: "{n} tareas pendientes de antes",
+    carryBring: "Traer a hoy",
+    carryDismiss: "Ahora no",
+  },
+};
+
+function detectLang() {
+  const nav = (navigator.language || "").toLowerCase();
+  const base = nav.slice(0, 2);
+  if (base === "ko") return "ko";
+  if (base === "ja") return "ja";
+  if (base === "es") return "es";
+  if (nav.startsWith("zh")) return "zh";
+  return "en";
+}
+function resolveLang() {
+  if (urlLangParam && URL_LANGS.has(urlLangParam)) {
+    saveUI({ ...loadUI(), lang: urlLangParam });
+    return urlLangParam;
+  }
+  const saved = loadUI().lang;
+  if (saved && saved !== "auto" && T[saved]) return saved;
+  return detectLang();
+}
+const LANG = resolveLang();
+const INTL_LOCALE = { ko: "ko", en: "en", ja: "ja", zh: "zh-CN", es: "es" };
+const intlLocale = () => INTL_LOCALE[LANG] || "en";
+const t = (key, vars) => {
+  let s = (T[LANG]?.[key] ?? T.en?.[key] ?? T.ko?.[key] ?? key);
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, v);
+  return s;
+};
+
+const DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
+const getDays = () => {
+  if (LANG === "ko") return DAYS_KO;
+  const fmt = new Intl.DateTimeFormat(intlLocale(), { weekday: "short" });
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2023, 0, 1 + i)));
+};
+
+function applyTexts() {
+  document.documentElement.lang = LANG;
+  document.title = t("title");
+  $("authLogo").setAttribute("aria-label", t("logoAria"));
+  $("authH2").textContent = t("authBrand");
+  $("authSub").innerHTML = t("authSub");
+  $("googleBtnText").textContent = t("googleBtn");
+  $("authDivider").textContent = t("authDivider");
+  $("email").placeholder = t("emailPh");
+  $("pw").placeholder = t("pwPh");
+  $("emailBtn").textContent = t("loginBtn");
+  $("switchLine").innerHTML = t("switchLogin");
+  $("backLink").textContent = t("backLink");
+  $("loginTopBtn").textContent = t("loginBtn");
+  $("calBtn").title = t("calBtnTitle");
+  $("calBtn").setAttribute("aria-label", t("calBtnAria"));
+  $("setBtn").title = t("setBtnTitle");
+  $("setBtn").setAttribute("aria-label", t("setBtnAria"));
+  $("input").placeholder = t("inputPh");
+  $("clock").title = t("clockTitle");
+  $("clockClear").title = t("clockClearTitle");
+  $("addBtn").textContent = t("addBtn");
+  $("emptyText").innerHTML = t("emptyState");
+  $("nudgeText").innerHTML = t("nudgeText");
+  $("nudgeLoginBtn").textContent = t("loginBtn");
+  $("carryBring").textContent = t("carryBring");
+  $("carryDismiss").textContent = t("carryDismiss");
+  $("setAccountTitle").textContent = t("setAccount");
+  $("setMcpTitle").textContent = t("setMcpTitle");
+  $("setDesignTitle").textContent = t("setDisplay");
+  $("setLangLabel").textContent = t("setLang");
+  $("langSelect").options[0].textContent = t("langAuto");
+  $("langSelect").options[1].textContent = t("langKo");
+  $("langSelect").options[2].textContent = t("langEn");
+  $("langSelect").options[3].textContent = t("langJa");
+  $("langSelect").options[4].textContent = t("langZh");
+  $("langSelect").options[5].textContent = t("langEs");
+  $("langSelect").setAttribute("aria-label", t("setLang"));
+  $("setBgAlphaLabel").textContent = t("bgAlpha");
+  $("bgAlphaRange").setAttribute("aria-label", t("bgAlpha"));
+  $("setAppTitle").textContent = t("setWidget");
+  $("setAlwaysOnTopLabel").textContent = t("alwaysOnTop");
+  $("alwaysOnTopToggle").setAttribute("aria-label", t("alwaysOnTop"));
+  $("setAutoLaunchLabel").textContent = t("autoLaunch");
+  $("autoLaunchToggle").setAttribute("aria-label", t("autoLaunch"));
+  $("setQuitLabel").textContent = t("quitAppLabel");
+  $("quitAppBtn").textContent = t("quitBtn");
+  $("setAboutTitle").textContent = t("setAbout");
+  $("setVersionLabel").textContent = t("version");
+  $("setPrivacyLabel").textContent = t("privacy");
+  $("setPrivacyLink").textContent = t("view");
+  $("setWebLabel").textContent = t("oharuWeb");
+  const contactEl = document.querySelector('[data-i18n="contact"]');
+  if (contactEl) contactEl.textContent = t("contact");
+  $("seoLine").textContent = t("seoLine");
+  if (!IS_DESKTOP) {
+    $("setPcWidgetRow").hidden = false;
+    $("setPcWidgetLabel").textContent = t("pcWidget");
+    $("setPcWidgetLink").textContent = t("download");
+    $("dlCard").hidden = false;
+    $("dlTitle").textContent = t("installTitle");
+    $("dlSub").textContent = t("installSub");
+    $("dlBtn").textContent = t("download");
+  }
+}
+
+// ── 유틸 ───────────────────────────────────────
+const $ = id => document.getElementById(id);
+const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayStr = () => dstr(new Date());
+const fmtTime = hhmm => {
+  const [h, m] = hhmm.split(":").map(Number);
+  if (LANG === "ko") {
+    return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")}`;
+  }
+  return new Intl.DateTimeFormat(intlLocale(), { hour: "numeric", minute: "2-digit" }).format(new Date(2000, 0, 1, h, m));
+};
+const fmtDateLine = d => {
+  if (LANG === "ko") return `${d.getMonth() + 1}월 ${d.getDate()}일 ${getDays()[d.getDay()]}요일`;
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: "short", month: "short", day: "numeric" }).format(d);
+};
+const fmtCalMonth = (y, m) => {
+  if (LANG === "ko") return `${y}년 ${m + 1}월`;
+  return new Intl.DateTimeFormat(intlLocale(), { month: "long", year: "numeric" }).format(new Date(y, m, 1));
+};
+const fmtDayTitle = (sy, sm, sd) => {
+  const d = new Date(sy, sm - 1, sd);
+  const suffix = selDate === todayStr() ? t("todaySuffix") : "";
+  if (LANG === "ko") return `${sm}월 ${sd}일 ${getDays()[d.getDay()]}요일` + suffix;
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: "short", month: "short", day: "numeric" }).format(d) + suffix;
+};
+const isLate = hhmm => {
+  const [h, m] = hhmm.split(":").map(Number);
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes() > h * 60 + m;
+};
+const newId = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
+
+// ── 저장소: local / cloud 동일 인터페이스 ─────────
+// todo: { id, text, time|null, done, todoDate, createdAt }
+let repo = null, supabase = null, currentUserId = null;
+
+function localRepo() {
+  const KEY = "oneul.v3";
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (_) { return window.__mem || null; } };
+  const write = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (_) { window.__mem = s; } };
+  let state = read() || { todos: [] };
+  // 비정상 상태(같은 id 중복 저장) 자동 복구
+  {
+    const seen = new Set();
+    state.todos = (state.todos || []).filter(t => {
+      if (!t || !t.id || seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }
+  return {
+    async load() { return state.todos; },
+    async add(t) { state.todos.push(t); write(state); },
+    async update(t) { state.todos = state.todos.map(x => x.id === t.id ? t : x); write(state); },
+    async remove(id) { state.todos = state.todos.filter(x => x.id !== id); write(state); },
+    async setOrder(id, value) {
+      state.todos = state.todos.map(item => item.id === id ? { ...item, sortOrder: value } : item);
+      write(state);
+    },
+    async rollover() { /* 자동 이월 제거 — carryOver로 사용자 확인 후만 이동 */ },
+    async carryOver() {
+      const today = todayStr();
+      state.todos = state.todos.map(item =>
+        (!item.done && item.todoDate < today) ? { ...item, todoDate: today, time: null } : item
+      );
+      write(state);
+    }
+  };
+}
+
+function cloudRepo() {
+  const map = r => ({ id: r.id, text: r.text, time: r.time, done: r.done, todoDate: r.todo_date, createdAt: r.created_at, sortOrder: r.sort_order });
+  return {
+    async load() {
+      const { data, error } = await supabase.from("todos").select("*").order("created_at");
+      if (error) { console.error(error); return null; }
+      return data.map(map);
+    },
+    async add(t) {
+      const { error } = await supabase.from("todos")
+        .insert({ id: t.id, text: t.text, time: t.time, done: false, todo_date: t.todoDate, sort_order: t.sortOrder ?? null });
+      if (error) console.error(error);
+    },
+    async setOrder(id, value) {
+      const { error } = await supabase.from("todos").update({ sort_order: value }).eq("id", id);
+      if (error) console.error(error);
+    },
+    async update(t) {
+      const { error } = await supabase.from("todos").update({ done: t.done }).eq("id", t.id);
+      if (error) console.error(error);
+    },
+    async remove(id) {
+      const { error } = await supabase.from("todos").delete().eq("id", id);
+      if (error) console.error(error);
+    },
+    async rollover() { /* 자동 이월 제거 — carryOver로 사용자 확인 후만 이동 */ },
+    async carryOver() {
+      // 완료 항목은 자기 날짜에 보존(캘린더 기록), 미완료만 오늘로 이월
+      const { error } = await supabase.from("todos")
+        .update({ todo_date: todayStr(), time: null })
+        .eq("done", false).lt("todo_date", todayStr());
+      if (error) console.error(error);
+    }
+  };
+}
+
+// ── 앱 상태 ────────────────────────────────────
+let todos = [];                 // 전체 (모든 날짜)
+let view = "today";             // 'today' | 'cal'
+let calCursor = new Date();     // 캘린더가 보고 있는 달
+let selDate = todayStr();       // 캘린더에서 선택한 날짜
+let lastLoadedTodosJson = "";
+let lastLoadedDate = "";
+let reminderDataReady = false;
+window.OharuReminders?.mount(() => reminderDataReady ? todos : null);
+
+const byDate = date => todos.filter(t => t.todoDate === date);
+
+function legacyCompare(a, b) {
+  const at = a.time || "99:99", bt = b.time || "99:99";
+  if (at !== bt) return at < bt ? -1 : 1;
+  return (a.createdAt || "") < (b.createdAt || "") ? -1 : 1;
+}
+
+function sortItems(arr) {
+  const pending = arr.filter(item => !item.done).sort((a, b) => {
+    const ao = Number.isFinite(a.sortOrder), bo = Number.isFinite(b.sortOrder);
+    if (ao && bo && a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+    if (ao !== bo) return ao ? -1 : 1;
+    return legacyCompare(a, b);
+  });
+  return pending.concat(arr.filter(item => item.done).sort(legacyCompare));
+}
+
+async function backfillTodaySortOrder() {
+  const todayItems = todos.filter(item => item.todoDate === todayStr() && !item.done);
+  if (!todayItems.some(item => !Number.isFinite(item.sortOrder))) return;
+  const ordered = [...todayItems].sort(legacyCompare);
+  for (const [index, item] of ordered.entries()) {
+    const value = index + 1;
+    item.sortOrder = value;
+    await repo.setOrder(item.id, value);
+  }
+}
+
+function nextSortOrder(date, time = null) {
+  const values = todos
+    .filter(item => item.todoDate === date && !item.done && Number.isFinite(item.sortOrder))
+    .map(item => item.sortOrder);
+  if (time) return (values.length ? Math.min(...values) : 1) - 1;
+  return (values.length ? Math.max(...values) : 0) + 1;
+}
+
+// ── 헤더 ───────────────────────────────────────
+function renderHead() {
+  const d = new Date();
+  $("dateLine").textContent = fmtDateLine(d);
+  const tday = byDate(todayStr());
+  const total = tday.length, left = tday.filter(x => !x.done).length;
+  const h = $("headline"), bar = $("bar");
+  if (total === 0) { h.textContent = t("headlineEmpty"); bar.style.width = "0%"; }
+  else if (left === 0) { h.textContent = t("headlineDone"); bar.style.width = "100%"; }
+  else {
+    h.innerHTML = t("headlineLeft", { n: left });
+    bar.style.width = `${Math.round(((total - left) / total) * 100)}%`;
+  }
+}
+
+// ── 리스트 아이템 공용 렌더러 ────────────────────
+let ignoreRowClickUntil = 0;
+let ignoreRowClickId = null;
+
+function beginDrag(row, item, e, onCancel = null) {
+  e.preventDefault();
+  e.stopPropagation();
+  ignoreRowClickUntil = Date.now() + 500;
+  ignoreRowClickId = item.id;
+  const list = row.parentElement;
+  if (!list) return;
+  const rows = [...list.querySelectorAll(".item")].filter(el => !el.classList.contains("done"));
+  const startIndex = rows.indexOf(row);
+  const otherRows = rows.filter(itemRow => itemRow !== row);
+  const pointerId = e.pointerId;
+  const startY = e.clientY;
+  const rowHeight = row.offsetHeight;
+  const centers = new Map(rows.map(itemRow => [
+    itemRow, itemRow.getBoundingClientRect().top + itemRow.offsetHeight / 2,
+  ]));
+  let targetIndex = startIndex;
+  row.classList.add("dragging");
+
+  const resetPreview = () => {
+    rows.forEach(itemRow => { itemRow.style.transform = ""; });
+  };
+  const move = moveEvent => {
+    if (moveEvent.pointerId !== pointerId) return;
+    moveEvent.preventDefault();
+    targetIndex = otherRows.findIndex(itemRow => moveEvent.clientY < centers.get(itemRow));
+    if (targetIndex < 0) targetIndex = otherRows.length;
+    rows.forEach((itemRow, index) => {
+      if (itemRow === row) {
+        itemRow.style.transform = `translateY(${moveEvent.clientY - startY}px) scale(1.02)`;
+        return;
+      }
+      let shift = 0;
+      if (targetIndex > startIndex && index > startIndex && index <= targetIndex) shift = -rowHeight;
+      if (targetIndex < startIndex && index >= targetIndex && index < startIndex) shift = rowHeight;
+      itemRow.style.transform = shift ? `translateY(${shift}px)` : "";
+    });
+  };
+  const end = async endEvent => {
+    if (endEvent.pointerId !== pointerId) return;
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", end);
+    document.removeEventListener("pointercancel", end);
+    const changed = endEvent.type === "pointerup" && targetIndex !== startIndex;
+    if (!changed) {
+      resetPreview();
+      row.classList.remove("dragging");
+      if (endEvent.type !== "pointerup" && onCancel) onCancel();
+      return;
+    }
+    const remainingItems = otherRows
+      .map(el => todos.find(todo => todo.id === el.dataset.todoId)).filter(Boolean);
+    const previous = remainingItems[targetIndex - 1];
+    const next = remainingItems[targetIndex];
+    let value;
+    if (!previous) value = next.sortOrder - 1;
+    else if (!next) value = previous.sortOrder + 1;
+    else value = (previous.sortOrder + next.sortOrder) / 2;
+    item.sortOrder = value;
+    const previewRows = [...otherRows];
+    previewRows.splice(targetIndex, 0, row);
+    const previewIds = new Set(previewRows.map(itemRow => itemRow.dataset.todoId));
+    const previewItems = previewRows
+      .map(itemRow => todos.find(todo => todo.id === itemRow.dataset.todoId)).filter(Boolean);
+    let previewIndex = 0;
+    todos = todos.map(todo => previewIds.has(todo.id) ? previewItems[previewIndex++] : todo);
+    const firstDone = list.querySelector(".item.done");
+    rows.forEach(itemRow => {
+      itemRow.style.transition = "none";
+      itemRow.style.transform = "";
+    });
+    previewRows.forEach(itemRow => list.insertBefore(itemRow, firstDone));
+    row.classList.remove("dragging");
+    rows.forEach(itemRow => { itemRow.style.transition = ""; });
+    updateGrabEdges(list);
+    await repo.setOrder(item.id, value);
+    rememberLoadedState();
+  };
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", end);
+  document.addEventListener("pointercancel", end);
+}
+
+function attachDragHandle(row, item, onGrab, onCancel) {
+  const handle = document.createElement("span");
+  handle.className = "grab";
+  handle.setAttribute("aria-label", "순서 변경");
+  handle.innerHTML = '<svg viewBox="0 0 4 14" aria-hidden="true"><circle cx="2" cy="2" r="1"/><circle cx="2" cy="7" r="1"/><circle cx="2" cy="12" r="1"/></svg>';
+  handle.addEventListener("pointerdown", e => {
+    if (e.button !== 0) return;
+    onGrab();
+    e.stopPropagation();
+    beginDrag(row, item, e, onCancel);
+  });
+  return handle;
+}
+
+function attachLongPress(row, item, onGrab, onCancel) {
+  let press = null;
+  const cancel = () => {
+    if (!press) return;
+    clearTimeout(press.timer);
+    press = null;
+  };
+  row.addEventListener("pointerdown", e => {
+    if (e.button !== 0 || e.target.closest(".grab, .del")) return;
+    press = {
+      pointerId: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      timer: setTimeout(() => {
+        if (!press) return;
+        press = null;
+        onGrab();
+        beginDrag(row, item, e, onCancel);
+      }, 400),
+    };
+  });
+  row.addEventListener("pointermove", e => {
+    if (!press || e.pointerId !== press.pointerId) return;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) cancel();
+  });
+  row.addEventListener("pointerup", cancel);
+  row.addEventListener("pointercancel", cancel);
+}
+
+function buildItem(item, { interactive = true, sortable = false } = {}) {
+  const row = document.createElement("div");
+  row.className = "item" + (item.done ? " done" : "");
+  row.dataset.todoId = item.id;
+  row.setAttribute("role", "checkbox");
+  row.setAttribute("aria-checked", item.done);
+  if (interactive) row.tabIndex = 0;
+
+  const check = document.createElement("span");
+  check.className = "check";
+  check.innerHTML = '<svg viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg>';
+
+  const body = document.createElement("div");
+  body.className = "body";
+  if (item.time) {
+    const chip = document.createElement("div");
+    const late = !item.done && item.todoDate === todayStr() && isLate(item.time);
+    chip.className = "time" + (late ? " late" : "");
+    chip.textContent = fmtTime(item.time) + (late ? t("overdue") : "");
+    body.appendChild(chip);
+  }
+  const label = document.createElement("div");
+  label.className = "label";
+  label.textContent = item.text;
+  body.appendChild(label);
+
+  row.append(check, body);
+
+  if (interactive) {
+    let suppressNextClick = false;
+    let suppressClickTimer = null;
+    const clearSuppressedClick = () => {
+      suppressNextClick = false;
+      ignoreRowClickUntil = 0;
+      ignoreRowClickId = null;
+      clearTimeout(suppressClickTimer);
+      suppressClickTimer = null;
+    };
+    const suppressGrabClick = () => {
+      suppressNextClick = true;
+      clearTimeout(suppressClickTimer);
+      suppressClickTimer = setTimeout(clearSuppressedClick, 1000);
+    };
+    row.addEventListener("click", e => {
+      if (!suppressNextClick) return;
+      clearSuppressedClick();
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+    row.addEventListener("pointercancel", clearSuppressedClick, true);
+    const del = document.createElement("button");
+    del.className = "del";
+    del.setAttribute("aria-label", t("delAria"));
+    del.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+    del.onclick = async e => {
+      e.stopPropagation();
+      todos = todos.filter(x => x.id !== item.id);
+      render();
+      await repo.remove(item.id);
+      rememberLoadedState();
+    };
+    const toggle = async () => {
+      item.done = !item.done;
+      row.classList.toggle("done", item.done);
+      row.setAttribute("aria-checked", item.done);
+      renderHead();
+      setTimeout(render, 320);
+      await repo.update(item);
+      rememberLoadedState();
+    };
+    row.onclick = e => {
+      if (!e.target.closest(".check, .body")) return;
+      if (item.id === ignoreRowClickId && Date.now() < ignoreRowClickUntil) return;
+      toggle();
+    };
+    row.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
+    if (sortable && !item.done && item.todoDate === todayStr()) {
+      attachLongPress(row, item, suppressGrabClick, clearSuppressedClick);
+      row.append(attachDragHandle(row, item, suppressGrabClick, clearSuppressedClick), del);
+    }
+    else row.appendChild(del);
+  }
+  return row;
+}
+
+// ── 오늘 보기 ──────────────────────────────────
+function pendingPastCount() {
+  const today = todayStr();
+  return todos.filter(item => !item.done && item.todoDate < today).length;
+}
+function checkCarry() {
+  const card = $("carryCard");
+  const n = pendingPastCount();
+  if (n > 0 && loadUI().carryDismissed !== todayStr()) {
+    $("carryText").textContent = t("carryTitle", { n });
+    card.hidden = false;
+  } else {
+    card.hidden = true;
+  }
+}
+function updateGrabEdges(list) {
+  const grabRows = [...list.querySelectorAll(".item")].filter(row => row.querySelector(".grab"));
+  grabRows.forEach(row => row.classList.remove("grab-first", "grab-last"));
+  if (!grabRows.length) return;
+  if (grabRows[0] === list.firstElementChild) grabRows[0].classList.add("grab-first");
+  if (grabRows[grabRows.length - 1] === list.lastElementChild) {
+    grabRows[grabRows.length - 1].classList.add("grab-last");
+  }
+}
+function renderToday() {
+  const list = $("list");
+  list.innerHTML = "";
+  const items = sortItems(byDate(todayStr()));
+  $("empty").hidden = items.length !== 0;
+  for (const item of items) list.appendChild(buildItem(item, { sortable: true }));
+  updateGrabEdges(list);
+  checkCarry();
+}
+
+// ── 캘린더 보기 ────────────────────────────────
+function buildFutureComposer() {
+  const comp = document.createElement("div");
+  comp.className = "composer";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.maxLength = 80;
+  input.placeholder = t("futurePh");
+  input.autocomplete = "off";
+
+  let localTime = null;
+  const clockEl = document.createElement("div");
+  clockEl.className = "clock";
+  clockEl.title = t("clockTitle");
+  const clockSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  clockSvg.setAttribute("viewBox", "0 0 24 24");
+  clockSvg.setAttribute("fill", "none");
+  clockSvg.setAttribute("stroke", "currentColor");
+  clockSvg.setAttribute("stroke-width", "2");
+  clockSvg.setAttribute("stroke-linecap", "round");
+  const c1 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  c1.setAttribute("cx", "12"); c1.setAttribute("cy", "12"); c1.setAttribute("r", "9");
+  const p1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  p1.setAttribute("d", "M12 7v5l3 2");
+  clockSvg.append(c1, p1);
+  const clockTextEl = document.createElement("span");
+  clockTextEl.className = "t";
+  const clearEl = document.createElement("span");
+  clearEl.className = "clear";
+  clearEl.title = t("clockClearTitle");
+  clearEl.textContent = "×";
+  const timeIn = document.createElement("input");
+  timeIn.type = "time";
+  clockEl.append(clockSvg, clockTextEl, clearEl, timeIn);
+
+  timeIn.addEventListener("change", () => {
+    localTime = timeIn.value || null;
+    clockEl.classList.toggle("set", !!localTime);
+    clockTextEl.textContent = localTime ? fmtTime(localTime) : "";
+  });
+  clearEl.addEventListener("click", e => {
+    e.stopPropagation(); e.preventDefault();
+    localTime = null; timeIn.value = "";
+    clockEl.classList.remove("set"); clockTextEl.textContent = "";
+  });
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "add";
+  addBtn.textContent = t("addBtn");
+
+  async function addFuture() {
+    const text = input.value.trim();
+    if (!text) return;
+    const newTodo = { id: newId(), text, time: localTime, done: false, todoDate: selDate, sortOrder: nextSortOrder(selDate, localTime), createdAt: new Date().toISOString() };
+    todos.push(newTodo);
+    render();
+    await repo.add(newTodo);
+    rememberLoadedState();
+    input.focus();
+  }
+  addBtn.onclick = addFuture;
+  input.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    if (e.isComposing || e.keyCode === 229) return;
+    addFuture();
+  });
+
+  comp.append(input, clockEl, addBtn);
+  return comp;
+}
+
+function renderCal() {
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  $("calMonth").textContent = fmtCalMonth(y, m);
+  const grid = $("calGrid");
+  grid.innerHTML = "";
+  getDays().forEach((d, i) => {
+    const el = document.createElement("div");
+    el.className = "dow" + (i === 0 ? " sun" : "");
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const first = new Date(y, m, 1);
+  const start = new Date(first);
+  start.setDate(1 - first.getDay());
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const ds = dstr(d);
+    const cell = document.createElement("button");
+    cell.className = "day"
+      + (d.getMonth() !== m ? " other" : "")
+      + (ds === todayStr() ? " today" : "")
+      + (ds === selDate ? " sel" : "");
+    const n = document.createElement("span");
+    n.className = "n";
+    n.textContent = d.getDate();
+    cell.appendChild(n);
+    const items = byDate(ds);
+    if (items.length) {
+      const left = items.filter(item => !item.done).length;
+      const cnt = document.createElement("span");
+      if (left === 0) {
+        cnt.className = "cnt all-done";
+        cnt.textContent = "✓";
+      } else if (ds > todayStr()) {
+        cnt.className = "cnt future";
+        cnt.textContent = left;
+      } else {
+        cnt.className = "cnt has-left";
+        cnt.textContent = left;
+      }
+      cell.appendChild(cnt);
+    }
+    cell.onclick = () => { selDate = ds; renderCal(); };
+    grid.appendChild(cell);
+  }
+  // 선택한 날짜 상세
+  const dd = $("dayDetail");
+  dd.innerHTML = "";
+  const [sy, sm, sd] = selDate.split("-").map(Number);
+  const title = document.createElement("div");
+  title.className = "dd-title";
+  title.textContent = fmtDayTitle(sy, sm, sd);
+  dd.appendChild(title);
+  const editable = selDate >= todayStr();
+  if (editable) dd.appendChild(buildFutureComposer());
+  const items = sortItems(byDate(selDate));
+  if (!items.length) {
+    if (!editable) {
+      const none = document.createElement("div");
+      none.className = "none";
+      none.textContent = t("noRecords");
+      dd.appendChild(none);
+    }
+  } else {
+    const l = document.createElement("div");
+    l.className = "list";
+    for (const item of items) l.appendChild(buildItem(item, { interactive: editable }));
+    dd.appendChild(l);
+  }
+}
+
+function render() {
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
+  renderHead();
+  if (view === "today") renderToday();
+  else if (view === "cal") renderCal();
+}
+
+// ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
+function switchView(v) {
+  view = v;
+  $("calBtn").classList.toggle("on", v === "cal");
+  $("setBtn").classList.toggle("on", v === "set");
+  $("todayView").hidden = v !== "today";
+  $("calView").hidden = v !== "cal";
+  $("setView").hidden = v !== "set";
+  if (v === "cal") { calCursor = new Date(); selDate = todayStr(); }
+  render();
+}
+$("calBtn").onclick = () => switchView(view === "cal" ? "today" : "cal");
+$("setBtn").onclick = () => switchView(view === "set" ? "today" : "set");
+$("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); renderCal(); };
+$("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
+
+// ── 설정 ───────────────────────────────────────
+const APP_VERSION = "1.8.0";
+let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
+
+applyTexts();
+$("appVersion").textContent = "v" + APP_VERSION;
+
+const uiSaved = loadUI();
+$("langSelect").value = uiSaved.lang || "auto";
+$("langSelect").addEventListener("change", () => {
+  saveUI({ ...loadUI(), lang: $("langSelect").value });
+  location.reload();
+});
+
+function renderAccount(email) {
+  const el = $("setAccount");
+  el.innerHTML = "";
+  const left = document.createElement("span");
+  const right = document.createElement("button");
+  right.className = "set-btn";
+  if (email) {
+    left.textContent = email;
+    left.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+    right.textContent = t("logout");
+    right.classList.add("danger");
+    right.onclick = async () => { await window.OharuReminders?.clear(); await supabase.auth.signOut(); location.reload(); };
+  } else {
+    left.innerHTML = t("guestMode");
+    right.textContent = t("login");
+    right.classList.add("primary");
+    right.onclick = () => { if (openLoginScreen) openLoginScreen(); };
+  }
+  el.append(left, right);
+}
+
+function applyBgAlpha(p) {
+  document.documentElement.style.setProperty("--bg-alpha", p / 100);
+  $("bgAlphaVal").textContent = p + "%";
+}
+if (IS_DESKTOP) {
+  $("setBgAlphaRow").hidden = false;
+  const saved = Math.min(100, Math.max(30, loadUI().bgAlpha ?? 100));
+  $("bgAlphaRange").value = saved;
+  applyBgAlpha(saved);
+  $("bgAlphaRange").addEventListener("input", e => {
+    const v = +e.target.value;
+    applyBgAlpha(v);
+    saveUI({ ...loadUI(), bgAlpha: v });
+  });
+
+  const bridge = window.desktopBridge;
+  if (bridge) {
+    $("setApp").hidden = false;
+    const topToggle = $("alwaysOnTopToggle");
+    const launchToggle = $("autoLaunchToggle");
+    const applyPrefs = (p) => {
+      if (!p) return;
+      topToggle.checked = !!p.alwaysOnTop;
+      launchToggle.checked = !!p.autoLaunch;
+    };
+    if (bridge.getPrefs) bridge.getPrefs().then(applyPrefs);
+    if (bridge.onPrefs) bridge.onPrefs(applyPrefs);
+    topToggle.addEventListener("change", () => {
+      if (bridge.setAlwaysOnTop) bridge.setAlwaysOnTop(topToggle.checked);
+    });
+    launchToggle.addEventListener("change", () => {
+      if (bridge.setAutoLaunch) bridge.setAutoLaunch(launchToggle.checked);
+    });
+    $("quitAppBtn").onclick = () => { if (bridge.quitApp) bridge.quitApp(); };
+  }
+}
+
+// ── AI 연동(MCP) ─────────────────────────────
+// 호환성이 확인된 MCP 클라이언트가 개인 토큰으로 오하루에 할 일을 추가할
+// 수 있게 하는 기능. 기존 todos CRUD 흐름과는 완전히 분리된 애드온이며,
+// public.todos 테이블/RLS는 이 코드에서 전혀 건드리지 않는다.
+const MCP_BASE_URL = SUPABASE_URL + "/functions/v1/mcp";
+
+function mcpB64urlFromBytes(bytes) {
+  let bin = "";
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function mcpSha256Hex(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function mcpGenToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return "oharu_mcp_" + mcpB64urlFromBytes(bytes);
+}
+async function mcpCopyToClipboard(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch { return false; }
+}
+function mcpFmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+async function mcpLoadTokens() {
+  const { data, error } = await supabase
+    .from("mcp_tokens")
+    .select("id,name,token_prefix,created_at,last_used_at,revoked_at")
+    .is("revoked_at", null)
+    .order("created_at", { ascending: false });
+  if (error) { console.error("MCP 토큰 목록 조회 실패:", error.message); return []; }
+  return data || [];
+}
+function mcpShowReveal(plainToken) {
+  const box = $("mcpReveal");
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = "";
+
+  const warn = document.createElement("div");
+  warn.className = "mcp-warn";
+  warn.textContent = t("mcpTokenWarn");
+  box.appendChild(warn);
+
+  const mkRow = (label, value) => {
+    const wrap = document.createElement("div");
+    const lab = document.createElement("div");
+    lab.className = "sub";
+    lab.textContent = label;
+    const row = document.createElement("div");
+    row.className = "mcp-row";
+    const val = document.createElement("div");
+    val.className = "mcp-val";
+    val.textContent = value;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mcp-copy";
+    btn.textContent = t("mcpCopyBtn");
+    btn.onclick = async () => {
+      const ok = await mcpCopyToClipboard(value);
+      btn.textContent = ok ? t("mcpCopied") : t("mcpCopyBtn");
+      setTimeout(() => { btn.textContent = t("mcpCopyBtn"); }, 1500);
+    };
+    row.append(val, btn);
+    wrap.append(lab, row);
+    return wrap;
+  };
+
+  box.appendChild(mkRow(t("mcpUrlLabel"), MCP_BASE_URL));
+  box.appendChild(mkRow(t("mcpTokenLabel"), plainToken));
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "set-btn";
+  closeBtn.style.marginTop = "8px";
+  closeBtn.textContent = t("mcpCloseBtn");
+  closeBtn.onclick = () => { box.hidden = true; };
+  box.appendChild(closeBtn);
+}
+async function renderMcp(loggedIn) {
+  const root = $("mcpRows");
+  if (!root) return;
+  root.innerHTML = "";
+
+  if (!loggedIn || !supabase) {
+    const row = document.createElement("div");
+    row.className = "set-row";
+    row.innerHTML = `<span class="sub">${t("mcpLoginRequired")}</span>`;
+    root.appendChild(row);
+    return;
+  }
+
+  const descRow = document.createElement("div");
+  descRow.className = "set-row";
+  descRow.innerHTML = `<span class="sub">${t("mcpDesc")}</span>`;
+  root.appendChild(descRow);
+
+  const tokens = await mcpLoadTokens();
+  tokens.forEach(tok => {
+    const item = document.createElement("div");
+    item.className = "mcp-token-item";
+    const head = document.createElement("div");
+    head.className = "mcp-token-head";
+    const left = document.createElement("span");
+    left.textContent = `${tok.name} · ${tok.token_prefix}…`;
+    const revokeBtn = document.createElement("button");
+    revokeBtn.type = "button";
+    revokeBtn.className = "set-btn danger";
+    revokeBtn.textContent = t("mcpRevokeBtn");
+    revokeBtn.onclick = async () => {
+      if (!confirm(t("mcpRevokeConfirm"))) return;
+      revokeBtn.disabled = true;
+      const { error } = await supabase
+        .from("mcp_tokens")
+        .update({ revoked_at: new Date().toISOString() })
+        .eq("id", tok.id);
+      if (error) { alert(t("mcpRevokeFailed")); revokeBtn.disabled = false; return; }
+      renderMcp(true);
+    };
+    head.append(left, revokeBtn);
+    const meta = document.createElement("div");
+    meta.className = "mcp-token-meta";
+    meta.textContent = `${t("mcpCreatedAt")} ${mcpFmtDate(tok.created_at)}` +
+      (tok.last_used_at ? ` · ${t("mcpLastUsed")} ${mcpFmtDate(tok.last_used_at)}` : "");
+    item.append(head, meta);
+    root.appendChild(item);
+  });
+
+  const createRow = document.createElement("div");
+  createRow.className = "set-row";
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", t("mcpNamePh"));
+  [["개인 MCP 클라이언트", "mcpOptOther"]].forEach(([v, k]) => {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = t(k);
+    select.appendChild(o);
+  });
+  const createBtn = document.createElement("button");
+  createBtn.type = "button";
+  createBtn.className = "set-btn primary";
+  createBtn.textContent = t("mcpCreateBtn");
+  createBtn.onclick = async () => {
+    if (!currentUserId) return;
+    createBtn.disabled = true;
+    try {
+      const plain = mcpGenToken();
+      const hash = await mcpSha256Hex(plain);
+      const { error } = await supabase.from("mcp_tokens").insert({
+        user_id: currentUserId,
+        name: select.value,
+        token_hash: hash,
+        token_prefix: plain.slice(0, 18),
+      });
+      if (error) { alert(t("mcpCreateFailed")); return; }
+      mcpShowReveal(plain);
+      await renderMcp(true);
+    } finally {
+      createBtn.disabled = false;
+    }
+  };
+  createRow.append(select, createBtn);
+  root.appendChild(createRow);
+}
+
+// ── 시간 선택 ──────────────────────────────────
+const clock = $("clock"), timeInput = $("timeInput"), clockText = $("clockText");
+let pickedTime = null;
+timeInput.addEventListener("change", () => {
+  pickedTime = timeInput.value || null;
+  clock.classList.toggle("set", !!pickedTime);
+  clockText.textContent = pickedTime ? fmtTime(pickedTime) : "";
+});
+$("clockClear").addEventListener("click", e => {
+  e.stopPropagation(); e.preventDefault();
+  pickedTime = null; timeInput.value = "";
+  clock.classList.remove("set"); clockText.textContent = "";
+});
+
+// ── 추가 ───────────────────────────────────────
+async function add() {
+  const input = $("input");
+  const text = input.value.trim();
+  if (!text) return;
+  const newTodo = { id: newId(), text, time: pickedTime, done: false, todoDate: todayStr(), sortOrder: nextSortOrder(todayStr(), pickedTime), createdAt: new Date().toISOString() };
+  todos.push(newTodo);
+  input.value = "";
+  pickedTime = null; timeInput.value = "";
+  clock.classList.remove("set"); clockText.textContent = "";
+  render();
+  input.focus();
+  await repo.add(newTodo);
+  rememberLoadedState();
+}
+$("addBtn").onclick = add;
+$("input").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  // 한글(조합형 IME) 입력 중 Enter가 두 번 발화되어 중복 등록되는 버그 방지
+  if (e.isComposing || e.keyCode === 229) return;
+  add();
+});
+
+// ── 과거 미완료 가져오기 ───────────────────────
+$("carryBring").onclick = async () => {
+  await repo.carryOver();
+  const carried = await repo.load();
+  if (!carried) return;
+  todos = carried; reminderDataReady = true;
+  render();
+  rememberLoadedState();
+};
+$("carryDismiss").onclick = () => {
+  saveUI({ ...loadUI(), carryDismissed: todayStr() });
+  $("carryCard").hidden = true;
+};
+
+// ── 부팅 ───────────────────────────────────────
+let appStarted = false;
+let guestMode = false;
+function todosSnapshot(items) {
+  return JSON.stringify([...items].sort((a, b) => String(a.id).localeCompare(String(b.id))));
+}
+function rememberLoadedState() {
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
+  lastLoadedTodosJson = todosSnapshot(todos);
+  lastLoadedDate = todayStr();
+}
+async function startApp(r, { canLogout = false, guest = false, email = null, userId = null } = {}) {
+  if (appStarted) return; // 로그인 이벤트 다중 발화 시 중복 부팅 방지
+  appStarted = true;
+  guestMode = guest;
+  repo = r;
+  currentUserId = userId;
+  $("authView").hidden = true;
+  $("mainView").hidden = false;
+  $("nudge").hidden = !guest;
+  renderAccount(canLogout ? (email || t("signedIn")) : null);
+  renderMcp(!!canLogout); // 별도 애드온 — 실패해도 메인 투두 흐름에 영향 없음(fire-and-forget)
+  await repo.rollover();
+  const initialTodos = await repo.load();
+  if (initialTodos) { todos = initialTodos; reminderDataReady = true; }
+  await backfillTodaySortOrder();
+  render();
+  rememberLoadedState();
+  setInterval(async () => {
+    await repo.rollover();
+    const loaded = await repo.load();
+    if (!loaded) return;
+    reminderDataReady = true;
+    const loadedJson = todosSnapshot(loaded);
+    const dateChanged = todayStr() !== lastLoadedDate;
+    if (loadedJson === lastLoadedTodosJson && !dateChanged) return;
+    todos = loaded;
+    await backfillTodaySortOrder();
+    render();
+    rememberLoadedState();
+  }, 60 * 1000);
+}
+
+if (!CLOUD) {
+  startApp(localRepo());
+  // 미리보기용: Supabase 연결 전에도 로그인 화면을 확인할 수 있게
+  const previewMsg = () => {
+    const m = $("authMsg");
+    m.textContent = t("previewSupabase");
+    m.className = "msg";
+  };
+  const openPreviewLogin = () => {
+    $("mainView").hidden = true;
+    $("authView").hidden = false;
+    $("backLine").hidden = false;
+  };
+  openLoginScreen = openPreviewLogin;
+  $("loginTopBtn").hidden = false;
+  $("loginTopBtn").onclick = openPreviewLogin;
+  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  $("googleBtn").onclick = previewMsg;
+  $("emailBtn").onclick = previewMsg;
+  const sw = $("switchLink");
+  if (sw) sw.onclick = previewMsg;
+} else {
+  const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "pkce" } });
+  window.OharuThemes?.connect(supabase);
+
+  // 게스트(localStorage) 할 일을 로그인된 계정 DB로 이전
+  // 여러 경로(부팅/로그인 이벤트)에서 동시에 불려도 실제 실행은 1회, 모두 같은 완료를 기다린다
+  let migratePromise = null;
+  function migrateLocalIfAny() {
+    if (!migratePromise) migratePromise = (async () => {
+      try {
+        const raw = localStorage.getItem("oneul.v3");
+        if (!raw) return;
+        const items = (JSON.parse(raw).todos || []);
+        if (items.length) {
+          const rows = items.map(t => ({
+            id: t.id, text: t.text, time: t.time || null,
+            done: !!t.done, todo_date: t.todoDate || todayStr()
+          }));
+          const { error } = await supabase.from("todos").upsert(rows, { onConflict: "id" });
+          if (error) { console.error("게스트 데이터 이전 실패:", error); return; } // 실패 시 로컬 보존
+        }
+        localStorage.removeItem("oneul.v3"); // 이전 성공 시에만 로컬 비움
+      } catch (e) { console.error(e); }
+    })();
+    return migratePromise;
+  }
+
+  // 로그인 화면 열기/닫기 (게스트 모드에서 버튼으로 진입)
+  const openAuth = () => {
+    $("mainView").hidden = true;
+    $("authView").hidden = false;
+    $("backLine").hidden = false;
+    const msg = $("authMsg");
+    msg.textContent = t("migrateHint");
+    msg.className = "msg";
+  };
+  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  openLoginScreen = openAuth;
+  $("loginTopBtn").onclick = openAuth;
+  $("nudgeLoginBtn").onclick = openAuth;
+
+  const msg = $("authMsg");
+  const setMsg = (t, err) => { msg.textContent = t; msg.className = "msg" + (err ? " err" : ""); };
+
+  // 구글 로그인
+  $("googleBtn").onclick = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname }
+    });
+    if (error) setMsg(t("errGoogle"), true);
+  };
+
+  if (IS_DESKTOP) {
+    // 데스크톱: 내장 창의 구글 인증은 정책상 차단되므로
+    // 시스템 브라우저에서 인증하고 딥링크(oharu://auth-callback)로 복귀한다
+    $("googleBtn").onclick = async () => {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: "oharu://auth-callback", skipBrowserRedirect: true }
+      });
+      if (error || !data || !data.url) {
+        return setMsg(t("errGoogleStart"), true);
+      }
+      if (window.desktopBridge && window.desktopBridge.openExternal) {
+        window.desktopBridge.openExternal(data.url);
+        setMsg(t("msgGoogleBrowser"));
+      } else {
+        setMsg(t("errGoogleDesktop"), true);
+      }
+    };
+    if (window.desktopBridge && window.desktopBridge.onAuthCode) {
+      window.desktopBridge.onAuthCode(async (code) => {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) setMsg(t("errGoogleFinish"), true);
+      });
+    }
+  }
+
+  // 이메일 로그인 / 가입 토글
+  let mode = "login"; // 'login' | 'signup'
+  const applyMode = () => {
+    $("emailBtn").textContent = mode === "login" ? t("loginBtn") : t("signupBtn");
+    $("switchLine").innerHTML = mode === "login" ? t("switchLogin") : t("switchSignup");
+    $("switchLink").onclick = () => { mode = mode === "login" ? "signup" : "login"; setMsg(""); applyMode(); };
+  };
+  applyMode();
+
+  $("emailBtn").onclick = async () => {
+    const email = $("email").value.trim();
+    const pw = $("pw").value;
+    if (!email.includes("@")) return setMsg(t("errEmail"), true);
+    if (pw.length < 6) return setMsg(t("errPw"), true);
+    $("emailBtn").disabled = true;
+    if (mode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+      if (error) setMsg(t("errLogin"), true);
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password: pw });
+      if (error) setMsg(error.message.includes("registered") ? t("errRegistered") : t("errSignup"), true);
+      else if (!data.session) setMsg(t("msgConfirm"));
+    }
+    $("emailBtn").disabled = false;
+  };
+
+  $("pw").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.isComposing) $("emailBtn").click();
+  });
+
+  // 로그인 성공 → (게스트였다면) 데이터 이전 후 클라우드 모드 진입
+  // 주의: supabase-js는 onAuthStateChange 콜백 "안"에서 다른 Supabase 함수를 직접 await하면
+  // 교착(멈춤)될 수 있다. 공식 권장대로 setTimeout으로 콜백 밖에서 실행한다.
+  supabase.auth.onAuthStateChange((_e, sess) => {
+    // Clear old-owner reminders on every auth boundary, including other tabs.
+    if (_e === "SIGNED_OUT" || (currentUserId && sess?.user?.id && sess.user.id !== currentUserId)) {
+      window.OharuReminders?.clear();
+      setTimeout(() => { todos = []; reminderDataReady = false; location.reload(); }, 0);
+      return;
+    }
+    if (!sess) return;
+    setTimeout(async () => {
+      if (guestMode) {
+        await migrateLocalIfAny();
+        location.reload();
+      } else if (!appStarted) {
+        // 데스크톱 로그인 게이트/OAuth 복귀 등에서 로그인한 경우
+        await migrateLocalIfAny();
+        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email, userId: sess.user && sess.user.id });
+      }
+    }, 0);
+  });
+
+  // 구글 인증에서 막 돌아온 순간인지 감지 (?code= 또는 #access_token)
+  const isOAuthReturn = /[?#&](code|access_token)=/.test(location.search + location.hash);
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    // 구글 OAuth 복귀 등: 남아있는 게스트 데이터가 있으면 먼저 이전
+    await migrateLocalIfAny();
+    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email, userId: session.user && session.user.id });
+  } else if (isOAuthReturn) {
+    // 인증 복귀 중: 세션 교환이 끝나면 onAuthStateChange가 이전 후 앱을 시작한다.
+    // 여기서 게스트 모드를 시작하면 이전 작업과 경쟁 상태가 생기므로 대기한다.
+    // 안전장치: 8초 내 세션이 안 오면(교환 실패) 게스트로 복귀
+    setTimeout(() => {
+      if (!appStarted) {
+        $("loginTopBtn").hidden = false;
+        startApp(localRepo(), { guest: true });
+      }
+    }, 8000);
+  } else if (IS_DESKTOP) {
+    // 데스크톱 앱: 로그인 필수 (게스트 모드 없음, 돌아가기 없음)
+    $("authView").hidden = false;
+  } else {
+    // 웹: 로그인 없이 바로 사용 (게스트 모드) — 로그인은 버튼/유도 카드로 진입
+    $("loginTopBtn").hidden = false;
+    startApp(localRepo(), { guest: true });
+  }
+}
+</script>
+</body>
+</html>
