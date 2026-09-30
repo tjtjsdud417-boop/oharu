@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "origin": "https://oharu.today",
+  "supabaseProjectRef": "tcaghsjndfaxlsgaqrdi",
+  "vapidPublicKey": null,
+  "vapidPrivateKeySecretName": null,
+  "contact": null,
+  "allowedPushHosts": [],
+  "schedulerIntervalSeconds": 60,
+  "deliveryGraceSeconds": 300,
+  "requiresApproval": ["VAPID signing key creation and storage", "subscription authentication and revocation", "persistent scheduler/service access", "additive database schema and RLS deployment"]
+}

@@ -89,6 +89,8 @@ Android5/iOS9도 위 수정 전 검증 빌드이므로 공개 제출 대상에�
 
 ### 최종 산출물 확인 (2026-09-30)
 
+후속 Apple 직접 읽기 조회 완료: iOS10 `processingState=VALID`, `internalBuildState=MISSING_EXPORT_COMPLIANCE`, `externalBuildState=MISSING_EXPORT_COMPLIANCE`. 업로드 시각 2026-09-30T10:59:10Z, ASC 앱6807312683. 기존 Expo 제출 키를 메모리에서만 사용한 단기 JWT로 GET 조회했으며 신규 credential/grant나 규정 답변은 변경하지 않았다. 아래의 최초 조회 미확인 기록은 이 결과로 보완된다.
+
 - Android6 EAS FINISHED: 2b90d55c-656c-4197-bac0-cd4dd313dcae. AAB 49,798,031 bytes, SHA256 `4B82DBC689A5515519E63E27C5596616E959F259618FDFDE3B7F4E56CFF57569`. 내장 HTML SHA256은 최종 87C31B68…D00A134와 일치한다. jarsigner 무결성 검증 성공; 일반 Android 자체서명 인증서이므로 public PKI 체인/타임스탬프 경고가 있다.
 - AAB 업로드 서명 인증서 SHA256: `C6:31:84:66:6E:A7:91:B2:65:26:C9:1E:1E:9C:E3:E6:EF:F5:AC:BE:5C:E2:8C:80:60:8C:6F:44:77:EA:CC:C0`. Google Play App Signing 배포 인증서와 동일하다고 검증하지 않았다. Galaxy/Huawei 이전 시 해당 스토어의 기존 배포 인증서와 별도 대조해야 한다.
 - 최종 AAB를 공식 bundletool 1.18.3으로 universal APK로 변환하고 표준 디버그 키로 검증용 서명하여 격리 emulator-5580에 설치 성공. 이는 production AAB 서명을 바꾸거나 스토어에 검증용 APK를 올린 작업이 아니다. 앱 데이터 초기화·네트워크 차단 후 30초 이상 정상 첫 실행 확인, native 알림 채널 중요도 4(HIGH) 확인. 이 결과는 최종 산출물에 bridge 패치와 HIGH 변경이 들어갔음을 실제 실행으로 확인한다. [최종 Android6 오프라인 화면](../mobile/validation/android-final6-offline.png). 실제 로그인/실기기는 검증 범위가 아니다.

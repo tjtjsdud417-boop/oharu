@@ -1,0 +1,27 @@
+name: Oharu inactive preparation checks
+on:
+  push:
+    branches: ['release/**', main]
+    paths: ['push-draft/**', 'mobile/ios-widget-draft/**', 'desktop/scheduled-draft/**', '.github/workflows/preparation-checks.yml']
+  pull_request:
+    paths: ['push-draft/**', 'mobile/ios-widget-draft/**', 'desktop/scheduled-draft/**', '.github/workflows/preparation-checks.yml']
+permissions:
+  contents: read
+jobs:
+  protocol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test push-draft/protocol.test.cjs mobile/ios-widget-draft/prepare-integration.test.cjs
+  windows-source-contract:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile draft against test doubles (not Windows SDK validation)
+        shell: pwsh
+        run: ./desktop/scheduled-draft/test.ps1

@@ -65,3 +65,19 @@ await bridge.update({schemaVersion: 1, enabled: false}); // 동의 해제·로�
 ## 검증 기록과 남은 한계
 
 Windows에서 `node --test mobile/ios-widget-draft/snapshot.test.cjs` **9/9 통과**. 데이터 최소화, 제목 동의, 문자열 정제, clear, 시간 범위, 중복/대용량 거절, 직렬 호출과 네이티브 실패, 비활성 등록 경계를 검사했다. JS 문법 검사와 두 plist 템플릿 파싱도 통과했다. Swift/Xcode 도구가 이 환경에 없어 Swift 컴파일·WidgetKit 런타임·App Group 실제 파일 공유·프로비저닝·OS 화면은 **미검증**이다. 이 소스 초안을 “iPhone 위젯 출시 완료”로 보고하면 안 된다.
+
+## 비활성 통합 준비 보강 (2026-09-30)
+
+`prepare-integration.cjs`는 승인된 기존 App Group ID와 앱 버전을 받아 **적용하지 않는 검토용 설정 객체**를 반환한다. 실제 Apple 등록 여부를 자동 인증하는 함수가 아니다. 잘못된 호스트 앱, 미해결 자리표시자, 잘못된 그룹/버전을 거부하고 호스트/확장 소스 분리, 동일 그룹 metadata, 버전 동기화, extension 전용 build settings와 Embed 위치를 명시한다. 파일 쓰기·config plugin 실행·Xcode target 생성·entitlement 활성화·Apple 자원 등록은 수행하지 않는다. 예제 `group.example.oharu`는 테스트용이며 실제 등록된 Oharu 그룹이 아니다.
+
+실행 검증:
+
+```powershell
+node --test mobile/ios-widget-draft/snapshot.test.cjs mobile/ios-widget-draft/prepare-integration.test.cjs
+```
+
+총 **13/13 통과**. 추가 4개는 부적절한 앱/그룹/버전 거부, target 소스 분리와 파일 존재, 반복 준비 시 객체 오염 방지 및 실제 release config 무변경, 비활성 template 경계를 검증한다. 기존 최종 Android6/iOS10 runtime과 HTML은 변경하지 않았다.
+
+미완료 이유는 두 부분이다. 첫째 이 Swift 초안은 실행 가능한 Expo config plugin 또는 Xcode extension target까지 연결되지 않은 소스 초안이다. 둘째 실제 App Group 및 호스트/확장 provisioning 자격이 확인되지 않았으며 이 Windows 환경에서 WidgetKit Swift 컴파일·iPhone 화면 동작도 검증하지 못했다. **승인만 받으면 이미 완성된 위젯이 나타나는 상태가 아니다.** 승인된 자격 확인 후 위 단계의 native target/module 연결, 빌드와 실기기 검증이 추가로 필요하다. SDK57 expo-widgets 대안과 이 직접 Swift 방식 중 하나를 선택해 연결해야 한다.
+
+참고로 기존 앱 iOS10은 별도 App Store Connect 읽기 조회에서 `processingState=VALID`, 내부·외부 beta 상태 모두 `MISSING_EXPORT_COMPLIANCE`로 확인했다(ASC 앱6807312683, 업로드 2026-09-30T10:59:10Z). 이는 위젯 포함 빌드가 아니다. 기존 제출 키만 메모리에서 사용했으며 키 저장/출력, 새 자격, 수출규정 답변, 심사/공개 출시 변경은 하지 않았다.
