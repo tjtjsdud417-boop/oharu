@@ -13,7 +13,8 @@
     "react-native-webview": "13.16.1"
   },
   "scripts": {
-    "test": "node --test reminders.test.cjs widget.test.cjs",
+    "test": "node --test reminders.test.cjs widget.test.cjs patch-webview.test.cjs",
+    "postinstall": "node patch-webview.cjs",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

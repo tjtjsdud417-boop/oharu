@@ -5,6 +5,7 @@
 !App.js
 !reminders.cjs
 !widget.cjs
+!patch-webview.cjs
 !plugins
 !plugins/**
 !index.js

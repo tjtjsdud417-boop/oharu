@@ -34,7 +34,7 @@ await desktopBridge.getNotificationStatus();
 - `node --check main.js`, `node --check preload.js`: 통과.
 - `npm run dist`: NSIS 빌드 성공. Windows 빌드 도구의 macOS 심볼릭 링크 압축 해제 문제는 임시 캐시에 Windows용 파일만 추출해 해결. 관리자 권한/개발자 모드/보안 설정 변경 없음.
 - Electron 44 최종 빌드는 `node node_modules/electron-builder/cli.js --win nsis --config.electronDist=node_modules/electron/dist`로 성공. npm의 공식 Electron 다운로드로 검증·설치된 로컬 런타임을 재사용하여 빌더의 중복 네트워크 다운로드 제한을 피했다. 빌드 로그에서 `electron=44.5.1`, `arch=x64` 확인.
-- 최종 1.8.0 빌드(Electron44·OS 오류 상태·권한 응답 및 비동기 취소 회귀 수정 포함): `dist/Oharu-Setup.exe`, 114,693,045 바이트. SHA256 `706BD7D7DE16734152E3C3635AA0CC26BB24D6BA03E320A0809DBD1E993D8256`. 설치 파일과 포함된 Oharu.exe 모두 `NotSigned`. PE 제품명 Oharu / 회사 moodweb / 파일 버전 1.8.0 확인. `dist/build-verification.json`에 기계 판독용 결과 저장.
+- 최종 1.8.0 빌드(Electron44·OS 오류 상태·알림 회귀 및 게스트 데이터 중복 수정 포함): `dist/Oharu-Setup.exe`, 114,693,051 바이트. SHA256 `A080AECCAECACADD99EC8B0D8210549DEADAB660676450397B55EAB2E1113056`. 설치 파일과 포함된 Oharu.exe 모두 `NotSigned`. PE 제품명 Oharu / 회사 moodweb / 파일 버전 1.8.0 확인. `dist/build-verification.json`에 기계 판독용 결과 저장.
 - 최종 패키지의 index.html, theme-system.js/CSS, reminders.js가 통합된 작업본과 바이트 단위로 일치함을 확인.
 - 원본 설치 파일 `Get-AuthenticodeSignature`: `NotSigned`. 현재 사용자 인증서 저장소에 코드 서명 인증서 발견되지 않음. 환경 변수에 기존 서명 설정 이름도 발견되지 않음.
 - 서명 필수 빌드 경로를 별도 `dist/signed-check`에서 실행하여 `App is not signed and forceCodeSigning is set to true` 오류와 exit 1 확인. 무서명 파일을 서명 완료로 통과시키지 않음.

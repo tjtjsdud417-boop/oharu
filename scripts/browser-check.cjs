@@ -30,6 +30,7 @@ fs.mkdirSync(out, { recursive: true });
   await page.locator('#input').press('Enter');
   await page.getByText('출시 확인용 테스트', {exact:true}).waitFor();
   assert.equal(await page.locator('.item').count(),1);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('oneul.v3')).todos.length),1,'guest add persisted more than once');
   await page.locator('#setBtn').click();
   assert.equal(await page.locator('#oharu-theme-select option').count(),10);
   for (const option of await page.locator('#oharu-theme-select option').evaluateAll(nodes => nodes.map(n=>n.value))) {
