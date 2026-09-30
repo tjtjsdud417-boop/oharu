@@ -12,7 +12,8 @@ const {
 const path = require("path");
 const fs = require("fs");
 const { ReminderQueue } = require("./reminders");
-const { isAllowedExternalUrl, isTrustedAppUrl } = require("./security");
+const { NotificationDeliveryStatus } = require("./notification-status");
+const { isAllowedExternalUrl, isTrustedAppUrl, externalUrlForAppLink } = require("./security");
 
 const APP_URL = "https://oharu.today/?desktop=1";
 const DEFAULT_BOUNDS = { width: 420, height: 640 };
@@ -32,7 +33,7 @@ let isQuitting = false;
 let STATE_FILE = "";
 let reminders = null;
 let reminderTimer = null;
-let notificationError = null;
+const notificationStatus = new NotificationDeliveryStatus();
 let state = {
   width: DEFAULT_BOUNDS.width,
   height: DEFAULT_BOUNDS.height,
@@ -149,14 +150,15 @@ function initReminders() {
       try { fs.writeFileSync(ledgerFile, JSON.stringify(keys), "utf8"); } catch (error) { console.error("Reminder ledger write failed", error.message); }
     },
     notify: (item) => {
-      if (!Notification.isSupported()) { notificationError = "unsupported"; return; }
+      const attempt = notificationStatus.begin();
+      if (!Notification.isSupported()) { notificationStatus.failed(attempt, "unsupported"); return; }
       try {
         const toast = new Notification({ title: "오하루 · 할 일 알림", body: item.title, icon: path.join(__dirname, "build", "icon.ico") });
         toast.on("click", showMainWindow);
-        toast.on("failed", () => { notificationError = "Windows notification delivery failed. Check notification settings."; });
+        notificationStatus.observe(toast, attempt);
         toast.show();
       } catch {
-        notificationError = "Windows notification delivery failed. Check notification settings.";
+        notificationStatus.failed(attempt);
       }
     },
   });
@@ -280,11 +282,16 @@ function createWindow() {
 
   win = new BrowserWindow(winOpts);
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (isAllowedExternalUrl(url)) shell.openExternal(url).catch(console.error);
+    const external = externalUrlForAppLink(url, getFallbackHtmlPath(), win.webContents.getURL());
+    if (external) shell.openExternal(external).catch(console.error);
     return { action: "deny" };
   });
   win.webContents.on("will-navigate", (event, url) => {
-    if (!isTrustedAppUrl(url, getFallbackHtmlPath())) event.preventDefault();
+    if (!isTrustedAppUrl(url, getFallbackHtmlPath())) {
+      event.preventDefault();
+      const external = externalUrlForAppLink(url, getFallbackHtmlPath(), win.webContents.getURL());
+      if (external) shell.openExternal(external).catch(console.error);
+    }
   });
 
   win.once("ready-to-show", () => {
@@ -340,16 +347,9 @@ if (!gotLock) {
 
   registerHandler("get-prefs", () => getPrefs());
   registerHandler("sync-reminders", (_event, items) => {
-    if (!reminders) return { supported: false, scheduled: 0 };
-    return { supported: Notification.isSupported(), ...reminders.sync(items) };
+    return notificationStatus.sync(reminders, items, Notification.isSupported());
   });
-  registerHandler("notification-status", () => ({
-    supported: Notification.isSupported(),
-    mode: "while-running",
-    worksWhenQuit: false,
-    permission: "system-settings",
-    error: notificationError,
-  }));
+  registerHandler("notification-status", () => notificationStatus.snapshot(Notification.isSupported()));
 
   registerHandler("set-always-on-top", (_event, val) => {
     if (!win) return false;

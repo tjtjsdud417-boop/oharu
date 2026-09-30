@@ -10,10 +10,11 @@
     "start": "electron .",
     "dist": "electron-builder --win nsis",
     "test": "node --test test/*.test.js",
+    "test:runtime": "electron test/runtime-smoke.cjs",
     "dist:signed": "electron-builder --win nsis -c.forceCodeSigning=true"
   },
   "devDependencies": {
-    "electron": "^33.2.1",
+    "electron": "44.5.1",
     "electron-builder": "^25.1.8",
     "rcedit": "^5.0.2"
   },
@@ -30,6 +31,7 @@
       "package.json",
       "build/**",
       "reminders.js",
+      "notification-status.js",
       "security.js"
     ],
     "extraResources": [

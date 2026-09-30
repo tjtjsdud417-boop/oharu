@@ -897,8 +897,8 @@ const T = {
     carryBring: "오늘로 가져오기",
     carryDismiss: "괜찮아요",
     setMcpTitle: "AI 연동",
-    mcpLoginRequired: "로그인하면 클로드·챗지피티·제미나이 같은 AI에서 오하루로 할 일을 바로 추가할 수 있어요.",
-    mcpDesc: "AI의 MCP(커넥터) 설정에 아래 연결 정보를 등록하면, 대화 중에 오하루로 할 일이 자동으로 추가돼요. AI마다 따로 발급하는 걸 권해요.",
+    mcpLoginRequired: "로그인하면 호환되는 MCP 클라이언트용 개인 토큰을 관리할 수 있어요. 서비스별 연결 지원 범위를 먼저 확인해주세요. 테마 JSON 만들기는 로그인 없이 아래에서 사용할 수 있어요.",
+    mcpDesc: "개인 토큰 발급은 AI 연결 성공을 뜻하지 않아요. 호환되는 MCP 클라이언트에서만 사용하고, 토큰이 들어간 주소를 공개하지 마세요. ChatGPT 공개 앱용 OAuth 연결은 아직 준비 중이에요. 별도 API 키 없는 테마 JSON 방식은 아래에서 사용할 수 있어요.",
     mcpCreateBtn: "토큰 발급",
     mcpRevokeBtn: "폐기",
     mcpRevokeConfirm: "이 토큰을 폐기할까요? 연결된 AI에서 더 이상 오하루에 접근할 수 없어요.",
@@ -908,8 +908,8 @@ const T = {
     mcpLastUsed: "최근 사용",
     mcpNamePh: "연동할 AI",
     mcpTokenWarn: "이 화면을 벗어나면 다시 볼 수 없어요. 지금 복사해서 안전한 곳에 붙여넣으세요.",
-    mcpUrlWithTokenLabel: "전체 주소 (클로드·제미나이 등 — URL 하나만 입력할 때)",
-    mcpUrlLabel: "서버 주소 (챗지피티 등 — URL/토큰을 따로 입력할 때)",
+    mcpUrlWithTokenLabel: "개인 토큰 포함 주소 (호환성을 확인한 클라이언트 전용)",
+    mcpUrlLabel: "서버 주소 (클라이언트의 공식 인증 방식을 확인하세요)",
     mcpTokenLabel: "토큰",
     mcpCopyBtn: "복사",
     mcpCopied: "복사됨",
@@ -917,7 +917,7 @@ const T = {
     mcpOptClaude: "클로드",
     mcpOptChatgpt: "챗지피티",
     mcpOptGemini: "제미나이",
-    mcpOptOther: "기타 AI",
+    mcpOptOther: "호환 MCP 클라이언트",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -998,8 +998,8 @@ const T = {
     carryBring: "Bring to today",
     carryDismiss: "Not now",
     setMcpTitle: "AI connection",
-    mcpLoginRequired: "Log in to let AI assistants like Claude, ChatGPT, or Gemini add to-dos to Oharu directly.",
-    mcpDesc: "Add the connection info below to your AI's MCP (connector) settings, and to-dos will be added to Oharu automatically during chats. We recommend issuing a separate token per AI.",
+    mcpLoginRequired: "Sign in to manage personal tokens for compatible MCP clients. Check each service's supported connection method first. Theme JSON works below without signing in.",
+    mcpDesc: "Issuing a personal token does not confirm an AI connection. Use only compatible MCP clients and never publish token-bearing URLs. OAuth for a public ChatGPT app is not available yet. The theme JSON flow below needs no separate API key.",
     mcpCreateBtn: "Issue token",
     mcpRevokeBtn: "Revoke",
     mcpRevokeConfirm: "Revoke this token? The connected AI will no longer be able to access Oharu.",
@@ -1009,8 +1009,8 @@ const T = {
     mcpLastUsed: "Last used",
     mcpNamePh: "AI to connect",
     mcpTokenWarn: "You won't be able to see this again after leaving this screen. Copy it now and store it somewhere safe.",
-    mcpUrlWithTokenLabel: "Full URL (Claude, Gemini, etc. — when only one URL field is provided)",
-    mcpUrlLabel: "Server URL (ChatGPT, etc. — when URL and token are entered separately)",
+    mcpUrlWithTokenLabel: "Personal token URL (only for clients with verified support)",
+    mcpUrlLabel: "Server URL (check the client's official authentication method)",
     mcpTokenLabel: "Token",
     mcpCopyBtn: "Copy",
     mcpCopied: "Copied",
@@ -1018,7 +1018,7 @@ const T = {
     mcpOptClaude: "Claude",
     mcpOptChatgpt: "ChatGPT",
     mcpOptGemini: "Gemini",
-    mcpOptOther: "Other AI",
+    mcpOptOther: "Compatible MCP client",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -2002,7 +2002,7 @@ if (IS_DESKTOP) {
 }
 
 // ── AI 연동(MCP) ─────────────────────────────
-// 클로드/챗지피티/제미나이 같은 AI가 개인 토큰으로 오하루에 할 일을 추가할
+// 호환성이 확인된 MCP 클라이언트가 개인 토큰으로 오하루에 할 일을 추가할
 // 수 있게 하는 기능. 기존 todos CRUD 흐름과는 완전히 분리된 애드온이며,
 // public.todos 테이블/RLS는 이 코드에서 전혀 건드리지 않는다.
 const MCP_BASE_URL = SUPABASE_URL + "/functions/v1/mcp";
@@ -2044,7 +2044,6 @@ function mcpShowReveal(plainToken) {
   if (!box) return;
   box.hidden = false;
   box.innerHTML = "";
-  const fullUrl = MCP_BASE_URL + "/" + plainToken;
 
   const warn = document.createElement("div");
   warn.className = "mcp-warn";
@@ -2075,7 +2074,6 @@ function mcpShowReveal(plainToken) {
     return wrap;
   };
 
-  box.appendChild(mkRow(t("mcpUrlWithTokenLabel"), fullUrl));
   box.appendChild(mkRow(t("mcpUrlLabel"), MCP_BASE_URL));
   box.appendChild(mkRow(t("mcpTokenLabel"), plainToken));
 
@@ -2140,7 +2138,7 @@ async function renderMcp(loggedIn) {
   createRow.className = "set-row";
   const select = document.createElement("select");
   select.setAttribute("aria-label", t("mcpNamePh"));
-  [["클로드", "mcpOptClaude"], ["챗지피티", "mcpOptChatgpt"], ["제미나이", "mcpOptGemini"], ["기타", "mcpOptOther"]].forEach(([v, k]) => {
+  [["개인 MCP 클라이언트", "mcpOptOther"]].forEach(([v, k]) => {
     const o = document.createElement("option");
     o.value = v; o.textContent = t(k);
     select.appendChild(o);
@@ -2401,6 +2399,12 @@ if (!CLOUD) {
   // 주의: supabase-js는 onAuthStateChange 콜백 "안"에서 다른 Supabase 함수를 직접 await하면
   // 교착(멈춤)될 수 있다. 공식 권장대로 setTimeout으로 콜백 밖에서 실행한다.
   supabase.auth.onAuthStateChange((_e, sess) => {
+    // Clear old-owner reminders on every auth boundary, including other tabs.
+    if (_e === "SIGNED_OUT" || (currentUserId && sess?.user?.id && sess.user.id !== currentUserId)) {
+      window.OharuReminders?.clear();
+      setTimeout(() => { todos = []; reminderDataReady = false; location.reload(); }, 0);
+      return;
+    }
     if (!sess) return;
     setTimeout(async () => {
       if (guestMode) {

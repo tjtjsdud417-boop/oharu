@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { snapshot, due, GRACE_MS } = require('../web/reminders.js');
+const { snapshot: makeSnapshot, due, cleanLedger, GRACE_MS } = require('../web/reminders.js');
+const snapshot = items => makeSnapshot(items, new Date(2026,8,30).getTime());
 const todo = { id: 'one', text: '알림', time: '14:30', todoDate: '2026-10-01', done: false };
 test('wall time conversion, completion, deletion, editing and duplicates', () => {
   const first = snapshot([todo]);
@@ -32,4 +33,14 @@ test('unknown offline/startup snapshot preserves native reservations; valid empt
   await window.OharuReminders.sync([]);
   assert.equal(calls.length,2);
   assert.equal(calls[0].tasks.length,0);
+});
+test('historical rows cannot consume the 500 notification budget', () => {
+  const historical=Array.from({length:500},(_,i)=>({...todo,id:`old-${i}`,todoDate:'2000-01-01'}));
+  assert.equal(snapshot([...historical,todo]).length,1);
+  assert.equal(snapshot([...historical,todo])[0].id,todo.id);
+});
+test('delivered ledger accepts only bounded numeric timestamps in a plain record', () => {
+  for(const value of [true,123,'text',[],null]) assert.equal(Object.keys(cleanLedger(value)).length,0);
+  const now=Date.now();
+  assert.deepEqual(Object.keys(cleanLedger({good:now,bad:'x',old:now-86400001,future:Infinity},now)),['good']);
 });

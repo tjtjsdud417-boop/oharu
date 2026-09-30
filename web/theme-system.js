@@ -32,7 +32,12 @@
   function portable(t) { return {version:1,name:t.name,tokens:t.tokens}; }
   themes.forEach(t=>validate(portable(t)));
   let current={id:'default'}, account='guest', client=null, statusEl=null, selectEl=null, pending=false, generation=0;
+  let ownership=0, resetDraft=()=>{};
   const storageKey=()=> 'oharu.theme.v1.'+account;
+  function switchAccount(next) {
+    if(next===account) return;
+    account=next; ownership++; generation++; pending=false; resetDraft(); message(''); restore();
+  }
   function message(text) { if(statusEl) statusEl.textContent=text; }
   function normalize(value) {
     if(!value || typeof value!=='object') throw Error('잘못된 테마 설정이에요.');
@@ -61,11 +66,11 @@
   function save(value) {
     apply(value); const cached=cache(); pending=true;
     if(!client || account==='guest') { if(cached) message('이 기기에 저장했어요. 로그인하면 계정 테마를 사용할 수 있어요.'); return Promise.resolve(); }
-    const owner=account, snapshot=JSON.parse(JSON.stringify(current));
+    const owner=account, epoch=ownership, snapshot=JSON.parse(JSON.stringify(current));
     writeQueue=writeQueue.catch(()=>{}).then(async()=>{
-      if(account!==owner) return;
-      try { const {error}=await client.auth.updateUser({data:{oharu_theme_v1:snapshot}}); if(error) throw error; pending=false; if(account===owner) message('계정에 저장했어요. 다른 기기는 다시 열면 같은 테마를 적용해요.'); }
-      catch(_) { if(account===owner) message('이 기기에는 적용했어요. 계정 동기화에 실패했어요. 온라인에서 테마를 다시 선택해 주세요.'); }
+      if(account!==owner || epoch!==ownership) return;
+      try { const {error}=await client.auth.updateUser({data:{oharu_theme_v1:snapshot}}); if(error) throw error; if(account===owner && epoch===ownership) { pending=false; message('계정에 저장했어요. 다른 기기는 다시 열면 같은 테마를 적용해요.'); } }
+      catch(_) { if(account===owner && epoch===ownership) message('이 기기에는 적용했어요. 계정 동기화에 실패했어요. 온라인에서 테마를 다시 선택해 주세요.'); }
     });
     return writeQueue;
   }
@@ -75,7 +80,7 @@
     try {
       const {data,error}=await client.auth.getUser(); if(error || turn!==generation) return;
       const user=data.user, next=user?user.id:'guest';
-      if(next!==account) { account=next; pending=false; restore(); }
+      switchAccount(next);
       if(user && !pending && user.user_metadata && user.user_metadata.oharu_theme_v1) { apply(user.user_metadata.oharu_theme_v1); cache(); }
     } catch(_) { message('계정 테마를 불러오지 못했어요. 이 기기의 테마를 유지해요.'); }
   }
@@ -83,8 +88,8 @@
     if(client===supabase) return; client=supabase;
     client.auth.onAuthStateChange((event,session)=>{
       // Never await Supabase methods inside its auth callback.
-      if(event==='SIGNED_OUT') { generation++; account='guest'; pending=false; restore(); }
-      else if(session && (event==='SIGNED_IN' || event==='INITIAL_SESSION')) root.setTimeout(refresh,0);
+      if(event==='SIGNED_OUT') { generation++; switchAccount('guest'); }
+      else if(session && (event==='SIGNED_IN' || event==='INITIAL_SESSION')) { switchAccount(session.user.id); root.setTimeout(refresh,0); }
     });
     refresh();
   }
@@ -97,29 +102,30 @@
     for(const theme of themes) { const option=root.document.createElement('option'); option.value=theme.id; option.textContent=theme.name; selectEl.append(option); }
     apply(current); selectEl.addEventListener('change',()=>{ if(selectEl.value!=='custom') save({id:selectEl.value}); });
     const area=section.querySelector('textarea');
-    let previewTheme=null, previous=null;
+    let previewTheme=null, previous=null, previewOwner=-1, previousOwner=-1;
     const preview=root.document.createElement('div'); preview.className='oharu-theme-preview'; preview.hidden=true;
     const sample=root.document.createElement('div'); sample.className='oharu-theme-sample'; sample.textContent='오늘의 할 일 · 산책 20분 · 오후 3:00';
     const result=root.document.createElement('p');
     const confirm=root.document.createElement('button'); confirm.type='button'; confirm.textContent='미리 본 테마 적용'; confirm.dataset.action='confirm';
     preview.append(sample,result,confirm); section.querySelector('details').append(preview);
     const undo=root.document.createElement('button'); undo.type='button'; undo.textContent='이전 테마로 되돌리기'; undo.dataset.action='undo'; undo.hidden=true; section.append(undo);
+    resetDraft=()=>{ previewTheme=null; previous=null; previewOwner=-1; previousOwner=-1; preview.hidden=true; undo.hidden=true; area.value=''; section.querySelector('input[type="file"]').value=''; };
     section.querySelector('[data-action="import"]').textContent='3. 검사하고 미리 보기';
     area.addEventListener('input',()=>{ previewTheme=null; preview.hidden=true; });
-    section.querySelector('input[type="file"]').addEventListener('change',async event=>{ previewTheme=null; preview.hidden=true; const file=event.target.files[0]; if(!file) return; try { if(file.size>8192) throw Error('파일은 8KB 이하여야 해요.'); area.value=await file.text(); message('파일을 읽었어요. 검사하고 미리 보기를 눌러 주세요.'); } catch(e) { message(e.message); } });
+    section.querySelector('input[type="file"]').addEventListener('change',async event=>{ previewTheme=null; preview.hidden=true; const epoch=ownership, file=event.target.files[0]; if(!file) return; try { if(file.size>8192) throw Error('파일은 8KB 이하여야 해요.'); const text=await file.text(); if(epoch!==ownership) return; area.value=text; message('파일을 읽었어요. 검사하고 미리 보기를 눌러 주세요.'); } catch(e) { if(epoch===ownership) message(e.message); } });
     section.addEventListener('click',async event=>{
       const action=event.target.dataset.action; if(!action) return;
       try {
         if(action==='reset') await save({id:'default'});
         if(action==='copy') { try { await root.navigator.clipboard.writeText(prompt); message('요청문을 복사했어요. 원하는 분위기를 덧붙여 주세요.'); } catch(_) { area.value=prompt; area.focus(); area.select(); message('자동 복사가 허용되지 않았어요. 선택된 요청문을 직접 복사해 주세요.'); } }
         if(action==='import') {
-          previewTheme=validate(area.value); const t=previewTheme.tokens;
+          previewTheme=validate(area.value); previewOwner=ownership; const t=previewTheme.tokens;
           sample.style.backgroundColor=t.card; sample.style.color=t.text; preview.style.backgroundColor=t.bg; preview.style.color=t.text;
           result.textContent='고정 예시 미리 보기 · 본문 대비 '+contrast(t.text,t.card).toFixed(2)+':1 · 모든 필수 대비 4.5:1 이상 통과'; preview.hidden=false;
           message('검사를 통과했어요. 미리 본 테마 적용을 누르면 저장해요.');
         }
-        if(action==='confirm' && previewTheme) { previous=JSON.parse(JSON.stringify(current)); await save({id:'custom',theme:previewTheme}); undo.hidden=false; preview.hidden=true; }
-        if(action==='undo' && previous) { await save(previous); previous=null; undo.hidden=true; }
+        if(action==='confirm' && previewTheme && previewOwner===ownership) { const epoch=ownership; previous=JSON.parse(JSON.stringify(current)); previousOwner=epoch; await save({id:'custom',theme:previewTheme}); if(epoch===ownership) { undo.hidden=false; preview.hidden=true; } }
+        if(action==='undo' && previous && previousOwner===ownership) { const value=previous; previous=null; previousOwner=-1; undo.hidden=true; await save(value); }
         if(action==='export') { const theme=current.id==='custom'?current.theme:portable(themes.find(t=>t.id===current.id)); area.value=JSON.stringify(theme,null,2); section.querySelector('details').open=true; area.focus(); area.select(); message('아래 JSON을 복사해 다른 기기에 가져올 수 있어요. 기본 테마 내보내기는 읽기 쉬운 대비를 보완한 색상이에요.'); }
       } catch(e) { message('적용하지 않았어요: '+e.message); }
     });

@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
-const out = path.join(root, 'output/playwright');
+const base = process.env.OHARU_CHECK_URL || 'http://127.0.0.1:4173/';
+const out = path.join(root, 'output/playwright', process.env.OHARU_CHECK_URL ? 'production' : '');
 fs.mkdirSync(out, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true, channel: 'chrome' });
@@ -16,12 +17,12 @@ fs.mkdirSync(out, { recursive: true });
   await context.route('**/baseline', route => route.fulfill({ contentType: 'text/html', body: baseline }));
   const page = await context.newPage();
   const errors = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto('http://127.0.0.1:4173/baseline');
+  await page.goto(new URL('baseline',base).href);
   await page.locator('#mainView').waitFor({ state: 'visible' });
   const geometry = () => page.evaluate(() => Object.fromEntries(['.wrap','header','.composer','#input','#addBtn'].map(s => { const e=document.querySelector(s); if (!e) return [s,null]; const r=e.getBoundingClientRect(); return [s,[r.x,r.y,r.width,r.height]]; })));
   const before = await geometry();
   await page.screenshot({path:path.join(out,'default-before.png'),fullPage:true});
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto(base);
   await page.locator('#mainView').waitFor({ state: 'visible' });
   assert.deepEqual(await geometry(), before, 'default layout changed');
   await page.screenshot({path:path.join(out,'default-after.png'),fullPage:true});
@@ -73,6 +74,7 @@ fs.mkdirSync(out, { recursive: true });
   assert.deepEqual(errors,[]);
   await page.evaluate(()=>{
     window.__notifications=[];
+    if (navigator.serviceWorker) Object.defineProperty(navigator.serviceWorker,'getRegistration',{value:async()=>({showNotification:async(title,options)=>window.__notifications.push({title,...options})}),configurable:true});
     Object.defineProperty(window,'Notification',{value:class {
       static permission='granted';static requestPermission(){return Promise.resolve('granted');}
       constructor(title,options){window.__notifications.push({title,...options});}
