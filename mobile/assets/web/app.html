@@ -990,6 +990,8 @@ html[data-oharu-theme] .tog input:focus-visible + i { outline: 3px solid var(--t
     else status('웹페이지가 실행 중일 때 알림. 브라우저 종료·절전 중에는 정시 전달을 보장하지 않아요.');
   }
   async function sync(items, user = identity) {
+    // A failed/not-yet-loaded remote snapshot is unknown, not an empty task list.
+    if (!Array.isArray(items)) return;
     identity = user || 'guest';
     tasks = enabled && !suspended ? snapshot(items) : [];
     const widgetTasks = suspended ? [] : snapshot(items);
@@ -1681,7 +1683,7 @@ function cloudRepo() {
   return {
     async load() {
       const { data, error } = await supabase.from("todos").select("*").order("created_at");
-      if (error) { console.error(error); return []; }
+      if (error) { console.error(error); return null; }
       return data.map(map);
     },
     async add(t) {
@@ -1719,7 +1721,8 @@ let calCursor = new Date();     // 캘린더가 보고 있는 달
 let selDate = todayStr();       // 캘린더에서 선택한 날짜
 let lastLoadedTodosJson = "";
 let lastLoadedDate = "";
-window.OharuReminders?.mount(() => todos);
+let reminderDataReady = false;
+window.OharuReminders?.mount(() => reminderDataReady ? todos : null);
 
 const byDate = date => todos.filter(t => t.todoDate === date);
 
@@ -2166,7 +2169,7 @@ function renderCal() {
 }
 
 function render() {
-  window.OharuReminders?.sync(todos, currentUserId);
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
   renderHead();
   if (view === "today") renderToday();
   else if (view === "cal") renderCal();
@@ -2312,7 +2315,9 @@ $("input").addEventListener("keydown", e => {
 // ── 과거 미완료 가져오기 ───────────────────────
 $("carryBring").onclick = async () => {
   await repo.carryOver();
-  todos = await repo.load();
+  const carried = await repo.load();
+  if (!carried) return;
+  todos = carried; reminderDataReady = true;
   render();
   rememberLoadedState();
 };
@@ -2328,7 +2333,7 @@ function todosSnapshot(items) {
   return JSON.stringify([...items].sort((a, b) => String(a.id).localeCompare(String(b.id))));
 }
 function rememberLoadedState() {
-  window.OharuReminders?.sync(todos, currentUserId);
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
   lastLoadedTodosJson = todosSnapshot(todos);
   lastLoadedDate = todayStr();
 }
@@ -2342,7 +2347,8 @@ async function startApp(r, { canLogout = false, guest = false, email = null } = 
   $("nudge").hidden = !guest;
   renderAccount(canLogout ? (email || t("signedIn")) : null);
   await repo.rollover();
-  todos = await repo.load();
+  const initialTodos = await repo.load();
+  if (initialTodos) { todos = initialTodos; reminderDataReady = true; }
   await backfillTodaySortOrder();
   render();
   rememberLoadedState();
@@ -2353,6 +2359,8 @@ async function startApp(r, { canLogout = false, guest = false, email = null } = 
   setInterval(async () => {
     await repo.rollover();
     const loaded = await repo.load();
+    if (!loaded) return;
+    reminderDataReady = true;
     const loadedJson = todosSnapshot(loaded);
     const dateChanged = todayStr() !== lastLoadedDate;
     if (loadedJson === lastLoadedTodosJson && !dateChanged) return;

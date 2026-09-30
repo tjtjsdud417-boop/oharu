@@ -21,3 +21,15 @@ test('fires once, only in five minute grace; changed schedule gets a new identit
   assert.equal(due(tasks, { [`one:${when}`]: when }, when).length, 0);
   assert.equal(due(tasks, {}, when + GRACE_MS).length, 0);
 });
+test('unknown offline/startup snapshot preserves native reservations; valid empty snapshot clears', async () => {
+  const vm=require('node:vm'),fs=require('node:fs');
+  const calls=[];
+  const window={document:{},ReactNativeWebView:{postMessage:value=>calls.push(JSON.parse(value))}};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../web/reminders.js'),'utf8'),{window,localStorage:{getItem:()=>null}});
+  await window.OharuReminders.sync(null);
+  await window.OharuReminders.sync(undefined);
+  assert.equal(calls.length,0);
+  await window.OharuReminders.sync([]);
+  assert.equal(calls.length,2);
+  assert.equal(calls[0].tasks.length,0);
+});

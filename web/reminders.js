@@ -37,6 +37,8 @@
     else status('웹페이지가 실행 중일 때 알림. 브라우저 종료·절전 중에는 정시 전달을 보장하지 않아요.');
   }
   async function sync(items, user = identity) {
+    // A failed/not-yet-loaded remote snapshot is unknown, not an empty task list.
+    if (!Array.isArray(items)) return;
     identity = user || 'guest';
     tasks = enabled && !suspended ? snapshot(items) : [];
     const widgetTasks = suspended ? [] : snapshot(items);
