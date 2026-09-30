@@ -65,4 +65,23 @@ Android 14 격리 에뮬레이터에서 최초 guest 화면 실패를 재현했�
 
 `mobile/bootstrap.test.cjs`는 실제 모바일 HTML과 번들 SDK를 실행하고 외부 요청을 전부 차단하여 cold bootstrap, native ready, guest 할 일 생성, reload 저장 복원을 검증했다. 통과. 실제 계정 로그인/OAuth/deeplink는 별도 미검증이며 guest 통과로 전체 인증 흐름을 보증하지 않는다.
 
-최종 HTML SHA256: `34FC1B992AA847D8E51E0A2B948CC0F957F58C93419D3B95EE353F607BE628F8`. 두 플랫폼 Expo export와 모바일 unit 15개 통과. 변형 APK 재패키징은 최소 HTML에서도 blank가 발생하여 최종 native 판정 근거에서 제외하고, 실제 EAS 재빌드 산출물을 다시 설치해 검증한다. 기존 포함 빌드 크레딧은 재확인 시 4500 중 900 사용, 추가 과금 0이었다.
+최종 HTML SHA256: `925E951622833D21F862FE4F9C78E0FEBC8A3B829DEE1C973FDEDDBA2B352CE8`. 두 플랫폼 Expo export와 모바일 unit 15개 통과. 변형 APK 재패키징은 최소 HTML에서도 blank가 발생하여 최종 native 판정 근거에서 제외하고, 실제 EAS 재빌드 산출물을 다시 설치해 검증한다. 기존 포함 빌드 크레딧은 재확인 시 4500 중 900 사용, 추가 과금 0이었다.
+
+### 실제 Android 검증 및 최종 빌드 추적
+
+Android 14 격리 에뮬레이터(WebView 113.0.5672.136)에서 파일 WebView의 메시지 출처가 `null` 문자열로 전달되는 추가 원인을 확인했다. `react-native-webview` 13.16.1의 Android bridge를 고정 버전 postinstall 패치로 보강했다. 최상위 프레임, opaque origin, 현재 file URL 조건을 모두 만족할 때만 실제 문서 URL을 전달하고 App의 정확한 bundled URI 검사도 유지한다. 프레임 증명이 없는 구형 fallback은 사용자 명령을 전달하지 않고 WebView 업데이트 안내만 표시한다. 버전/예상 소스가 바뀌면 빌드를 실패시킨다. iOS는 해당 패치 대상이 아니며 실제 iPhone 실행은 미검증이다.
+
+최종 source HTML SHA256은 `87C31B68E3E585C4FAC5B42A45E6BE83112BB562062675496EB878147D00A134`이다. localRepo의 load/add/update 객체 참조를 분리해 연속 추가 시 중복 저장되는 오류를 수정했고 기존 사용자 데이터 삭제/정리 migration은 추가하지 않았다.
+
+검증 결과(합성 게스트 데이터만 사용):
+
+- [네트워크 차단·앱 데이터 초기화 후 30초 cold start](../mobile/validation/android-offline-cold-start.png): 정상 화면, 준비 신호 처리.
+- [권한 거부 안내](../mobile/validation/android-permission-denied.png): 실제 Android 권한 창에서 거부, 자동 재요청 없음. 사용자가 다시 버튼을 눌러 허용한 뒤 OS granted=true 확인.
+- [native bridge 기록](../mobile/validation/android-native-bridge.json): 두 항목 고유 ID/저장 개수 일치, 실제 OS 예약 2개 및 widget snapshot 2개. srcdoc iframe이 보낸 위조 취소/빈 snapshot 명령은 실제 발신됐지만 native 응답·예약·위젯을 바꾸지 못함.
+- UI 삭제 후 native 예약 1개, 이후 전체 미래 항목 삭제 후 예약 0개 확인.
+- [HIGH 알림 실제 전달 기록](../mobile/validation/android-notification-delivery.json): 10:51:00 UTC 예정, OS 알림 생성 10:52:26.703 UTC, 표시 10:52:27.506 UTC. 이 실행에서는 각각 86.703초/87.506초 지연됐다. exact-alarm 권한을 요청하지 않는 시스템 제어 예약이며 정시 도착을 보장하지 않는다. Expo HIGH enum과 Android native 숫자를 혼동하던 값을 수정했고 새 설치 채널의 실제 중요도 4(HIGH)를 확인했다. 이전 검증용 LOW 채널이나 사용자가 변경한 채널 설정을 앱에서 강제 삭제/재설정하지 않는다.
+- [홈 위젯 추가·예정 항목 표시](../mobile/validation/android-widget-upcoming.png), 위젯 누름으로 MainActivity 열림, [항목 삭제 후 빈 상태 갱신](../mobile/validation/android-widget-cleared.png) 확인. Galaxy 실기기/OEM 잠금 화면 지원 검증을 대신하지 않는다.
+
+위 런타임은 실제 컴파일한 격리 x86_64 APK에서 검증했다. 보안 검증 일부는 Temp 테스트 APK에서만 WebView 진단 접속을 켰으며 제품 App에는 디버깅 옵션이 없다. 영어 모드의 기존 Android 상단 제목과 로그인 버튼 겹침은 남아 있다. 실제 계정 OAuth/deeplink, iPhone, Galaxy Doze/재부팅/잠금 화면은 미검증이다.
+
+Android5/iOS9도 위 수정 전 검증 빌드이므로 공개 제출 대상에서 제외한다. 최종 클라우드 빌드: [Android6](https://expo.dev/accounts/saiapp/projects/oharu/builds/2b90d55c-656c-4197-bac0-cd4dd313dcae), [iOS10](https://expo.dev/accounts/saiapp/projects/oharu/builds/fc6e32c7-9f73-4f14-a33a-791fe8c538aa). 시작 전 포함 크레딧 4500 중 1200 사용/추가 과금 0을 확인했으며 새 credentials/capability는 생성하지 않았다. 빌드 완료, 실제 산출물 검증, 스토어 업로드/심사/공개 상태는 별개로 추적한다.

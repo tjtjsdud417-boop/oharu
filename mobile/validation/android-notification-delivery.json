@@ -1,0 +1,17 @@
+{
+  "platform": "Android 14 isolated emulator",
+  "webview": "113.0.5672.136",
+  "task": "Native_QA_delivery",
+  "id": "f5d244cc-a9b8-42e7-817c-04a38d43a921",
+  "dueAt": 1790765460000,
+  "dueISO": "2026-09-30T10:51:00.000Z",
+  "nativeCreationTime": 1790765546703,
+  "createdISO": "2026-09-30T10:52:26.703Z",
+  "nativeVisibleSince": 1790765547506,
+  "visibleISO": "2026-09-30T10:52:27.506Z",
+  "creationDelayMs": 86703,
+  "visibleDelayMs": 87506,
+  "importance": 4,
+  "isNoisy": true,
+  "method": "OS dumpsys notification record; exact-alarm privilege not requested; app in background"
+}

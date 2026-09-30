@@ -1,6 +1,16 @@
 # 독립 QA 후 수정 증거
 
-## 최신 게스트 저장 수정 및 배포 제한
+## Final source verification (2026-09-30)
+
+This section supersedes the historical hashes and counts below. Source `bbe77f9a4fdd804247b56fd300608dd416fdafab`: 92/92 local tests pass; GitHub runs 36704804638 and 36704800099 pass. `73d383f` also copies `repo.update` inputs at the storage boundary, preventing a caller's later object mutation from being silently flushed by another write. No existing user records were deleted or deduplicated.
+
+Final native HTML SHA256: `87C31B68E3E585C4FAC5B42A45E6BE83112BB562062675496EB878147D00A134`. Android bridge patch `2e69a0d` requires original opaque source origin, main-frame provenance and a local file document, followed by the app's exact document URI check. Unsupported legacy callbacks cannot forward privileged commands. Actual Android 14/WebView 113 tests verified offline cold start, denial/retry, two OS reservations, iframe message rejection, cancellation and home-widget add/open/clear.
+
+The Expo channel now uses `AndroidImportance.HIGH`, verified as native importance 4. Actual background notification due 10:51:00 UTC was created at 10:52:26.703 and visible at 10:52:27.506: delivery works, but this inexact alarm does not guarantee the selected minute. Final EAS Android 6 (`2b90d55c-656c-4197-bac0-cd4dd313dcae`) and iOS 10 (`fc6e32c7-9f73-4f14-a33a-791fe8c538aa`) are building; older mobile artifacts are superseded.
+
+Production web remains verified only through `d8b2888`. Vercel rejected subsequent writes; read access to the exact existing project still succeeds. Guest-storage fixes are **not deployed**. See [current release limits](release-status.md).
+
+## Earlier guest-storage checkpoint (historical)
 
 `a0c90c9`는 기존 게스트 배열 공유로 한 번 추가한 항목이 저장소에 두 번 기록되는 문제를 고친다. web/native의 load snapshot과 add 입력을 복사한다. 기존 데이터 삭제나 정리 작업은 추가하지 않았다. 오늘·달력 추가 직후 저장 개수/고유 ID, Android/iOS 모드 재실행 검사를 추가했다. Toss는 별도 repository가 이미 snapshot을 복사하며 정밀 개수 검사도 통과했다. 통합 테스트 88/88 통과, 독립 재확인 대기.
 
