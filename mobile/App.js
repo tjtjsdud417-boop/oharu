@@ -161,6 +161,10 @@ function OharuContent() {
           // Only the bundled top-level page can request the restricted notification API.
           if (typeof event.url !== 'string' || event.url.split('#')[0] !== uri) return;
           if (event.data === 'oharu:ready') { clearReadyTimer(); nativeEvent('oharu:reminders:resync'); }
+          else if (event.data === 'oharu:unsupported-webview') {
+            clearReadyTimer();
+            setError('Android System WebView 또는 Chrome을 최신 버전으로 업데이트한 뒤 다시 실행해 주세요. 이 버전에서는 안전한 앱 연결을 사용할 수 없어요.');
+          }
           else if (event.data === 'oharu:boot-error') fail();
           else {
             let type;
