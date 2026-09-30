@@ -1751,8 +1751,9 @@ function localRepo() {
     });
   }
   return {
-    async load() { return state.todos; },
-    async add(t) { state.todos.push(t); write(state); },
+    // UI owns its snapshot: optimistic UI mutations must not mutate persisted state twice.
+    async load() { return state.todos.map(t => ({ ...t })); },
+    async add(t) { state.todos.push({ ...t }); write(state); },
     async update(t) { state.todos = state.todos.map(x => x.id === t.id ? t : x); write(state); },
     async remove(id) { state.todos = state.todos.filter(x => x.id !== id); write(state); },
     async setOrder(id, value) {
