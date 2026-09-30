@@ -45,10 +45,24 @@ Windows EAS의 no-VCS 복사는 디렉터리에 끝 slash 없이 ignore를 검�
 
 로컬 알림만 사용하는 이번 릴리스는 `withLocalNotifications.js`가 공식 Android plugin만 적용하고 같은 plugin 이름을 run-once 등록해 Expo 자동 APNs 기본값 재적용도 차단한다. 최종 `expo config --type introspect`의 iOS entitlements는 `{}`다. 새로운 APNs/App Group capability/credential을 발급하지 않는다.
 
-2026-09-30 네이티브 서비스 통합 후 `expo export --platform all` 성공: Android 659모듈 / iOS 656모듈, 양쪽 Hermes 번들 약 1.6MB. 이는 JS 번들 검사이며 APK/IPA 네이티브 아카이브 및 실제 설치 성공을 뜻하지 않는다. 부모 작업의 최종 HTML 통합 후 재실행해야 한다. `adb devices`는 연결 기기 0개였다. SDK 내장 의존성 맵의 오프라인 검사는 up-to-date이나 온라인 최신 버전 확인은 네트워크 제한으로 미완료다. `npm audit`의 brace-expansion high 1건은 호환 업데이트로 제거했으며 Expo 도구 체인 moderate 10건은 남아 있다. 강제 수정이 제안하는 SDK46 다운그레이드는 적용하지 않았다.
+2026-09-30 최종 오프라인 동기화 수정과 위젯을 포함한 `expo export --platform all` 성공: 양쪽 Hermes 번들 약 1.6MB. source/staging HTML SHA256은 `5224f4fced4e8c76f71cb7311517bfa226b956521660632983da63e106575d80`으로 일치한다. 최종 plugin 구성으로 새 CNG 생성 후 Android Kotlin/리소스 재컴파일도 성공(30초,137 tasks). 이는 실제 설치 성공을 뜻하지 않는다. `adb devices`는 연결 기기0개였다. SDK 내장 의존성 맵의 오프라인 검사는 up-to-date이나 온라인 최신 버전 확인은 네트워크 제한으로 미완료다. `npm audit`의 brace-expansion high1건은 호환 업데이트로 제거했으며 Expo 도구 체인 moderate10건은 남아 있다. 강제 수정이 제안하는 SDK46 다운그레이드는 적용하지 않았다.
+
+검증용 원격 production 빌드: [Android 1.0.0(4)](https://expo.dev/accounts/saiapp/projects/oharu/builds/3504fa61-7941-4c2c-a2dc-b9b4338d3b96), [iOS 1.0.0(8)](https://expo.dev/accounts/saiapp/projects/oharu/builds/3f74b880-60e1-4fc4-9d37-d2df143bb708)는 둘 다 FINISHED. 둘 다 `com.oharu.today`, 기존 EAS Starter 포함 크레딧·서명만 사용하고 `--freeze-credentials`와 Apple capability sync 비활성 옵션으로 새 credential 생성을 막았다. **독립 코드리뷰에서 발견한 계정전환·알림 재시도 등 웹 로직 추가수정 때문에 이 두 빌드는 공개출시 대상이 아니며 후속 빌드로 대체한다.** iOS8 IPA 내부 Info.plist(앱ID/버전/최소 iOS16.4)와 포함 HTML 해시는 검증했다. 기존 ASC 제출키 APP_MANAGER 역할 및 ASC 앱6807312683 접근을 확인한 뒤 [iOS8 TestFlight 업로드](https://expo.dev/accounts/saiapp/projects/oharu/submissions/85851387-85e4-447e-8506-4a988db67a15)를 시작했으나 테스터그룹 자동 설정/App Review/공개출시는 하지 않았다. Android 정확한 package의 Google Play 제출키는 등록돼 있지 않아 자동 제출하지 않는다. iOS export-compliance 항목(`ITSAppUsesNonExemptEncryption`)은 기존 설정에 없어 App Store Connect 확인이 남아 있다.
+
+검증용 iOS8 제출은 2026-09-30 09:47:56 UTC FINISHED, ASC 직접 조회 결과 `processingState=VALID`, `internalState/externalState=MISSING_EXPORT_COMPLIANCE`다. 수출규정 답변 전 테스터 준비 완료라고 표시하지 않는다. Android4 AAB도 내려받아 `jarsigner -verify`에서 `jar verified` 확인, 실제 HTML 해시 일치와 widget XML3종 포함을 확인했다. Android 자체 서명 인증서에 대한 JAR truststore 경고는 남아 있으며 공개 CA 체인을 가진 인증서라고 주장하지 않는다.
 
 `cd mobile; npm test`로 브리지 잘못된 데이터/중복 ID/편집/삭제/완료/권한 거부/설정 해제/과거 시각/60개 제한/경합/예약 오류 및 위젯 sanitization/로그아웃/CNG/권한범위 15개 테스트를 실행한다. 2026-09-30 실행: **15/15 통과**. 실제 OS 수신 테스트를 대신하지 않는다.
 
 출시 전 각 실제 기기에서: 2분 후 예약 → 홈/잠금/종료 수신; 시각 수정 시 원래 예약 미수신; 삭제/완료 미수신; 오프라인 수신; 거부 후 무반복 프롬프트; 재허용 후 재개 동기화; 시간대 변경; 61개 이상 누락 안내; 로그아웃 후 남은 알림 없음; 새 native release 설치 후 bundled HTML와 bridge 일치 확인. Android 강제 종료/Doze, iOS 집중 모드는 OS 제한을 기록한다.
 
 공식 근거: [Expo SDK57](https://docs.expo.dev/versions/v57.0.0/), [Notifications](https://docs.expo.dev/versions/v57.0.0/sdk/notifications/), [iOS Widgets](https://docs.expo.dev/versions/v57.0.0/sdk/widgets/), [Android alarms](https://developer.android.com/develop/background-work/services/alarms).
+
+### 2026-09-30 모바일 시작 회귀 검증
+
+Android 14 격리 에뮬레이터에서 최초 guest 화면 실패를 재현했다. 진단 HTML의 `unhandledrejection` 결과는 `currentUserId is not defined`였고, Supabase import/session 단계를 통과한 뒤 render에서 실패했다. 모바일 사용자 ID 선언과 세션/인증 이벤트 할당을 수정했다. 이 오류를 CDN 장애로 단정하지 않는다.
+
+추가로 첫 오프라인 설치가 CDN 모듈 다운로드에 의존하지 않도록 Supabase JS 2.117.2 공식 npm UMD를 MIT 라이선스와 함께 HTML에 번들했다. `mobile/bundle-web-deps.cjs`로 재생성하며 버전은 package-lock으로 고정된다. 기존 Pretendard 1.3.9 CSS는 비동기로 로드하며 네트워크가 없으면 기존 시스템 폰트 fallback을 사용한다. 임의 원격 코드/새 인증키는 추가하지 않았다.
+
+`mobile/bootstrap.test.cjs`는 실제 모바일 HTML과 번들 SDK를 실행하고 외부 요청을 전부 차단하여 cold bootstrap, native ready, guest 할 일 생성, reload 저장 복원을 검증했다. 통과. 실제 계정 로그인/OAuth/deeplink는 별도 미검증이며 guest 통과로 전체 인증 흐름을 보증하지 않는다.
+
+최종 HTML SHA256: `34FC1B992AA847D8E51E0A2B948CC0F957F58C93419D3B95EE353F607BE628F8`. 두 플랫폼 Expo export와 모바일 unit 15개 통과. 변형 APK 재패키징은 최소 HTML에서도 blank가 발생하여 최종 native 판정 근거에서 제외하고, 실제 EAS 재빌드 산출물을 다시 설치해 검증한다. 기존 포함 빌드 크레딧은 재확인 시 4500 중 900 사용, 추가 과금 0이었다.

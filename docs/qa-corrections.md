@@ -6,7 +6,7 @@
 
 현재 자동 테스트 70/70 및 추가 리뷰 재현 4/4 통과. 추가 수정의 독립 재확인 결과는 대기 중이다. 운영 웹은 `dpl_6C4MJanmLcpsGF6rfiZ3HvumPHu4` / `https://oharu-qu2ktpul3-moodweb.vercel.app`로 갱신했다. Windows 최신 초안은 114,693,045 bytes, SHA256 `706BD7D7DE16734152E3C3635AA0CC26BB24D6BA03E320A0809DBD1E993D8256`이다.
 
-모바일 첫 실행은 실제 Android 에뮬레이터에서 `currentUserId is not defined`로 실패함을 발견했다. 모바일 HTML에 없던 변수를 통합 코드가 참조한 결함이며, CDN 로딩 실패로 확인된 것은 아니다. 모바일 수정 및 재검증이 끝나기 전 기존 빌드를 출시 완료로 취급하지 않는다.
+모바일 첫 실행은 실제 Android 에뮬레이터에서 `currentUserId is not defined`로 실패함을 발견했다. 모바일 HTML에 없던 변수를 통합 코드가 참조한 결함이며, CDN 로딩 실패로 확인된 것은 아니다. `65626f0`에서 선언·세션 갱신을 수정하고, 별도로 필수 Supabase SDK 2.117.2를 MIT 라이선스와 함께 앱에 번들해 외부 CDN 없이 게스트 초기화가 가능하도록 했다. 외부 요청 전부 차단한 실제 HTML 시작/CRUD/재실행 저장 테스트를 포함한 전체 77/77 통과. HTML SHA256 `34FC1B992AA847D8E51E0A2B948CC0F957F58C93419D3B95EE353F607BE628F8`. 새 정식 EAS 산출물의 기기 검증 전 기존 빌드를 출시 완료로 취급하지 않는다.
 
 ## 앞선 수정 및 검증 이력
 
