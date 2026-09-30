@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+ <string name="oharu_widget_name">오하루 · 다음 할 일</string>
+ <string name="oharu_widget_empty">예정된 할 일이 없어요. 앱을 열어 새 일정을 추가해 보세요.</string>
+ <string name="oharu_widget_open">눌러서 오하루 열기</string>
+ <string name="oharu_widget_description">가까운 시간의 할 일 3개를 확인해요. 앱에서 마지막으로 동기화한 내용이 표시돼요.</string>
+</resources>

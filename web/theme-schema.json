@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oharu.today/theme-schema.json",
+  "title": "Oharu ThemeV1",
+  "description": "Visual color tokens only. Structural validity is necessary but not sufficient: OharuThemes.validate additionally enforces WCAG contrast. Imports remain drafts until the user previews and explicitly applies them. No URL, CSS, JavaScript, layout or account fields are accepted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "name", "tokens"],
+  "properties": {
+    "version": { "const": 1 },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[^\\u0000-\\u001f<>]+$",
+      "description": "The current JavaScript validator also limits the name to 40 UTF-16 code units; astral Unicode symbols use two units."
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bg", "card", "text", "muted", "accent", "soft", "line", "danger", "dangerSoft"],
+      "properties": {
+        "bg": { "$ref": "#/$defs/color" },
+        "card": { "$ref": "#/$defs/color" },
+        "text": { "$ref": "#/$defs/color" },
+        "muted": { "$ref": "#/$defs/color" },
+        "accent": { "$ref": "#/$defs/color" },
+        "soft": { "$ref": "#/$defs/color" },
+        "line": { "$ref": "#/$defs/color" },
+        "danger": { "$ref": "#/$defs/color" },
+        "dangerSoft": { "$ref": "#/$defs/color" }
+      }
+    }
+  },
+  "$defs": {
+    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
+  },
+  "$comment": "Authoritative semantic validation: text/bg, text/card, muted/bg, muted/card, accent/bg, accent/card, accent/soft, danger/card, danger/dangerSoft and #FFFFFF/accent must each have WCAG relative-luminance contrast >=4.5:1. File imports are limited to 8192 bytes; JSON string validation limits the input to 8192 UTF-16 code units. Neither transport limit can be expressed as an object-level standard JSON Schema keyword."
+}

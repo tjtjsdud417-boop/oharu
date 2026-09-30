@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "오하루",
+    "slug": "oharu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/oharu-icon-1024.png",
+    "userInterfaceStyle": "light",
+    "scheme": "oharu",
+    "backgroundColor": "#F2F4F6",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.oharu.today"
+    },
+    "android": {
+      "package": "com.oharu.today",
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "backgroundColor": "#F2F4F6",
+        "foregroundImage": "./assets/oharu-icon-512.png"
+      }
+    },
+    "plugins": [
+      "expo-asset",
+      "./plugins/withOharuWidget.js",
+      ["expo-notifications", {"defaultChannel": "todo-reminders"}]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9fac0860-511e-45e3-84de-5526d3ed132d"
+      }
+    },
+    "owner": "saiapp"
+  }
+}

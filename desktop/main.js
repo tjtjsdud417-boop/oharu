@@ -6,9 +6,13 @@ const {
   nativeImage,
   ipcMain,
   shell,
+  Notification,
+  powerMonitor,
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { ReminderQueue } = require("./reminders");
+const { isAllowedExternalUrl, isTrustedAppUrl } = require("./security");
 
 const APP_URL = "https://oharu.today/?desktop=1";
 const DEFAULT_BOUNDS = { width: 420, height: 640 };
@@ -26,6 +30,9 @@ let win = null;
 let tray = null;
 let isQuitting = false;
 let STATE_FILE = "";
+let reminders = null;
+let reminderTimer = null;
+let notificationError = null;
 let state = {
   width: DEFAULT_BOUNDS.width,
   height: DEFAULT_BOUNDS.height,
@@ -124,15 +131,37 @@ function handleAuthCallback(code) {
   win.webContents.send("auth-code", code);
 }
 
-function isAllowedExternalUrl(url) {
-  if (typeof url !== "string") return false;
-  if (url.startsWith("https://accounts.google.com")) return true;
-  try {
-    const { protocol, hostname } = new URL(url);
-    return protocol === "https:" && hostname.endsWith(".supabase.co");
-  } catch {
-    return false;
-  }
+function registerHandler(channel, handler) {
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!win || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame ||
+      !isTrustedAppUrl(event.senderFrame.url, getFallbackHtmlPath())) throw new Error("Untrusted app frame");
+    return handler(event, ...args);
+  });
+}
+
+function initReminders() {
+  const ledgerFile = path.join(app.getPath("userData"), "reminder-delivered.json");
+  let delivered = [];
+  try { const data = JSON.parse(fs.readFileSync(ledgerFile, "utf8")); if (Array.isArray(data)) delivered = data; } catch {}
+  reminders = new ReminderQueue({
+    delivered,
+    onDelivered: (keys) => {
+      try { fs.writeFileSync(ledgerFile, JSON.stringify(keys), "utf8"); } catch (error) { console.error("Reminder ledger write failed", error.message); }
+    },
+    notify: (item) => {
+      if (!Notification.isSupported()) { notificationError = "unsupported"; return; }
+      try {
+        const toast = new Notification({ title: "오하루 · 할 일 알림", body: item.title, icon: path.join(__dirname, "build", "icon.ico") });
+        toast.on("click", showMainWindow);
+        toast.on("failed", () => { notificationError = "Windows notification delivery failed. Check notification settings."; });
+        toast.show();
+      } catch {
+        notificationError = "Windows notification delivery failed. Check notification settings.";
+      }
+    },
+  });
+  reminderTimer = setInterval(() => reminders.tick(), 1000);
+  powerMonitor.on("resume", () => reminders.tick());
 }
 
 function getPrefs() {
@@ -150,7 +179,7 @@ function broadcastPrefs() {
 function buildTrayMenu() {
   return Menu.buildFromTemplate([
     {
-      label: "Oharu — To-Do Widget",
+      label: "오하루 · 오늘의 할 일",
       enabled: false,
     },
     { type: "separator" },
@@ -166,7 +195,7 @@ function buildTrayMenu() {
       },
     },
     {
-      label: "항상 위 고정",
+      label: "항상 위에 표시",
       type: "checkbox",
       checked: win ? win.isAlwaysOnTop() : state.alwaysOnTop,
       click: (item) => {
@@ -179,7 +208,7 @@ function buildTrayMenu() {
       },
     },
     {
-      label: "시작 시 자동 실행",
+      label: "로그인 시 자동 실행",
       type: "checkbox",
       checked: state.openAtLogin,
       click: (item) => {
@@ -210,7 +239,7 @@ function buildTray() {
 async function clearWebCache() {
   const ses = win.webContents.session;
   await ses.clearCache();
-  await ses.clearStorageData({ storages: ["serviceworkers", "cachestorage"] });
+  // Keep offline service-worker resources. App updates own their cache version.
 }
 
 async function loadAppContents() {
@@ -235,10 +264,11 @@ function createWindow() {
     backgroundColor: "#00000000",
     skipTaskbar: false,
     show: false,
-    icon: path.join(__dirname, "build", "window.ico"),
+    icon: path.join(__dirname, "build", "icon.ico"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
       preload: path.join(__dirname, "preload.js"),
     },
   };
@@ -249,6 +279,13 @@ function createWindow() {
   }
 
   win = new BrowserWindow(winOpts);
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedExternalUrl(url)) shell.openExternal(url).catch(console.error);
+    return { action: "deny" };
+  });
+  win.webContents.on("will-navigate", (event, url) => {
+    if (!isTrustedAppUrl(url, getFallbackHtmlPath())) event.preventDefault();
+  });
 
   win.once("ready-to-show", () => {
     win.setAlwaysOnTop(alwaysOnTop);
@@ -280,7 +317,7 @@ function createWindow() {
 
 function createTray() {
   tray = new Tray(createTrayIcon());
-  tray.setToolTip("Oharu — Today's To-Do List");
+  tray.setToolTip("오하루 · 오늘의 할 일");
   buildTray();
   tray.on("double-click", showMainWindow);
 }
@@ -295,15 +332,26 @@ if (!gotLock) {
     app.setAsDefaultProtocolClient("oharu", process.execPath, [path.resolve(process.argv[1])]);
   }
 
-  ipcMain.handle("open-external", async (_event, url) => {
+  registerHandler("open-external", async (_event, url) => {
     if (!isAllowedExternalUrl(url)) return false;
     await shell.openExternal(url);
     return true;
   });
 
-  ipcMain.handle("get-prefs", () => getPrefs());
+  registerHandler("get-prefs", () => getPrefs());
+  registerHandler("sync-reminders", (_event, items) => {
+    if (!reminders) return { supported: false, scheduled: 0 };
+    return { supported: Notification.isSupported(), ...reminders.sync(items) };
+  });
+  registerHandler("notification-status", () => ({
+    supported: Notification.isSupported(),
+    mode: "while-running",
+    worksWhenQuit: false,
+    permission: "system-settings",
+    error: notificationError,
+  }));
 
-  ipcMain.handle("set-always-on-top", (_event, val) => {
+  registerHandler("set-always-on-top", (_event, val) => {
     if (!win) return false;
     const on = !!val;
     win.setAlwaysOnTop(on);
@@ -314,7 +362,7 @@ if (!gotLock) {
     return true;
   });
 
-  ipcMain.handle("set-auto-launch", (_event, val) => {
+  registerHandler("set-auto-launch", (_event, val) => {
     const on = !!val;
     state.openAtLogin = on;
     applyLoginItemSettings(on);
@@ -324,7 +372,7 @@ if (!gotLock) {
     return true;
   });
 
-  ipcMain.handle("quit-app", () => {
+  registerHandler("quit-app", () => {
     isQuitting = true;
     saveState();
     app.quit();
@@ -338,6 +386,7 @@ if (!gotLock) {
 
   app.whenReady().then(() => {
     initState();
+    initReminders();
     applyLoginItemSettings(state.openAtLogin);
     createWindow();
     createTray();
@@ -347,6 +396,7 @@ if (!gotLock) {
 
   app.on("before-quit", () => {
     isQuitting = true;
+    clearInterval(reminderTimer);
     saveState();
   });
 

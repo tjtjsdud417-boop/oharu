@@ -1,0 +1,48 @@
+/* Color only overrides: no changes to existing layout or spacing. */
+html[data-oharu-theme] body { background: rgb(var(--theme-bg-rgb) / var(--bg-alpha, 1)); }
+html[data-oharu-theme] .item:hover,
+html[data-oharu-theme] .btn.google { background: var(--card); }
+html[data-oharu-theme] .nudge .nudge-text { color: var(--blue); }
+html[data-oharu-theme] .grab,
+html[data-oharu-theme] .item:hover .grab { color: var(--text-sub); background: var(--bg); }
+html[data-oharu-theme] .cal-grid .dow.sun { color: var(--danger); }
+html[data-oharu-theme] .progress,
+html[data-oharu-theme] .day .cnt { background: var(--line); }
+html[data-oharu-theme] .set-btn:hover,
+html[data-oharu-theme] .cal-head .nav button:hover { background: var(--blue-soft); }
+html[data-oharu-theme] .textbtn:hover,
+html[data-oharu-theme] .composer .add:hover,
+html[data-oharu-theme] .nudge .nudge-btn:hover,
+html[data-oharu-theme] .set-btn.primary:hover,
+html[data-oharu-theme] .btn.primary:hover,
+html[data-oharu-theme] .dl-card .dl-btn:hover { background: var(--blue); }
+/* Decorative separators may be subtle; actionable boundaries use a tested token. */
+html[data-oharu-theme] .check,
+html[data-oharu-theme] .composer,
+html[data-oharu-theme] .auth input,
+html[data-oharu-theme] .set-row select,
+html[data-oharu-theme] .btn.google,
+html[data-oharu-theme] .oharu-theme-settings select,
+html[data-oharu-theme] .oharu-theme-settings textarea,
+html[data-oharu-theme] .oharu-theme-settings button,
+html[data-oharu-theme] .oharu-theme-settings a { border-color: var(--text-sub); }
+html[data-oharu-theme] .item.done .check,
+html[data-oharu-theme] .composer:focus-within,
+html[data-oharu-theme] .auth input:focus { border-color: var(--blue); }
+html[data-oharu-theme] .tog i { background: var(--text-sub); }
+html[data-oharu-theme] .tog input:checked + i { background: var(--blue); }
+html[data-oharu-theme] :is(button,a,select,input,textarea,[tabindex]):focus-visible,
+html[data-oharu-theme] .tog input:focus-visible + i { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-settings { border-top: 1px solid var(--line); padding: 16px 18px; color: var(--text); }
+.oharu-theme-settings label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.oharu-theme-settings select,.oharu-theme-settings textarea { width: 100%; max-width: 100%; border: 1px solid #80909F; border-radius: 10px; padding: 10px; background: var(--card); color: var(--text); font: inherit; }
+.oharu-theme-settings textarea { resize: vertical; font-size: 12px; }
+.oharu-theme-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.oharu-theme-settings button,.oharu-theme-settings a { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 12px; border: 1px solid #80909F; border-radius: 10px; color: var(--text); background: var(--card); font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }
+.oharu-theme-settings p { font-size: 12px; line-height: 1.7; margin: 10px 0; overflow-wrap: anywhere; }
+.oharu-theme-settings summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-size: 14px; }
+.oharu-theme-settings input[type=file] { max-width: 100%; margin: 4px 0 12px; }
+.oharu-theme-settings :focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-preview { padding: 12px; border-radius: 12px; margin-top: 12px; }
+.oharu-theme-sample { padding: 16px; border-radius: 10px; line-height: 1.6; }
+.oharu-theme-settings [hidden] { display: none; }

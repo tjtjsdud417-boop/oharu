@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오하루 - 오늘 할 일에 집중하는 무료 투두리스트</title>
-<meta name="description" content="오늘 할 일을 적고 완료한 일을 체크하는 무료 투두리스트, 오하루. 웹에서는 가입 없이 시작하고, 로그인하면 PC와 모바일에서 동기화할 수 있어요. 윈도우 바탕화면 위젯도 지원해요.">
+<meta name="description" content="가입 없이 3초 만에 시작하는 무료 투두리스트. 오늘 할 일만 심플하게 관리하고, 윈도우 바탕화면 위젯으로 항상 띄워두세요. PC·모바일 자동 동기화 지원.">
 <meta name="naver-site-verification" content="9b85138bf4fdfd70d642d452cb54b76a4b681db8" />
 <meta name="keywords" content="투두리스트, 할일 관리, 오늘 할일, 무료 투두 앱, 할일 목록, 바탕화면 위젯, 데스크톱 위젯, 일정 관리, 갓생, to-do list, todo widget">
 <link rel="canonical" href="https://oharu.today/">
@@ -13,50 +13,10 @@
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
-<script>
-  // 관리자페이지용 방문 로그 — 기존 앱 로직과 완전히 분리된 별도 스크립트.
-  // 실패해도 앱 동작에 영향 없음(fire-and-forget). 2026-09 admin.oharu.today 구축.
-  (function () {
-    try {
-      var SUPABASE_URL = "https://tcaghsjndfaxlsgaqrdi.supabase.co";
-      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjYWdoc2puZGZheGxzZ2FxcmRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2OTE0MzUsImV4cCI6MjA5OTI2NzQzNX0.gb2945bf3444mm_TtCk01x0QrVaGc14f512BR6HlExY";
-      var params = new URLSearchParams(location.search);
-      if (params.get("exclude_stats") === "1") {
-        localStorage.setItem("oharu_exclude_stats", "1");
-      }
-      if (localStorage.getItem("oharu_exclude_stats") === "1") {
-        return; // 관리자(선영님) 본인 방문 — 통계 제외 처리된 브라우저
-      }
-      var sid = sessionStorage.getItem("oharu_sid");
-      if (!sid) {
-        sid = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
-        sessionStorage.setItem("oharu_sid", sid);
-      }
-      fetch(SUPABASE_URL + "/rest/v1/page_visits", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify({
-          path: location.pathname,
-          referrer: document.referrer || null,
-          utm_source: params.get("utm_source"),
-          utm_medium: params.get("utm_medium"),
-          utm_campaign: params.get("utm_campaign"),
-          session_id: sid
-        }),
-        keepalive: true
-      }).catch(function () {});
-    } catch (e) {}
-  })();
-</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Oharu (오하루)">
 <meta property="og:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
-<meta property="og:description" content="오늘 할 일 입력과 완료 체크 · 웹에서 가입 없이 시작 · 로그인 후 기기 간 동기화 · 윈도우 바탕화면 위젯">
+<meta property="og:description" content="가입 없이 바로 시작 · 윈도우 바탕화면 위젯 · PC와 모바일 자동 동기화">
 <meta property="og:url" content="https://oharu.today/">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:locale:alternate" content="ko_KR">
@@ -67,18 +27,16 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="오하루 - 오늘 할 일에 집중하는 무료 투두리스트">
-<meta name="twitter:description" content="오늘 할 일 입력과 완료 체크 · 웹에서 가입 없이 시작 · 로그인 후 기기 간 동기화 · 윈도우 바탕화면 위젯">
 <meta name="twitter:image" content="https://oharu.today/og-image.jpg">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"Oharu (오하루)",
-"url":"https://oharu.today/","applicationCategory":"ProductivityApplication",
+"url":"https://oharu.today","applicationCategory":"ProductivityApplication",
 "operatingSystem":"Web, Windows","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
 "inLanguage":["ko","en","ja","zh","es"],
-"description":"오늘 할 일을 적고 완료한 일을 체크하는 무료 투두리스트, 오하루. 웹에서는 가입 없이 시작하고, 로그인하면 PC와 모바일에서 동기화할 수 있어요. 윈도우 바탕화면 위젯도 지원해요.",
+"description":"가입 없이 3초 만에 시작하는 무료 투두리스트. 오늘 할 일만 심플하게 관리하고, 윈도우 바탕화면 위젯으로 항상 띄워두세요. PC·모바일 자동 동기화 지원.",
 "downloadUrl":"https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu-Setup.exe"}
 </script>
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232b76f3'/%3E%3Crect x='79.5' y='57' width='69.8' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='92.8' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Crect x='50.7' y='128.5' width='98.6' height='15.9' rx='8' fill='%23fff'/%3E%3Ccircle cx='60.2' cy='65' r='9.5' fill='%23fff'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#F2F4F6">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -116,6 +74,12 @@
 
   /* ── 헤더 ─────────────────────────────── */
   .head { padding: 4px 4px 20px; position: relative; }
+  .settings-head { display: flex; align-items: center; gap: 12px; padding: 0 0 20px; }
+  .settings-head[hidden] { display: none; }
+  .settings-head h1 { font-size: 24px; line-height: 1.3; letter-spacing: -0.02em; }
+  .settings-back { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 12px; padding: 8px; background: transparent; color: var(--blue); font: inherit; font-weight: 600; cursor: pointer; }
+  .settings-back svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .settings-back:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   .head .date { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: -0.01em; }
   .head h1 { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
   .head h1 .num { color: var(--blue); }
@@ -151,6 +115,18 @@
   }
   .textbtn:hover { background: #1B64DA; }
   .textbtn:active { transform: scale(.96); }
+
+  /* Native iOS shell owns safe areas; the footer never overlays list content. */
+  html.ios-app, .ios-app body { height: 100%; overflow: hidden; }
+  .ios-app .app { height: 100%; min-height: 0; padding: 0; }
+  .ios-app #mainView { min-height: 0; }
+  .ios-app #authView { overflow-y: auto; padding: 28px 20px 24px; }
+  .ios-main-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 28px 20px 24px; scroll-padding-block: 16px; }
+  .ios-menu { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; padding: 10px 16px 12px; background: var(--bg); border-top: 1px solid #E5E8EB; }
+  .ios-menu .iconbtn { width: auto; min-width: 68px; height: auto; min-height: 52px; padding: 8px 12px; gap: 4px; font: inherit; font-size: 12px; font-weight: 600; }
+  .ios-menu .textbtn { height: auto; min-height: 52px; min-width: 68px; }
+  .ios-menu button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .ios-app[data-keyboard-open="1"] .ios-menu { display: none; }
 
   /* ── 입력 ─────────────────────────────── */
   .composer {
@@ -428,18 +404,6 @@
   .tog input:checked + i { background: var(--blue); }
   .tog input:checked + i::after { transform: translateX(18px); }
 
-  /* ── AI 연동(MCP) ──────────────────────── */
-  .mcp-reveal { margin: 0 18px 12px; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 12px; }
-  .mcp-warn { color: var(--danger); font-weight: 600; font-size: 12px; margin-bottom: 6px; }
-  .mcp-reveal .mcp-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-  .mcp-reveal .mcp-val { flex: 1; min-width: 0; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--card); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; }
-  .mcp-reveal .mcp-copy { flex-shrink: 0; border: none; background: var(--blue); color: #fff; font-weight: 700; font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
-  .mcp-reveal .mcp-copy:active { transform: scale(.96); }
-  .mcp-token-item { padding: 10px 18px; font-size: 13px; }
-  .mcp-token-item + .mcp-token-item { border-top: 1px solid var(--line); }
-  .mcp-token-item .mcp-token-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .mcp-token-item .mcp-token-meta { color: var(--text-sub); font-size: 11.5px; margin-top: 2px; }
-
   /* ── 캘린더 보기 ──────────────────────── */
   .cal {
     margin-top: 14px;
@@ -627,11 +591,11 @@
     <h2 id="authH2">오하루</h2>
     <p id="authSub">오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
     <div class="row">
-      <button class="btn google" id="googleBtn">
+      <button class="btn google" id="googleBtn" hidden disabled>
         <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
         <span id="googleBtnText">구글로 계속하기</span>
       </button>
-      <div class="divider" id="authDivider">또는 이메일로</div>
+      <div class="divider" id="authDivider" hidden>또는 이메일로</div>
       <input id="email" type="email" placeholder="이메일 주소" autocomplete="email">
       <input id="pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
       <button class="btn primary" id="emailBtn">로그인</button>
@@ -645,9 +609,9 @@
 
   <!-- ══ 메인 화면 ══ -->
   <div id="mainView" hidden style="display:flex;flex-direction:column;flex:1;">
-    <header class="head">
+    <header class="head" id="homeHeader">
       <div class="date" id="dateLine"></div>
-      <div class="topbtns">
+      <div class="topbtns" id="mainActions">
         <button class="textbtn" id="loginTopBtn" hidden>로그인</button>
         <button class="iconbtn" id="calBtn" title="목록 보기" aria-label="달력으로 전체 보기">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -664,6 +628,14 @@
       </div>
       <h1 id="headline"></h1>
       <div class="progress"><i id="bar"></i></div>
+    </header>
+
+    <header class="settings-head" id="settingsHeader" hidden>
+      <button type="button" class="settings-back" id="settingsBackBtn" aria-label="돌아가기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        <span id="settingsBackText">뒤로</span>
+      </button>
+      <h1 id="settingsTitle" tabindex="-1">설정</h1>
     </header>
 
     <!-- 기본: 오늘 투두 -->
@@ -715,11 +687,6 @@
         <div class="set-title" id="setAccountTitle">계정</div>
         <div class="set-row" id="setAccount"></div>
       </div>
-      <div class="set-card" id="setMcp">
-        <div class="set-title" id="setMcpTitle">AI 연동</div>
-        <div id="mcpReveal" class="mcp-reveal" hidden></div>
-        <div id="mcpRows"></div>
-      </div>
       <div class="set-card" id="setDesign">
         <div class="set-title" id="setDesignTitle">화면</div>
         <div class="set-row">
@@ -757,7 +724,7 @@
       <div class="set-card">
         <div class="set-title" id="setAboutTitle">정보</div>
         <div class="set-row"><span id="setVersionLabel">버전</span><span class="sub" id="appVersion"></span></div>
-        <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
+        <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><a href="https://oharu.today/privacy" target="_blank" rel="noopener" id="setPrivacyLink">보기</a></div>
         <div class="set-row" id="setPcWidgetRow" hidden><span id="setPcWidgetLabel">PC 위젯</span><a href="https://github.com/tjtjsdud417-boop/oharu/releases/latest/download/Oharu-Setup.exe" target="_blank" rel="noopener" id="setPcWidgetLink">다운로드</a></div>
         <div class="set-row"><span id="setWebLabel">오하루 웹</span><a href="https://oharu.today" target="_blank" rel="noopener">oharu.today</a></div>
         <div class="set-row"><span data-i18n="contact">문의</span><a href="mailto:ceo@moodweb.co.kr">ceo@moodweb.co.kr</a></div>
@@ -791,10 +758,316 @@
   </div>
 </aside>
 
+<script>
+// Report startup failures without sending error details or user data to native.
+function reportMobileBootFailure(event) {
+  if (!window.__oharuReady && window.ReactNativeWebView &&
+      (event.type === 'unhandledrejection' || event.message)) {
+    window.ReactNativeWebView.postMessage('oharu:boot-error');
+  }
+}
+window.addEventListener('error', reportMobileBootFailure);
+window.addEventListener('unhandledrejection', reportMobileBootFailure);
+</script>
 <!-- oharu-launch-assets:start -->
-<link rel="stylesheet" href="./theme-system.css">
-<script src="./theme-system.js"></script>
-<script src="./reminders.js"></script>
+<style>/* Color only overrides: no changes to existing layout or spacing. */
+html[data-oharu-theme] body { background: rgb(var(--theme-bg-rgb) / var(--bg-alpha, 1)); }
+html[data-oharu-theme] .item:hover,
+html[data-oharu-theme] .btn.google { background: var(--card); }
+html[data-oharu-theme] .nudge .nudge-text { color: var(--blue); }
+html[data-oharu-theme] .grab,
+html[data-oharu-theme] .item:hover .grab { color: var(--text-sub); background: var(--bg); }
+html[data-oharu-theme] .cal-grid .dow.sun { color: var(--danger); }
+html[data-oharu-theme] .progress,
+html[data-oharu-theme] .day .cnt { background: var(--line); }
+html[data-oharu-theme] .set-btn:hover,
+html[data-oharu-theme] .cal-head .nav button:hover { background: var(--blue-soft); }
+html[data-oharu-theme] .textbtn:hover,
+html[data-oharu-theme] .composer .add:hover,
+html[data-oharu-theme] .nudge .nudge-btn:hover,
+html[data-oharu-theme] .set-btn.primary:hover,
+html[data-oharu-theme] .btn.primary:hover,
+html[data-oharu-theme] .dl-card .dl-btn:hover { background: var(--blue); }
+/* Decorative separators may be subtle; actionable boundaries use a tested token. */
+html[data-oharu-theme] .check,
+html[data-oharu-theme] .composer,
+html[data-oharu-theme] .auth input,
+html[data-oharu-theme] .set-row select,
+html[data-oharu-theme] .btn.google,
+html[data-oharu-theme] .oharu-theme-settings select,
+html[data-oharu-theme] .oharu-theme-settings textarea,
+html[data-oharu-theme] .oharu-theme-settings button,
+html[data-oharu-theme] .oharu-theme-settings a { border-color: var(--text-sub); }
+html[data-oharu-theme] .item.done .check,
+html[data-oharu-theme] .composer:focus-within,
+html[data-oharu-theme] .auth input:focus { border-color: var(--blue); }
+html[data-oharu-theme] .tog i { background: var(--text-sub); }
+html[data-oharu-theme] .tog input:checked + i { background: var(--blue); }
+html[data-oharu-theme] :is(button,a,select,input,textarea,[tabindex]):focus-visible,
+html[data-oharu-theme] .tog input:focus-visible + i { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-settings { border-top: 1px solid var(--line); padding: 16px 18px; color: var(--text); }
+.oharu-theme-settings label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.oharu-theme-settings select,.oharu-theme-settings textarea { width: 100%; max-width: 100%; border: 1px solid #80909F; border-radius: 10px; padding: 10px; background: var(--card); color: var(--text); font: inherit; }
+.oharu-theme-settings textarea { resize: vertical; font-size: 12px; }
+.oharu-theme-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.oharu-theme-settings button,.oharu-theme-settings a { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 12px; border: 1px solid #80909F; border-radius: 10px; color: var(--text); background: var(--card); font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }
+.oharu-theme-settings p { font-size: 12px; line-height: 1.7; margin: 10px 0; overflow-wrap: anywhere; }
+.oharu-theme-settings summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-size: 14px; }
+.oharu-theme-settings input[type=file] { max-width: 100%; margin: 4px 0 12px; }
+.oharu-theme-settings :focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-preview { padding: 12px; border-radius: 12px; margin-top: 12px; }
+.oharu-theme-sample { padding: 16px; border-radius: 10px; line-height: 1.6; }
+.oharu-theme-settings [hidden] { display: none; }
+</style>
+<script>(function (root) {
+  'use strict';
+  const KEYS = ['bg','card','text','muted','accent','soft','line','danger','dangerSoft'];
+  const MAP = {bg:'--bg',card:'--card',text:'--text',muted:'--text-sub',accent:'--blue',soft:'--blue-soft',line:'--line',danger:'--danger',dangerSoft:'--danger-soft'};
+  const palettes = [
+    ['default','오하루 기본','#F2F4F6','#FFFFFF','#191F28','#526070','#205FC1','#E8F3FF'],
+    ['forest','숲의 아침','#E9F0E8','#F9FCF7','#203B2C','#4D6556','#286440','#DCECDD'],
+    ['rose','로즈 가든','#F7E9ED','#FFF9FB','#492A36','#775461','#994460','#F5DFE7'],
+    ['ocean','푸른 바다','#E5F0F5','#F8FCFF','#173C50','#496573','#126782','#D5EDF5'],
+    ['lavender','라벤더 오후','#EEEAF8','#FCFAFF','#352B51','#675A7D','#6943A3','#E9DFF8'],
+    ['sand','모래와 햇살','#F4EDDD','#FFFCF5','#463923','#6E6049','#826018','#EFE3C7'],
+    ['mint','민트 한 잔','#E4F3EE','#F8FFFC','#1E443A','#4A6A61','#176C57','#D1EDE2'],
+    ['peach','복숭아빛','#FAEDE4','#FFFAF6','#513528','#7D5945','#A04B24','#F6E0D0'],
+    ['slate','차분한 잉크','#E8ECF0','#F9FBFD','#253342','#546373','#405D7B','#DFE7EF'],
+    ['lemon','레몬 정원','#F3F3DF','#FFFFF7','#3C4224','#626749','#626B1E','#E9EBCB']
+  ];
+  const themes = palettes.map(([id,name,bg,card,text,muted,accent,soft]) => ({id,name,version:1,tokens:{bg,card,text,muted,accent,soft,line:bg,danger:'#AF2434',dangerSoft:'#FEECEE'}}));
+  function luminance(hex) { const a=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:Math.pow((x+.055)/1.055,2.4)); return .2126*a[0]+.7152*a[1]+.0722*a[2]; }
+  function contrast(a,b) { const x=luminance(a),y=luminance(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+  function validate(input) {
+    if (typeof input==='string') { if(input.length>8192) throw Error('테마 파일은 8KB 이하여야 해요.'); input=JSON.parse(input); }
+    if(!input || typeof input!=='object' || Array.isArray(input) || Object.keys(input).sort().join(',')!=='name,tokens,version') throw Error('version, name, tokens만 사용할 수 있어요.');
+    if(input.version!==1 || typeof input.name!=='string' || input.name.length<1 || input.name.length>40 || /[\u0000-\u001f<>]/.test(input.name)) throw Error('테마 이름 또는 버전을 확인해 주세요.');
+    const t=input.tokens;
+    if(!t || typeof t!=='object' || Array.isArray(t) || Object.keys(t).sort().join(',')!==KEYS.slice().sort().join(',')) throw Error('색상 토큰 9개를 정확히 입력해 주세요.');
+    for(const k of KEYS) if(typeof t[k]!=='string' || !/^#[0-9a-f]{6}$/i.test(t[k])) throw Error('색상은 #RRGGBB 형식만 사용할 수 있어요.');
+    const pairs=[['text','bg'],['text','card'],['muted','bg'],['muted','card'],['accent','bg'],['accent','card'],['accent','soft'],['danger','card'],['danger','dangerSoft']];
+    for(const [a,b] of pairs) if(contrast(t[a],t[b])<4.5) throw Error(a+' / '+b+' 글자 대비가 낮아요. 4.5:1 이상으로 조정해 주세요.');
+    if(contrast(t.accent,'#FFFFFF')<4.5) throw Error('버튼의 흰색 글자가 읽히도록 강조색을 어둡게 해 주세요.');
+    return {version:1,name:input.name,tokens:Object.fromEntries(KEYS.map(k=>[k,t[k].toUpperCase()]))};
+  }
+  function portable(t) { return {version:1,name:t.name,tokens:t.tokens}; }
+  themes.forEach(t=>validate(portable(t)));
+  let current={id:'default'}, account='guest', client=null, statusEl=null, selectEl=null, pending=false, generation=0;
+  const storageKey=()=> 'oharu.theme.v1.'+account;
+  function message(text) { if(statusEl) statusEl.textContent=text; }
+  function normalize(value) {
+    if(!value || typeof value!=='object') throw Error('잘못된 테마 설정이에요.');
+    if(value.id==='custom') return {id:'custom',theme:validate(value.theme)};
+    if(themes.some(t=>t.id===value.id)) { validate(portable(themes.find(t=>t.id===value.id))); return {id:value.id}; }
+    throw Error('지원하지 않는 테마예요.');
+  }
+  function apply(value) {
+    current=normalize(value);
+    if(!root.document) return;
+    const el=root.document.documentElement;
+    for(const v of Object.values(MAP).concat('--text-faint','--theme-bg-rgb')) el.style.removeProperty(v);
+    delete el.dataset.oharuTheme;
+    if(current.id!=='default') {
+      const theme=current.id==='custom'?current.theme:themes.find(t=>t.id===current.id);
+      for(const k of KEYS) el.style.setProperty(MAP[k],theme.tokens[k]);
+      el.style.setProperty('--text-faint',theme.tokens.muted);
+      el.style.setProperty('--theme-bg-rgb',theme.tokens.bg.slice(1).match(/../g).map(x=>parseInt(x,16)).join(' '));
+      el.dataset.oharuTheme=current.id;
+    }
+    if(selectEl) { let custom=selectEl.querySelector('[value="custom"]'); if(current.id==='custom' && !custom) { custom=root.document.createElement('option'); custom.value='custom'; selectEl.append(custom); } if(custom) { if(current.id==='custom') custom.textContent=current.theme.name; else custom.remove(); } selectEl.value=current.id; }
+  }
+  function restore() { try { apply(JSON.parse(root.localStorage.getItem(storageKey())) || {id:'default'}); } catch(_) { apply({id:'default'}); } }
+  function cache() { try { root.localStorage.setItem(storageKey(),JSON.stringify(current)); return true; } catch(_) { message('현재 화면에 적용했어요. 저장 공간을 사용할 수 없어 다시 열면 복원되지 않아요.'); return false; } }
+  let writeQueue=Promise.resolve();
+  function save(value) {
+    apply(value); const cached=cache(); pending=true;
+    if(!client || account==='guest') { if(cached) message('이 기기에 저장했어요. 로그인하면 계정 테마를 사용할 수 있어요.'); return Promise.resolve(); }
+    const owner=account, snapshot=JSON.parse(JSON.stringify(current));
+    writeQueue=writeQueue.catch(()=>{}).then(async()=>{
+      if(account!==owner) return;
+      try { const {error}=await client.auth.updateUser({data:{oharu_theme_v1:snapshot}}); if(error) throw error; pending=false; if(account===owner) message('계정에 저장했어요. 다른 기기는 다시 열면 같은 테마를 적용해요.'); }
+      catch(_) { if(account===owner) message('이 기기에는 적용했어요. 계정 동기화에 실패했어요. 온라인에서 테마를 다시 선택해 주세요.'); }
+    });
+    return writeQueue;
+  }
+  async function refresh() {
+    if(!client) return;
+    const turn=++generation;
+    try {
+      const {data,error}=await client.auth.getUser(); if(error || turn!==generation) return;
+      const user=data.user, next=user?user.id:'guest';
+      if(next!==account) { account=next; pending=false; restore(); }
+      if(user && !pending && user.user_metadata && user.user_metadata.oharu_theme_v1) { apply(user.user_metadata.oharu_theme_v1); cache(); }
+    } catch(_) { message('계정 테마를 불러오지 못했어요. 이 기기의 테마를 유지해요.'); }
+  }
+  function connect(supabase) {
+    if(client===supabase) return; client=supabase;
+    client.auth.onAuthStateChange((event,session)=>{
+      // Never await Supabase methods inside its auth callback.
+      if(event==='SIGNED_OUT') { generation++; account='guest'; pending=false; restore(); }
+      else if(session && (event==='SIGNED_IN' || event==='INITIAL_SESSION')) root.setTimeout(refresh,0);
+    });
+    refresh();
+  }
+  const prompt='오하루 테마 JSON을 만들어 주세요. 할 일, 계정 정보, API 키는 필요하지 않습니다. 코드 블록 없이 JSON만 출력하세요. 구조는 '+JSON.stringify(portable(themes[1]))+'. version=1, name은 1~40자, tokens의 9개 키만 허용하며 값은 #RRGGBB만 가능합니다. text와 muted는 bg/card에, accent는 bg/card/soft에, danger는 card/dangerSoft에 WCAG 대비 4.5:1 이상이어야 합니다. accent 위 흰색 버튼 글자도 4.5:1 이상이어야 합니다. URL, CSS, JavaScript, 추가 속성은 금지합니다. 원하는 분위기: ';
+  function mount() {
+    const host=root.document.getElementById('setDesign'); if(!host || root.document.getElementById('oharu-theme-settings')) return;
+    const section=root.document.createElement('section'); section.id='oharu-theme-settings'; section.className='oharu-theme-settings';
+    section.innerHTML='<label for="oharu-theme-select">테마</label><select id="oharu-theme-select" aria-label="테마 선택"></select><div class="oharu-theme-actions"><button type="button" data-action="reset">기본으로 복원</button><button type="button" data-action="export">JSON 내보내기</button></div><details><summary>AI로 나만의 테마 만들기</summary><p>요청문을 복사해 ChatGPT 또는 Claude에 붙여 넣고, 받은 JSON을 아래에 넣어 주세요. 구독의 앱 연결 지원 범위는 서비스마다 달라요. 이 방법은 별도 API 키 없이 사용하며, 할 일과 계정 정보를 전달하지 않아요.</p><div class="oharu-theme-actions"><button type="button" data-action="copy">1. 요청문 복사</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT 열기</a><a href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude 열기</a></div><label for="oharu-theme-json">2. 테마 JSON 붙여 넣기</label><textarea id="oharu-theme-json" maxlength="8192" rows="5" spellcheck="false"></textarea><label for="oharu-theme-file">또는 JSON 파일 선택 (8KB 이하)</label><input id="oharu-theme-file" type="file" accept=".json,application/json"><button type="button" data-action="import">3. 검사하고 적용</button></details><p class="oharu-theme-status" role="status" aria-live="polite"></p>';
+    host.append(section); selectEl=section.querySelector('select'); statusEl=section.querySelector('[role="status"]');
+    for(const theme of themes) { const option=root.document.createElement('option'); option.value=theme.id; option.textContent=theme.name; selectEl.append(option); }
+    apply(current); selectEl.addEventListener('change',()=>{ if(selectEl.value!=='custom') save({id:selectEl.value}); });
+    const area=section.querySelector('textarea');
+    let previewTheme=null, previous=null;
+    const preview=root.document.createElement('div'); preview.className='oharu-theme-preview'; preview.hidden=true;
+    const sample=root.document.createElement('div'); sample.className='oharu-theme-sample'; sample.textContent='오늘의 할 일 · 산책 20분 · 오후 3:00';
+    const result=root.document.createElement('p');
+    const confirm=root.document.createElement('button'); confirm.type='button'; confirm.textContent='미리 본 테마 적용'; confirm.dataset.action='confirm';
+    preview.append(sample,result,confirm); section.querySelector('details').append(preview);
+    const undo=root.document.createElement('button'); undo.type='button'; undo.textContent='이전 테마로 되돌리기'; undo.dataset.action='undo'; undo.hidden=true; section.append(undo);
+    section.querySelector('[data-action="import"]').textContent='3. 검사하고 미리 보기';
+    area.addEventListener('input',()=>{ previewTheme=null; preview.hidden=true; });
+    section.querySelector('input[type="file"]').addEventListener('change',async event=>{ previewTheme=null; preview.hidden=true; const file=event.target.files[0]; if(!file) return; try { if(file.size>8192) throw Error('파일은 8KB 이하여야 해요.'); area.value=await file.text(); message('파일을 읽었어요. 검사하고 미리 보기를 눌러 주세요.'); } catch(e) { message(e.message); } });
+    section.addEventListener('click',async event=>{
+      const action=event.target.dataset.action; if(!action) return;
+      try {
+        if(action==='reset') await save({id:'default'});
+        if(action==='copy') { try { await root.navigator.clipboard.writeText(prompt); message('요청문을 복사했어요. 원하는 분위기를 덧붙여 주세요.'); } catch(_) { area.value=prompt; area.focus(); area.select(); message('자동 복사가 허용되지 않았어요. 선택된 요청문을 직접 복사해 주세요.'); } }
+        if(action==='import') {
+          previewTheme=validate(area.value); const t=previewTheme.tokens;
+          sample.style.backgroundColor=t.card; sample.style.color=t.text; preview.style.backgroundColor=t.bg; preview.style.color=t.text;
+          result.textContent='고정 예시 미리 보기 · 본문 대비 '+contrast(t.text,t.card).toFixed(2)+':1 · 모든 필수 대비 4.5:1 이상 통과'; preview.hidden=false;
+          message('검사를 통과했어요. 미리 본 테마 적용을 누르면 저장해요.');
+        }
+        if(action==='confirm' && previewTheme) { previous=JSON.parse(JSON.stringify(current)); await save({id:'custom',theme:previewTheme}); undo.hidden=false; preview.hidden=true; }
+        if(action==='undo' && previous) { await save(previous); previous=null; undo.hidden=true; }
+        if(action==='export') { const theme=current.id==='custom'?current.theme:portable(themes.find(t=>t.id===current.id)); area.value=JSON.stringify(theme,null,2); section.querySelector('details').open=true; area.focus(); area.select(); message('아래 JSON을 복사해 다른 기기에 가져올 수 있어요. 기본 테마 내보내기는 읽기 쉬운 대비를 보완한 색상이에요.'); }
+      } catch(e) { message('적용하지 않았어요: '+e.message); }
+    });
+  }
+  const api={themes,validate,contrast,connect,save,apply,normalize,prompt,exportTheme:()=>portable(current.id==='custom'?current.theme:themes.find(t=>t.id===current.id))};
+  if(typeof module==='object' && module.exports) module.exports=api;
+  root.OharuThemes=api;
+  if(root.document) { restore(); if(root.document.readyState==='loading') root.document.addEventListener('DOMContentLoaded',mount); else mount(); root.addEventListener('storage',e=>{if(e.key===storageKey()) restore();}); root.addEventListener('focus',refresh); }
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+<script>(function (root) {
+  'use strict';
+  const GRACE_MS = 5 * 60 * 1000;
+  function snapshot(todos) {
+    const unique = new Map();
+    for (const todo of todos || []) {
+      if (!todo || typeof todo.id !== 'string' || todo.done || !/^\d{4}-\d{2}-\d{2}$/.test(todo.todoDate) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(todo.time)) continue;
+      const [y, m, d] = todo.todoDate.split('-').map(Number);
+      const [h, min] = todo.time.split(':').map(Number);
+      const date = new Date(y, m - 1, d, h, min);
+      // Reject invalid dates and nonexistent daylight-saving wall-clock times.
+      if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d || date.getHours() !== h || date.getMinutes() !== min) continue;
+      unique.set(todo.id, { id: todo.id, title: String(todo.text || '').slice(0, 200), dueAt: date.getTime(), done: false });
+    }
+    return [...unique.values()].sort((a, b) => a.dueAt - b.dueAt).slice(0, 500);
+  }
+  function due(tasks, delivered, now) {
+    return tasks.filter(task => task.dueAt <= now && task.dueAt > now - GRACE_MS && !delivered[`${task.id}:${task.dueAt}`]);
+  }
+  const api = { snapshot, due, GRACE_MS };
+  if (typeof module !== 'undefined') module.exports = api;
+  if (!root.document) return;
+  const KEY = 'oharu.reminders.v1';
+  const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
+  const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
+  let enabled = read(KEY, false) === true, tasks = [], identity = 'guest', busy = false, suspended = false;
+  let getter = () => [], lastNative = '', request = 0;
+  const native = () => !!root.ReactNativeWebView;
+  const desktop = () => !!root.desktopBridge?.syncReminders;
+  const status = text => { const el = document.getElementById('reminderStatus'); if (el) el.textContent = text; };
+  function paint() {
+    const button = document.getElementById('reminderEnable');
+    if (button) button.textContent = enabled ? '알림 끄기' : '알림 켜기';
+    if (!enabled) status('이 기기의 알림이 꺼져 있어요.');
+    else if (native()) status('OS 예약 상태를 확인하고 있어요.');
+    else if (desktop()) status('앱·트레이 실행 중 알림. 앱 종료·PC 종료 중에는 전달되지 않아요.');
+    else status('웹페이지가 실행 중일 때 알림. 브라우저 종료·절전 중에는 정시 전달을 보장하지 않아요.');
+  }
+  async function sync(items, user = identity) {
+    identity = user || 'guest';
+    tasks = enabled && !suspended ? snapshot(items) : [];
+    const widgetTasks = suspended ? [] : snapshot(items);
+    const signature = JSON.stringify({ identity, tasks, widgetTasks, enabled });
+    if (signature === lastNative) return;
+    try {
+      if (native()) {
+        root.ReactNativeWebView.postMessage(JSON.stringify({ type: 'oharu:reminders:sync', version: 1, requestId: String(++request), tasks, enabled }));
+        root.ReactNativeWebView.postMessage(JSON.stringify({ type: 'oharu:widgets:sync', version: 1, requestId: String(++request), tasks: widgetTasks, enabled: !suspended }));
+      }
+      else if (desktop()) {
+        const result = await root.desktopBridge.syncReminders(tasks.map(t => ({ ...t, dueAt: new Date(t.dueAt).toISOString() })));
+        if (enabled && (result?.supported === false || result?.error)) status('Windows 알림을 표시할 수 없어요. 시스템 알림 설정을 확인해주세요.');
+      }
+      lastNative = signature;
+    } catch { status('알림 예약을 갱신하지 못했어요. 앱을 다시 열어주세요.'); }
+  }
+  async function tick() {
+    if (!enabled || native() || desktop() || busy || !root.Notification || Notification.permission !== 'granted') return;
+    busy = true;
+    const deliver = async () => {
+      const key = `${KEY}.delivered.${identity}`;
+      const delivered = read(key, {});
+      for (const [id, time] of Object.entries(delivered)) if (time < Date.now() - 86400000) delete delivered[id];
+      for (const task of due(tasks, delivered, Date.now())) {
+        try {
+          const options = { body: task.title, tag: `oharu:${identity}:${task.id}:${task.dueAt}`, icon: '/icon-192.png' };
+          const registration = await navigator.serviceWorker?.getRegistration();
+          if (registration) await registration.showNotification('오하루 · 할 일 시간이에요', options);
+          else new Notification('오하루 · 할 일 시간이에요', options);
+          delivered[`${task.id}:${task.dueAt}`] = Date.now();
+          write(key, delivered);
+        } catch { status('알림을 표시하지 못했어요. 브라우저 알림 권한을 확인해주세요.'); }
+      }
+    };
+    try {
+      // Same-origin tabs share one delivery lock; notification tags also coalesce.
+      if (navigator.locks) await navigator.locks.request('oharu-reminder-delivery', deliver);
+      else await deliver();
+    } finally { busy = false; }
+  }
+  async function toggle() {
+    if (enabled) { enabled = false; write(KEY, false); paint(); await sync([]); return; }
+    if (native()) {
+      root.ReactNativeWebView.postMessage(JSON.stringify({ type: 'oharu:reminders:permission', version: 1, requestId: String(++request) }));
+      return;
+    }
+    if (!desktop()) {
+      if (!root.Notification) { status('이 브라우저는 알림을 지원하지 않아요. iPhone은 홈 화면에 추가한 웹앱이나 모바일 앱을 이용해주세요.'); return; }
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') { status('알림이 허용되지 않았어요. 브라우저 설정에서 허용한 뒤 다시 눌러주세요.'); return; }
+    }
+    enabled = true; write(KEY, true); paint(); await sync(getter());
+  }
+  function mount(getTodos) {
+    getter = getTodos;
+    if (document.getElementById('reminderEnable')) return;
+    const card = document.createElement('div'); card.className = 'set-card';
+    card.innerHTML = '<div class="set-title">시간 알림</div><div class="set-row"><span>이 기기에서 알림 받기</span><button type="button" class="set-btn" id="reminderEnable">알림 켜기</button></div><p id="reminderStatus" role="status" style="font-size:13px;line-height:1.6"></p><p style="font-size:12px;line-height:1.6">시간은 현재 기기의 시간대 기준이에요. 다른 기기에서 바꾼 일정은 앱을 열어 동기화해주세요. 5분 넘게 지난 알림은 반복 표시하지 않아요. OS 집중 모드·절전 설정에 따라 알림이 늦어질 수 있어요.</p>';
+    document.getElementById('setDesign').after(card);
+    document.getElementById('reminderEnable').onclick = () => toggle().catch(() => status('알림 설정을 변경하지 못했어요. 다시 시도해주세요.'));
+    paint();
+    if (!native() && !desktop() && location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+    setInterval(() => { sync(getter()); tick(); }, 1000);
+    root.addEventListener('oharu:reminders:resync', () => { lastNative = ''; sync(getter()); });
+    root.addEventListener('oharu:native-reminders', event => {
+      const result = event.detail || {};
+      if (result.status === 'granted') { enabled = true; write(KEY, true); paint(); lastNative = ''; sync(getter()); }
+      else if (result.status === 'denied') status('알림 권한이 거부되어 예약할 수 없어요. 휴대폰 설정에서 허용해주세요.');
+      else if (result.status === 'schedule-error' || result.status === 'error' || result.status === 'unavailable' || result.status === 'invalid-message') status('알림 예약 실패. 휴대폰 설정과 권한을 확인해주세요.');
+      else if (typeof result.scheduled === 'number' && enabled) status(`예약된 알림 ${result.scheduled}개${result.omitted ? ` · 제한으로 제외 ${result.omitted}개` : ''}. 변경 뒤 앱을 열어 동기화해주세요.`);
+    });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastNative = ''; sync(getter()); tick(); } });
+    root.addEventListener('storage', event => { if (event.key === KEY) { enabled = read(KEY, false) === true; paint(); sync(getter()); } });
+  }
+  root.OharuReminders = { ...api, mount, sync, clear: () => { suspended = true; tasks = []; lastNative = ''; return sync([]); } };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
 <!-- oharu-launch-assets:end -->
 <script type="module">
 /* ═══════════════════════════════════════════════
@@ -808,7 +1081,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const CLOUD = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 // 데스크톱(Electron) 앱은 URL에 ?desktop=1을 붙여 로드한다: 로그인 필수 + 구글 버튼 숨김
-const IS_DESKTOP = new URLSearchParams(location.search).get("desktop") === "1";
+const IS_MOBILE = new URLSearchParams(location.search).get("mobile") === "1";
+const IS_IOS_APP = IS_MOBILE && new URLSearchParams(location.search).get("nativePlatform") === "ios";
+const IS_DESKTOP = !IS_MOBILE && new URLSearchParams(location.search).get("desktop") === "1";
 const URL_LANGS = new Set(["ko", "en", "ja", "zh", "es"]);
 const urlLangParam = new URLSearchParams(location.search).get("lang");
 
@@ -896,28 +1171,6 @@ const T = {
     carryTitle: "지난 할 일 {n}개가 남아있어요",
     carryBring: "오늘로 가져오기",
     carryDismiss: "괜찮아요",
-    setMcpTitle: "AI 연동",
-    mcpLoginRequired: "로그인하면 클로드·챗지피티·제미나이 같은 AI에서 오하루로 할 일을 바로 추가할 수 있어요.",
-    mcpDesc: "AI의 MCP(커넥터) 설정에 아래 연결 정보를 등록하면, 대화 중에 오하루로 할 일이 자동으로 추가돼요. AI마다 따로 발급하는 걸 권해요.",
-    mcpCreateBtn: "토큰 발급",
-    mcpRevokeBtn: "폐기",
-    mcpRevokeConfirm: "이 토큰을 폐기할까요? 연결된 AI에서 더 이상 오하루에 접근할 수 없어요.",
-    mcpRevokeFailed: "폐기에 실패했어요. 잠시 후 다시 시도해주세요.",
-    mcpCreateFailed: "발급에 실패했어요. 잠시 후 다시 시도해주세요.",
-    mcpCreatedAt: "발급",
-    mcpLastUsed: "최근 사용",
-    mcpNamePh: "연동할 AI",
-    mcpTokenWarn: "이 화면을 벗어나면 다시 볼 수 없어요. 지금 복사해서 안전한 곳에 붙여넣으세요.",
-    mcpUrlWithTokenLabel: "전체 주소 (클로드·제미나이 등 — URL 하나만 입력할 때)",
-    mcpUrlLabel: "서버 주소 (챗지피티 등 — URL/토큰을 따로 입력할 때)",
-    mcpTokenLabel: "토큰",
-    mcpCopyBtn: "복사",
-    mcpCopied: "복사됨",
-    mcpCloseBtn: "닫기",
-    mcpOptClaude: "클로드",
-    mcpOptChatgpt: "챗지피티",
-    mcpOptGemini: "제미나이",
-    mcpOptOther: "기타 AI",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -997,28 +1250,6 @@ const T = {
     carryTitle: "{n} unfinished from before",
     carryBring: "Bring to today",
     carryDismiss: "Not now",
-    setMcpTitle: "AI connection",
-    mcpLoginRequired: "Log in to let AI assistants like Claude, ChatGPT, or Gemini add to-dos to Oharu directly.",
-    mcpDesc: "Add the connection info below to your AI's MCP (connector) settings, and to-dos will be added to Oharu automatically during chats. We recommend issuing a separate token per AI.",
-    mcpCreateBtn: "Issue token",
-    mcpRevokeBtn: "Revoke",
-    mcpRevokeConfirm: "Revoke this token? The connected AI will no longer be able to access Oharu.",
-    mcpRevokeFailed: "Failed to revoke. Please try again.",
-    mcpCreateFailed: "Failed to issue. Please try again.",
-    mcpCreatedAt: "Issued",
-    mcpLastUsed: "Last used",
-    mcpNamePh: "AI to connect",
-    mcpTokenWarn: "You won't be able to see this again after leaving this screen. Copy it now and store it somewhere safe.",
-    mcpUrlWithTokenLabel: "Full URL (Claude, Gemini, etc. — when only one URL field is provided)",
-    mcpUrlLabel: "Server URL (ChatGPT, etc. — when URL and token are entered separately)",
-    mcpTokenLabel: "Token",
-    mcpCopyBtn: "Copy",
-    mcpCopied: "Copied",
-    mcpCloseBtn: "Close",
-    mcpOptClaude: "Claude",
-    mcpOptChatgpt: "ChatGPT",
-    mcpOptGemini: "Gemini",
-    mcpOptOther: "Other AI",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -1298,6 +1529,9 @@ function applyTexts() {
   $("calBtn").setAttribute("aria-label", t("calBtnAria"));
   $("setBtn").title = t("setBtnTitle");
   $("setBtn").setAttribute("aria-label", t("setBtnAria"));
+  $("settingsTitle").textContent = t("setBtnTitle");
+  $("settingsBackText").textContent = t("backLink").replace(/^←\s*/, "");
+  $("settingsBackBtn").setAttribute("aria-label", t("backLink").replace(/^←\s*/, ""));
   $("input").placeholder = t("inputPh");
   $("clock").title = t("clockTitle");
   $("clockClear").title = t("clockClearTitle");
@@ -1308,7 +1542,6 @@ function applyTexts() {
   $("carryBring").textContent = t("carryBring");
   $("carryDismiss").textContent = t("carryDismiss");
   $("setAccountTitle").textContent = t("setAccount");
-  $("setMcpTitle").textContent = t("setMcpTitle");
   $("setDesignTitle").textContent = t("setDisplay");
   $("setLangLabel").textContent = t("setLang");
   $("langSelect").options[0].textContent = t("langAuto");
@@ -1335,7 +1568,7 @@ function applyTexts() {
   const contactEl = document.querySelector('[data-i18n="contact"]');
   if (contactEl) contactEl.textContent = t("contact");
   $("seoLine").textContent = t("seoLine");
-  if (!IS_DESKTOP) {
+  if (!IS_DESKTOP && !IS_MOBILE) {
     $("setPcWidgetRow").hidden = false;
     $("setPcWidgetLabel").textContent = t("pcWidget");
     $("setPcWidgetLink").textContent = t("download");
@@ -1348,6 +1581,33 @@ function applyTexts() {
 
 // ── 유틸 ───────────────────────────────────────
 const $ = id => document.getElementById(id);
+
+function setupIOSMenu() {
+  if (!IS_IOS_APP || $("iosMenu")) return;
+  document.documentElement.classList.add("ios-app");
+  const main = $("mainView");
+  const actions = $("mainActions");
+  const scroll = document.createElement("div");
+  scroll.id = "iosMainScroll";
+  scroll.className = "ios-main-scroll";
+  while (main.firstChild) scroll.appendChild(main.firstChild);
+  // Keep buttons connected before document.getElementById looks them up.
+  main.appendChild(scroll);
+  const menu = document.createElement("nav");
+  menu.id = "iosMenu";
+  menu.className = "ios-menu";
+  for (const id of ["loginTopBtn", "calBtn", "setBtn"]) {
+    const button = $(id);
+    if (id !== "loginTopBtn") {
+      const label = document.createElement("span");
+      label.textContent = button.title;
+      button.appendChild(label);
+    }
+    menu.appendChild(button);
+  }
+  actions.remove();
+  main.appendChild(menu);
+}
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const todayStr = () => dstr(new Date());
 const fmtTime = hhmm => {
@@ -1380,7 +1640,7 @@ const newId = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" +
 
 // ── 저장소: local / cloud 동일 인터페이스 ─────────
 // todo: { id, text, time|null, done, todoDate, createdAt }
-let repo = null, supabase = null, currentUserId = null;
+let repo = null, supabase = null;
 
 function localRepo() {
   const KEY = "oneul.v3";
@@ -1914,7 +2174,11 @@ function render() {
 
 // ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
 function switchView(v) {
+  const leavingSettings = view === "set" && v !== "set";
   view = v;
+  const iosSettings = IS_IOS_APP && v === "set";
+  $("homeHeader").hidden = iosSettings;
+  $("settingsHeader").hidden = !iosSettings;
   $("calBtn").classList.toggle("on", v === "cal");
   $("setBtn").classList.toggle("on", v === "set");
   $("todayView").hidden = v !== "today";
@@ -1922,9 +2186,16 @@ function switchView(v) {
   $("setView").hidden = v !== "set";
   if (v === "cal") { calCursor = new Date(); selDate = todayStr(); }
   render();
+  if (IS_IOS_APP) {
+    if (iosSettings) $("settingsTitle").focus({ preventScroll: true });
+    else if (leavingSettings) $("setBtn").focus({ preventScroll: true });
+    if ($("iosMainScroll")) $("iosMainScroll").scrollTop = 0;
+    else window.scrollTo(0, 0);
+  }
 }
 $("calBtn").onclick = () => switchView(view === "cal" ? "today" : "cal");
 $("setBtn").onclick = () => switchView(view === "set" ? "today" : "set");
+$("settingsBackBtn").onclick = () => switchView("today");
 $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); renderCal(); };
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
@@ -1933,6 +2204,7 @@ const APP_VERSION = "1.8.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
+setupIOSMenu();
 $("appVersion").textContent = "v" + APP_VERSION;
 
 const uiSaved = loadUI();
@@ -2000,177 +2272,6 @@ if (IS_DESKTOP) {
   }
 }
 
-// ── AI 연동(MCP) ─────────────────────────────
-// 클로드/챗지피티/제미나이 같은 AI가 개인 토큰으로 오하루에 할 일을 추가할
-// 수 있게 하는 기능. 기존 todos CRUD 흐름과는 완전히 분리된 애드온이며,
-// public.todos 테이블/RLS는 이 코드에서 전혀 건드리지 않는다.
-const MCP_BASE_URL = SUPABASE_URL + "/functions/v1/mcp";
-
-function mcpB64urlFromBytes(bytes) {
-  let bin = "";
-  bytes.forEach(b => { bin += String.fromCharCode(b); });
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-async function mcpSha256Hex(text) {
-  const enc = new TextEncoder().encode(text);
-  const buf = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-function mcpGenToken() {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return "oharu_mcp_" + mcpB64urlFromBytes(bytes);
-}
-async function mcpCopyToClipboard(text) {
-  try { await navigator.clipboard.writeText(text); return true; }
-  catch { return false; }
-}
-function mcpFmtDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
-async function mcpLoadTokens() {
-  const { data, error } = await supabase
-    .from("mcp_tokens")
-    .select("id,name,token_prefix,created_at,last_used_at,revoked_at")
-    .is("revoked_at", null)
-    .order("created_at", { ascending: false });
-  if (error) { console.error("MCP 토큰 목록 조회 실패:", error.message); return []; }
-  return data || [];
-}
-function mcpShowReveal(plainToken) {
-  const box = $("mcpReveal");
-  if (!box) return;
-  box.hidden = false;
-  box.innerHTML = "";
-  const fullUrl = MCP_BASE_URL + "/" + plainToken;
-
-  const warn = document.createElement("div");
-  warn.className = "mcp-warn";
-  warn.textContent = t("mcpTokenWarn");
-  box.appendChild(warn);
-
-  const mkRow = (label, value) => {
-    const wrap = document.createElement("div");
-    const lab = document.createElement("div");
-    lab.className = "sub";
-    lab.textContent = label;
-    const row = document.createElement("div");
-    row.className = "mcp-row";
-    const val = document.createElement("div");
-    val.className = "mcp-val";
-    val.textContent = value;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "mcp-copy";
-    btn.textContent = t("mcpCopyBtn");
-    btn.onclick = async () => {
-      const ok = await mcpCopyToClipboard(value);
-      btn.textContent = ok ? t("mcpCopied") : t("mcpCopyBtn");
-      setTimeout(() => { btn.textContent = t("mcpCopyBtn"); }, 1500);
-    };
-    row.append(val, btn);
-    wrap.append(lab, row);
-    return wrap;
-  };
-
-  box.appendChild(mkRow(t("mcpUrlWithTokenLabel"), fullUrl));
-  box.appendChild(mkRow(t("mcpUrlLabel"), MCP_BASE_URL));
-  box.appendChild(mkRow(t("mcpTokenLabel"), plainToken));
-
-  const closeBtn = document.createElement("button");
-  closeBtn.type = "button";
-  closeBtn.className = "set-btn";
-  closeBtn.style.marginTop = "8px";
-  closeBtn.textContent = t("mcpCloseBtn");
-  closeBtn.onclick = () => { box.hidden = true; };
-  box.appendChild(closeBtn);
-}
-async function renderMcp(loggedIn) {
-  const root = $("mcpRows");
-  if (!root) return;
-  root.innerHTML = "";
-
-  if (!loggedIn || !supabase) {
-    const row = document.createElement("div");
-    row.className = "set-row";
-    row.innerHTML = `<span class="sub">${t("mcpLoginRequired")}</span>`;
-    root.appendChild(row);
-    return;
-  }
-
-  const descRow = document.createElement("div");
-  descRow.className = "set-row";
-  descRow.innerHTML = `<span class="sub">${t("mcpDesc")}</span>`;
-  root.appendChild(descRow);
-
-  const tokens = await mcpLoadTokens();
-  tokens.forEach(tok => {
-    const item = document.createElement("div");
-    item.className = "mcp-token-item";
-    const head = document.createElement("div");
-    head.className = "mcp-token-head";
-    const left = document.createElement("span");
-    left.textContent = `${tok.name} · ${tok.token_prefix}…`;
-    const revokeBtn = document.createElement("button");
-    revokeBtn.type = "button";
-    revokeBtn.className = "set-btn danger";
-    revokeBtn.textContent = t("mcpRevokeBtn");
-    revokeBtn.onclick = async () => {
-      if (!confirm(t("mcpRevokeConfirm"))) return;
-      revokeBtn.disabled = true;
-      const { error } = await supabase
-        .from("mcp_tokens")
-        .update({ revoked_at: new Date().toISOString() })
-        .eq("id", tok.id);
-      if (error) { alert(t("mcpRevokeFailed")); revokeBtn.disabled = false; return; }
-      renderMcp(true);
-    };
-    head.append(left, revokeBtn);
-    const meta = document.createElement("div");
-    meta.className = "mcp-token-meta";
-    meta.textContent = `${t("mcpCreatedAt")} ${mcpFmtDate(tok.created_at)}` +
-      (tok.last_used_at ? ` · ${t("mcpLastUsed")} ${mcpFmtDate(tok.last_used_at)}` : "");
-    item.append(head, meta);
-    root.appendChild(item);
-  });
-
-  const createRow = document.createElement("div");
-  createRow.className = "set-row";
-  const select = document.createElement("select");
-  select.setAttribute("aria-label", t("mcpNamePh"));
-  [["클로드", "mcpOptClaude"], ["챗지피티", "mcpOptChatgpt"], ["제미나이", "mcpOptGemini"], ["기타", "mcpOptOther"]].forEach(([v, k]) => {
-    const o = document.createElement("option");
-    o.value = v; o.textContent = t(k);
-    select.appendChild(o);
-  });
-  const createBtn = document.createElement("button");
-  createBtn.type = "button";
-  createBtn.className = "set-btn primary";
-  createBtn.textContent = t("mcpCreateBtn");
-  createBtn.onclick = async () => {
-    if (!currentUserId) return;
-    createBtn.disabled = true;
-    try {
-      const plain = mcpGenToken();
-      const hash = await mcpSha256Hex(plain);
-      const { error } = await supabase.from("mcp_tokens").insert({
-        user_id: currentUserId,
-        name: select.value,
-        token_hash: hash,
-        token_prefix: plain.slice(0, 18),
-      });
-      if (error) { alert(t("mcpCreateFailed")); return; }
-      mcpShowReveal(plain);
-      await renderMcp(true);
-    } finally {
-      createBtn.disabled = false;
-    }
-  };
-  createRow.append(select, createBtn);
-  root.appendChild(createRow);
-}
-
 // ── 시간 선택 ──────────────────────────────────
 const clock = $("clock"), timeInput = $("timeInput"), clockText = $("clockText");
 let pickedTime = null;
@@ -2231,22 +2332,24 @@ function rememberLoadedState() {
   lastLoadedTodosJson = todosSnapshot(todos);
   lastLoadedDate = todayStr();
 }
-async function startApp(r, { canLogout = false, guest = false, email = null, userId = null } = {}) {
+async function startApp(r, { canLogout = false, guest = false, email = null } = {}) {
   if (appStarted) return; // 로그인 이벤트 다중 발화 시 중복 부팅 방지
   appStarted = true;
   guestMode = guest;
   repo = r;
-  currentUserId = userId;
   $("authView").hidden = true;
   $("mainView").hidden = false;
   $("nudge").hidden = !guest;
   renderAccount(canLogout ? (email || t("signedIn")) : null);
-  renderMcp(!!canLogout); // 별도 애드온 — 실패해도 메인 투두 흐름에 영향 없음(fire-and-forget)
   await repo.rollover();
   todos = await repo.load();
   await backfillTodaySortOrder();
   render();
   rememberLoadedState();
+  if (IS_MOBILE && window.ReactNativeWebView) {
+    window.__oharuReady = true;
+    window.ReactNativeWebView.postMessage('oharu:ready');
+  }
   setInterval(async () => {
     await repo.rollover();
     const loaded = await repo.load();
@@ -2403,7 +2506,7 @@ if (!CLOUD) {
       } else if (!appStarted) {
         // 데스크톱 로그인 게이트/OAuth 복귀 등에서 로그인한 경우
         await migrateLocalIfAny();
-        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email, userId: sess.user && sess.user.id });
+        startApp(cloudRepo(), { canLogout: true, email: sess.user && sess.user.email });
       }
     }, 0);
   });
@@ -2415,7 +2518,7 @@ if (!CLOUD) {
   if (session) {
     // 구글 OAuth 복귀 등: 남아있는 게스트 데이터가 있으면 먼저 이전
     await migrateLocalIfAny();
-    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email, userId: session.user && session.user.id });
+    startApp(cloudRepo(), { canLogout: true, email: session.user && session.user.email });
   } else if (isOAuthReturn) {
     // 인증 복귀 중: 세션 교환이 끝나면 onAuthStateChange가 이전 후 앱을 시작한다.
     // 여기서 게스트 모드를 시작하면 이전 작업과 경쟁 상태가 생기므로 대기한다.

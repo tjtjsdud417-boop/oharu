@@ -1,0 +1,11 @@
+{
+  "name": "oharu-release-checks",
+  "version": "1.8.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs scripts/keepalive.test.mjs desktop/test/*.test.js mobile/reminders.test.cjs mobile/widget.test.cjs",
+    "preview": "node scripts/preview.cjs",
+    "test:browser": "node scripts/browser-check.cjs"
+  },
+  "devDependencies": { "playwright": "1.62.1" }
+}

@@ -1,0 +1,22 @@
+# Upload only the mobile app and its required assets, not local agent files,
+# generated native projects, store drafts, credentials, or unrelated documents.
+*
+!.easignore
+!App.js
+!reminders.cjs
+!widget.cjs
+!plugins/
+!plugins/**
+!index.js
+!app.json
+!eas.json
+!metro.config.js
+!package.json
+!package-lock.json
+!assets/
+assets/*
+!assets/oharu-icon-1024.png
+!assets/oharu-icon-512.png
+!assets/web/
+assets/web/*
+!assets/web/app.html
