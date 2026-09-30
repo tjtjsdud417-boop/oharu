@@ -32,7 +32,7 @@
   const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
   let enabled = read(KEY, false) === true, tasks = [], identity = 'guest', busy = false, suspended = false;
   let getter = () => [], lastNative = '', request = 0, pendingNative = null, failedSignature = '', retryAt = 0, failures = 0;
-  let lastDesktopPoll = 0, pollingDesktop = false, desktopHadError = false;
+  let lastDesktopPoll = 0, pollingDesktop = false, desktopHadError = false, pendingPermission = null;
   const memoryLedgers = new Map();
   const native = () => !!root.ReactNativeWebView;
   const desktop = () => !!root.desktopBridge?.syncReminders;
@@ -97,10 +97,13 @@
       memoryLedgers.set(owner, delivered);
       for (const task of due(tasks, delivered, Date.now())) {
         try {
-          if (suspended || !enabled || identity !== owner || !tasks.some(t => t.id === task.id && t.dueAt === task.dueAt)) break;
-          const options = { body: task.title, tag: `oharu:${identity}:${task.id}:${task.dueAt}`, icon: '/icon-192.png' };
+          if (suspended || !enabled || identity !== owner) break;
+          if (!tasks.some(t => t.id === task.id && t.dueAt === task.dueAt)) continue;
           const registration = await navigator.serviceWorker?.getRegistration();
           if (suspended || !enabled || identity !== owner) break;
+          const current = tasks.find(t => t.id === task.id && t.dueAt === task.dueAt && !t.done);
+          if (!current || current.dueAt <= Date.now() - GRACE_MS || current.dueAt > Date.now()) continue;
+          const options = { body: current.title, tag: `oharu:${owner}:${current.id}:${current.dueAt}`, icon: '/icon-192.png' };
           // Reserve in memory and validated storage before display; storage failure cannot spam the same tab.
           delivered[`${task.id}:${task.dueAt}`] = Date.now(); write(key, delivered);
           if (registration) await registration.showNotification('오하루 · 할 일 시간이에요', options);
@@ -117,7 +120,9 @@
   async function toggle() {
     if (enabled) { enabled = false; write(KEY, false); paint(); await sync([]); return; }
     if (native()) {
-      root.ReactNativeWebView.postMessage(JSON.stringify({ type: 'oharu:reminders:permission', version: 1, requestId: String(++request) }));
+      const requestId = String(++request);
+      pendingPermission = { requestId, owner: identity };
+      root.ReactNativeWebView.postMessage(JSON.stringify({ type: 'oharu:reminders:permission', version: 1, requestId }));
       return;
     }
     if (!desktop()) {
@@ -140,16 +145,23 @@
     root.addEventListener('oharu:reminders:resync', () => { resetDelivery(); sync(getter()); });
     root.addEventListener('oharu:native-reminders', event => {
       const result = event.detail || {};
-      if (result.status !== 'granted' && result.requestId && result.requestId !== pendingNative?.requestId) return;
+      if (pendingPermission && result.requestId === pendingPermission.requestId) {
+        const owner = pendingPermission.owner; pendingPermission = null;
+        if (suspended || identity !== owner) return;
+        if (result.status === 'granted') { enabled = true; write(KEY, true); paint(); resetDelivery(); sync(getter()); }
+        else if (result.status === 'denied') status('알림 권한이 거부되어 예약할 수 없어요. 휴대폰 설정에서 허용해주세요.');
+        else status('알림 권한을 확인하지 못했어요. 휴대폰 설정을 확인하고 다시 시도해주세요.');
+        return;
+      }
+      if (result.status === 'granted' || (result.requestId && result.requestId !== pendingNative?.requestId)) return;
       if (['scheduled','disabled','denied'].includes(result.status) && !result.failed && pendingNative) { lastNative = pendingNative.signature; pendingNative = null; failures = 0; retryAt = 0; }
       if (['schedule-error','error','unavailable','invalid-message'].includes(result.status) || result.failed) failed(pendingNative?.signature || failedSignature);
-      if (result.status === 'granted') { if (suspended) return; enabled = true; write(KEY, true); paint(); resetDelivery(); sync(getter()); }
-      else if (result.status === 'denied') status('알림 권한이 거부되어 예약할 수 없어요. 휴대폰 설정에서 허용해주세요.');
+      if (result.status === 'denied') status('알림 권한이 거부되어 예약할 수 없어요. 휴대폰 설정에서 허용해주세요.');
       else if (result.status === 'schedule-error' || result.status === 'error' || result.status === 'unavailable' || result.status === 'invalid-message') status('알림 예약 실패. 휴대폰 설정과 권한을 확인해주세요.');
       else if (typeof result.scheduled === 'number' && enabled) status(`예약된 알림 ${result.scheduled}개${result.omitted ? ` · 제한으로 제외 ${result.omitted}개` : ''}. 변경 뒤 앱을 열어 동기화해주세요.`);
     });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { resetDelivery(); sync(getter()); tick(); pollDesktopStatus(); } });
     root.addEventListener('storage', event => { if (event.key === KEY) { enabled = read(KEY, false) === true; paint(); sync(getter()); } });
   }
-  root.OharuReminders = { ...api, mount, sync, clear: () => { suspended = true; tasks = []; resetDelivery(); return sync([]); } };
+  root.OharuReminders = { ...api, mount, sync, clear: () => { suspended = true; tasks = []; pendingPermission = null; resetDelivery(); return sync([]); } };
 })(typeof window !== 'undefined' ? window : globalThis);
