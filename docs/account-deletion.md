@@ -1,4 +1,4 @@
-> 2026-10-01 배포 진행 갱신: 아래 준비 단계 설명보다 이 상태를 우선한다. 검토된 FK가 정확한 Oharu 프로젝트에 적용·재조회되었고, 내부 gate=false인 delete-account v1을 gateway verify_jwt=true로 배포하여 거부 동작을 검증했다. 로컬 entrypoint에만 활성화를 준비했으며 **활성 버전 배포는 새 커밋 CI 통과 대기**다. adapter 기본값 false는 유지했다. 실제 사용자 계정삭제는 실행하지 않았다.
+> 2026-10-01 최종 배포 상태: 검토된 FK 적용 및 재조회 완료. 활성화 커밋 ecd7f597의 CI 성공 후 delete-account **v2 ACTIVE / gateway verify_jwt=true** 배포 완료. 원격 entrypoint 활성 flag와 소스 일치, 무인증·위조·anon·주입 거부 및 CORS를 검증했다. 실제 사용자 계정삭제·실기기 삭제 E2E는 실행하지 않았다. 아래 비활성 준비 단계 기록은 이 최종 상태보다 이전 이력이다.
 
 # 계정삭제 서버 준비 상태 — 2026-10-01
 
@@ -104,3 +104,14 @@ verified MFA factor가 있는 계정은 password/OAuth 모두 서명 검증된 �
 - 실제 사용자 토큰 없는 HTTP 검증: 무인증401, 위조형식JWT401, 기존 공개anonJWT의 정확OAuth body는503 deletion_not_enabled/deleted:false, GET405, 악성Origin403, 정상웹 preflight204. 공개 client key는 메모리에서만 사용하고 출력하지 않았다.
 - [공식 gateway 문서](https://supabase.com/docs/guides/functions/auth-headers)는 현재 verify_jwt=true가 HS256과 새 asymmetric signing keys 모두 검증한다고 설명한다. 보안을 완화해 flag를 끄지 않고 handler의 getUser/getClaims·재인증 검사도 유지했다.
 - 활성화 diff는 index.ts에서 factory 반환 adapter에 securityPrerequisites=true를 설정하는 부분뿐이다. adapter의 안전한 기본 false, frozen handler 및 기존 fixture는 바꾸지 않았다. 이 로컬 설정은 추가 커밋 CI 성공 후에만 원격 활성 버전으로 배포한다.
+
+
+### 활성 v2 결과
+
+- Source `ecd7f59770235134cf27b6f8bfe195a627653bf5`; [activation launch CI 36841448415](https://github.com/tjtjsdud417-boop/oharu/actions/runs/36841448415) 성공 후 명시적 실행 신호로 1회 배포.
+- Function ID `b72fa900-0110-498f-8494-4753e23b9101`, version 2, ACTIVE, verify_jwt=true, bundle SHA256 `07bab7a306e69b1bbbe7a07fae26c018465c200ee39746d0adc3a4ea809c5629`.
+- 원격 get_edge_function의 index.ts에서 활성 flag 확인. handler/adapter 포함 배포 소스 3파일은 확정 커밋과 대조했다.
+- FK 동일 정의/NOT VALID 및 Storage buckets=0을 활성 배포 후 다시 확인했다.
+- 운영 HTTP 거부 검사(실제 사용자 토큰 없음): 무인증401, 위조JWT401, 공개anonJWT401 authentication_failed/deleted:false, ownerId 주입400 invalid_body, 악성Origin403 origin_denied, 정상웹 preflight204/정확Origin.
+- 로컬 기존 서버 테스트18/18, index.ts문법 검사, 실제 entrypoint의 가상 SDK 실행(본인 mock harddelete/잘못된 인증/Storage/프로젝트 차단) 통과.
+- 운영 사용자 삭제·행삭제 테스트·신규계정·새키·RLS/grant 변경 없음. 실제 사용자 비밀번호/Google/MFA 인증과 전체 삭제 성공의 운영 E2E는 이 결과로 주장하지 않는다.
