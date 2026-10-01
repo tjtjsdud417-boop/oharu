@@ -1,7 +1,7 @@
 {
   "name": "oharu-desktop",
   "productName": "Oharu",
-  "version": "1.8.0",
+  "version": "1.8.2",
   "description": "Oharu — 오늘의 할 일",
   "main": "main.js",
   "author": "moodweb",
@@ -41,6 +41,7 @@
         "filter": [
           "index.html",
           "theme-system.js",
+          "theme-navigation.js",
           "settings-experience.js",
           "theme-system.css",
           "reminders.js",

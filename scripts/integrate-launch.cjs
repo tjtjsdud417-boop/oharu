@@ -9,8 +9,8 @@ for (const name of ['web/index.html', 'mobile/assets/web/app.html']) {
   const start = '<!-- oharu-launch-assets:start -->';
   const end = '<!-- oharu-launch-assets:end -->';
   const assets = mobile
-    ? `<style>${fs.readFileSync(path.join(root, 'web/theme-system.css'), 'utf8')}</style>\n<script>${fs.readFileSync(path.join(root, 'web/theme-system.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/settings-experience.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/reminders.js'), 'utf8')}</script>`
-    : '<link rel="stylesheet" href="./theme-system.css">\n<script src="./theme-system.js"></script>\n<script src="./settings-experience.js"></script>\n<script src="./reminders.js"></script>';
+    ? `<style>${fs.readFileSync(path.join(root, 'web/theme-system.css'), 'utf8')}</style>\n<script>${fs.readFileSync(path.join(root, 'web/theme-system.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/theme-navigation.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/settings-experience.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/reminders.js'), 'utf8')}</script>`
+    : '<link rel="stylesheet" href="./theme-system.css">\n<script src="./theme-system.js"></script>\n<script src="./theme-navigation.js"></script>\n<script src="./settings-experience.js"></script>\n<script src="./reminders.js"></script>';
   const block = `${start}\n${assets}\n${end}`;
   if (html.includes(start)) html = html.slice(0, html.indexOf(start)) + block + html.slice(html.indexOf(end) + end.length);
   else html = html.replace('<script type="module">', `${block}\n<script type="module">`);
@@ -44,6 +44,27 @@ for (const name of ['web/index.html', 'mobile/assets/web/app.html']) {
   if (html.includes('await verifyDeletionOAuthReturn();')) html = html.replace('await verifyDeletionOAuthReturn();', 'await verifyDeletionOAuthReturn();\n  window.OharuThemes?.connect(supabase);');
   else html = html.replace(/(supabase = createClient\([^;]+;)/, '$1\n  window.OharuThemes?.connect(supabase);');
   html = html.replace(/const APP_VERSION = "[^"]+";/, 'const APP_VERSION = "1.8.0";');
+  if (!html.includes('window.OharuThemeRoute = {')) {
+    const route = mobile
+      ? `window.OharuThemeRoute = {
+  enter() {
+    if (IS_IOS_APP) { saveIOSRoute(); pushIOSRoute('set'); }
+    else history.pushState({...history.state}, '', location.href);
+    history.replaceState({...history.state, oharuThemeDetail:true}, '', location.href);
+  },
+  restore() { switchView('set', true); }
+};
+`
+      : `window.OharuThemeRoute = {
+  enter() { history.pushState({...history.state, oharuThemeDetail:true}, '', location.href); },
+  restore() { switchView('set'); }
+};
+`;
+    html = html.replace(mobile ? 'function stashIOSCalendarDraft() {' : 'function switchView(v) {', route + (mobile ? 'function stashIOSCalendarDraft() {' : 'function switchView(v) {'));
+  }
+  if (!html.includes('window.OharuThemeNavigation?.viewChanged(v);')) html = html.replace('$("setView").hidden = v !== "set";', '$("setView").hidden = v !== "set";\n  window.OharuThemeNavigation?.viewChanged(v);');
+  if (mobile && !html.includes('window.OharuThemeNavigation?.beforeRestore();')) html = html.replace('function restoreIOSRoute(event) {', 'function restoreIOSRoute(event) {\n  window.OharuThemeNavigation?.beforeRestore();');
+  if (mobile && !html.includes("if ($('authView').hidden && window.OharuThemeNavigation?.isOpen())")) html = html.replace('function closeIOSScreen() {', "function closeIOSScreen() {\n  if ($('authView').hidden && window.OharuThemeNavigation?.isOpen()) {\n    window.OharuThemeNavigation.back(); return;\n  }");
   fs.writeFileSync(filename, html);
   console.log(`Integrated ${name}`);
 }

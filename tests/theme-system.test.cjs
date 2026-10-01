@@ -28,8 +28,9 @@ test('declarative visual data rejects unapproved assets, URLs, executable fields
   for(const [key,bad] of [['scene','https://evil.test/a.svg'],['scene','cloud-post'],['pattern','url(x)'],['pet','cat'],['motion','gentle']]){const candidate=JSON.parse(JSON.stringify(value));candidate.visual[key]=bad;assert.throws(()=>api.validate(candidate));}
   const extra=JSON.parse(JSON.stringify(value));extra.visual.script='alert(1)';assert.throws(()=>api.validate(extra));
 });
-test('exactly ten distinct built-ins pass all foreground/background contrast pairs',()=>{
-  assert.equal(api.themes.length,10); assert.equal(new Set(api.themes.map(t=>t.tokens.bg)).size,10);
+test('exactly ten distinct button palettes keep every brand surface and pass contrast',()=>{
+  assert.equal(api.themes.length,10); assert.equal(new Set(api.themes.map(t=>t.tokens.accent)).size,10);
+  for(const theme of api.themes)assert.deepEqual(Object.fromEntries(['bg','card','soft','line','dangerSoft'].map(k=>[k,theme.tokens[k]])),{bg:'#F2F4F6',card:'#FFFFFF',soft:'#E8F3FF',line:'#F2F4F6',dangerSoft:'#FEECEE'});
   for(const t of api.themes) assert.doesNotThrow(()=>api.validate({version:1,name:t.name,tokens:t.tokens}));
 });
 test('contrast uses WCAG relative luminance',()=>{assert.equal(api.contrast('#000000','#FFFFFF'),21);assert.equal(api.contrast('#FFFFFF','#FFFFFF'),1);});
@@ -56,6 +57,7 @@ test('reject invalid shape, future schema, oversize and illegible themes without
   const before=api.exportTheme();assert.throws(()=>api.apply({id:'custom',theme:t}));assert.deepEqual(api.exportTheme(),before);
 });
 test('export/import round trip strips no tokens and supports Unicode names',()=>{const t=sample();t.name='나의 숲 🌿';assert.deepEqual(api.validate(JSON.stringify(t)),t);});
+test('editing exported JSON data cannot mutate the default or selected palette',()=>{const before=sample(),exported=api.exportTheme();exported.tokens.bg='#000000';exported.tokens.accent='#FFFFFF';assert.deepEqual(api.exportTheme(),before);});
 test('requires every token and rejects extra nested data',()=>{const t=sample();delete t.tokens.line;assert.throws(()=>api.validate(t));t.tokens.line='#FFFFFF';t.tokens.layout={width:0};assert.throws(()=>api.validate(t));});
 function browser(seed={}) {
   const data=new Map(Object.entries(seed)), styles=new Map(), listeners={};
@@ -64,18 +66,37 @@ function browser(seed={}) {
 }
 test('local persistence, corrupt storage recovery and default CSS restoration',async()=>{
   const b=browser({'oharu.theme.v1.guest':'{bad'});assert.equal(b.styles.size,0);
-  await b.api.save({id:'forest'});assert.equal(b.styles.get('--bg'),'#E9F0E8');
-  const reload=browser(Object.fromEntries(b.data));assert.equal(reload.styles.get('--bg'),'#E9F0E8');
+  await b.api.save({id:'forest'});assert.equal(b.styles.get('--blue'),'#286440');assert.equal(b.styles.has('--bg'),false);assert.equal(b.styles.has('--card'),false);
+  const reload=browser(Object.fromEntries(b.data));assert.equal(reload.styles.get('--blue'),'#286440');
   await b.api.save({id:'default'});assert.equal(b.styles.size,0);assert.equal(b.window.document.documentElement.dataset.oharuTheme,undefined);
 });
-test('storage denial does not prevent application',async()=>{const b=browser();b.window.localStorage.setItem=()=>{throw Error('denied')};await assert.doesNotReject(b.api.save({id:'mint'}));assert.equal(b.styles.get('--bg'),'#E4F3EE');});
+test('storage denial does not prevent application',async()=>{const b=browser();b.window.localStorage.setItem=()=>{throw Error('denied')};await assert.doesNotReject(b.api.save({id:'mint'}));assert.equal(b.styles.get('--blue'),'#176C57');});
 test('account metadata sync isolates users and signout restores guest',async()=>{
   const b=browser(); await b.api.save({id:'rose'});let authListener;const writes=[];
   const client={auth:{onAuthStateChange:fn=>authListener=fn,getUser:async()=>({data:{user:{id:'account-a',user_metadata:{oharu_theme_v1:{id:'ocean'}}}}}),updateUser:async x=>{writes.push(x);return {error:null}}}};
-  b.api.connect(client); await new Promise(r=>setImmediate(r));assert.equal(b.styles.get('--bg'),'#E5F0F5');
+  b.api.connect(client); await new Promise(r=>setImmediate(r));assert.equal(b.styles.get('--blue'),'#126782');
   await b.api.save({id:'mint'});assert.equal(writes[0].data.oharu_theme_v1.id,'mint');
-  authListener('SIGNED_OUT',null);assert.equal(b.styles.get('--bg'),'#F7E9ED');assert.ok(b.data.has('oharu.theme.v1.account-a'));
+  authListener('SIGNED_OUT',null);assert.equal(b.styles.get('--blue'),'#994460');assert.ok(b.data.has('oharu.theme.v1.account-a'));
 });
 test('failed cloud write retains local choice and reports no rejection',async()=>{
   const b=browser();b.api.connect({auth:{onAuthStateChange:()=>{},getUser:async()=>({data:{user:{id:'u',user_metadata:{}}}}),updateUser:async()=>({error:Error('offline')})}});await new Promise(r=>setImmediate(r));await assert.doesNotReject(b.api.save({id:'sand'}));assert.equal(JSON.parse(b.data.get('oharu.theme.v1.u')).id,'sand');
+});
+test('legacy colored surfaces normalize before preview/export without mutating input or unrelated data',()=>{
+ const legacy=sample();legacy.name='기존 사용자 테마';Object.assign(legacy.tokens,{bg:'#E9F0E8',card:'#F9FCF7',soft:'#DCECDD',line:'#E9F0E8',text:'#203B2C',muted:'#4D6556',accent:'#286440'});const original=JSON.stringify(legacy);
+ const theme=api.validate(legacy);assert.equal(JSON.stringify(legacy),original);assert.equal(theme.name,legacy.name);assert.equal(theme.tokens.text,legacy.tokens.text);assert.equal(theme.tokens.accent,legacy.tokens.accent);
+ for(const k of ['bg','card','soft','line','dangerSoft'])assert.equal(theme.tokens[k],sample().tokens[k]);
+ const raw=JSON.stringify({id:'custom',theme:legacy}),todo='{"syntheticTask":"preserve exact bytes"}';const b=browser({'oharu.theme.v1.guest':raw,'oneul.v3':todo});assert.equal(b.api.exportTheme().name,legacy.name);assert.equal(b.styles.get('--blue'),'#286440');assert.equal(b.data.get('oharu.theme.v1.guest'),raw);assert.equal(b.data.get('oneul.v3'),todo);
+ assert.equal(b.styles.has('--bg'),false);assert.equal(b.styles.has('--card'),false);assert.equal(b.styles.has('--blue-soft'),false);assert.equal(b.styles.has('--line'),false);assert.equal(b.styles.has('--danger-soft'),false);
+ const schema=JSON.parse(fs.readFileSync(require.resolve('../web/theme-schema.json'),'utf8'));for(const k of ['bg','card','soft','line','dangerSoft']){assert.equal(schema.properties.tokens.properties[k].readOnly,true);assert.equal(schema.properties.tokens.properties[k].default,theme.tokens[k]);}
+ assert.match(api.prompt,/bg=#F2F4F6, card=#FFFFFF/);assert.deepEqual(api.validate(JSON.stringify(theme)),theme);
+});
+test('readable legacy dark themes keep their identity and recover only incompatible foregrounds on restore',()=>{
+ const dark=sample();dark.name='기존 어두운 테마';Object.assign(dark.tokens,{bg:'#000000',card:'#000000',soft:'#000000',line:'#000000',dangerSoft:'#000000',text:'#FFFFFF',muted:'#BBBBBB',accent:'#757575',danger:'#F04452'});const value={id:'custom',theme:dark},before=JSON.stringify(value);
+ const normalized=api.normalize(value);assert.deepEqual(api.validate(JSON.stringify(dark)),normalized.theme);assert.equal(normalized.id,'custom');assert.equal(normalized.theme.name,dark.name);assert.equal(JSON.stringify(value),before);assert.deepEqual(normalized.theme.tokens,sample().tokens);
+ const raw=JSON.stringify(value),b=browser({'oharu.theme.v1.guest':raw});assert.equal(b.api.exportTheme().name,dark.name);assert.equal(b.data.get('oharu.theme.v1.guest'),raw);assert.equal(b.window.document.documentElement.dataset.oharuTheme,'custom');
+ const illegible=JSON.parse(before);illegible.theme.tokens.text='#000000';assert.throws(()=>api.normalize(illegible));
+});
+test('restoring legacy account metadata does not upload a migration or alter other metadata/tasks',async()=>{
+ const legacy=sample();legacy.tokens.bg='#E9F0E8';legacy.tokens.card='#F9FCF7';legacy.name='Saved custom';const user={id:'owner',user_metadata:{oharu_theme_v1:{id:'custom',theme:legacy},other_setting:'keep'}};const before=JSON.stringify(user),writes=[];const b=browser({'oneul.v3':'unchanged fixture'});
+ b.api.connect({auth:{onAuthStateChange(){},getUser:async()=>({data:{user}}),updateUser:async x=>{writes.push(x);return {error:null}}}});await new Promise(r=>setImmediate(r));assert.equal(b.api.exportTheme().name,'Saved custom');assert.deepEqual(writes,[]);assert.equal(JSON.stringify(user),before);assert.equal(b.data.get('oneul.v3'),'unchanged fixture');
 });

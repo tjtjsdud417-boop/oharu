@@ -2,6 +2,11 @@
   'use strict';
   const KEYS = ['bg','card','text','muted','accent','soft','line','danger','dangerSoft'];
   const MAP = {bg:'--bg',card:'--card',text:'--text',muted:'--text-sub',accent:'--blue',soft:'--blue-soft',line:'--line',danger:'--danger',dangerSoft:'--danger-soft'};
+  // Keep ThemeV1's nine fields for existing saved/imported files. Only foreground
+  // and button colors vary; surfaces and decorative separators retain the brand.
+  const SURFACES={bg:'#F2F4F6',card:'#FFFFFF',soft:'#E8F3FF',line:'#F2F4F6',dangerSoft:'#FEECEE'};
+  const COLORS=['text','muted','accent','danger'];
+  const PAIRS=[['text','bg'],['text','card'],['muted','bg'],['muted','card'],['accent','bg'],['accent','card'],['accent','soft'],['danger','card'],['danger','dangerSoft']];
   const palettes = [
     ['default','오하루 기본','#F2F4F6','#FFFFFF','#191F28','#526070','#205FC1','#E8F3FF'],
     ['forest','숲의 아침','#E9F0E8','#F9FCF7','#203B2C','#4D6556','#286440','#DCECDD'],
@@ -17,7 +22,7 @@
   // New illustrated themes are deferred until the owner approves representative designs.
   const SCENES=['none'],PATTERNS=['none'];
   const EN_NAMES=['Oharu default','Forest morning','Rose garden','Blue ocean','Lavender afternoon','Sand and sunlight','A cup of mint','Peach','Quiet ink','Lemon garden'];
-  const themes = palettes.map(([id,name,bg,card,text,muted,accent,soft],i) => ({id,name,enName:EN_NAMES[i],version:1,tokens:{bg,card,text,muted,accent,soft,line:bg,danger:'#AF2434',dangerSoft:'#FEECEE'}}));
+  const themes = palettes.map(([id,name,bg,card,text,muted,accent,soft],i) => ({id,name,enName:EN_NAMES[i],version:1,tokens:{bg,card,text,muted,accent,soft,line:bg,danger:'#AF2434',dangerSoft:'#FEECEE',...SURFACES}}));
   const DEFAULT={version:1,name:'오하루 기본',tokens:{bg:'#F2F4F6',card:'#FFFFFF',text:'#191F28',muted:'#526070',accent:'#205FC1',soft:'#E8F3FF',line:'#F2F4F6',danger:'#AF2434',dangerSoft:'#FEECEE'}};
   function validateVisual(v) {
     if(!v || typeof v!=='object' || Array.isArray(v) || Object.keys(v).sort().join(',')!=='motion,pattern,pet,scene') throw Error('장식은 scene, pattern, pet, motion만 사용할 수 있어요.');
@@ -26,6 +31,10 @@
   }
   function luminance(hex) { const a=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:Math.pow((x+.055)/1.055,2.4)); return .2126*a[0]+.7152*a[1]+.0722*a[2]; }
   function contrast(a,b) { const x=luminance(a),y=luminance(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+  function checkContrast(t) {
+    for(const [a,b] of PAIRS) if(contrast(t[a],t[b])<4.5) throw Error(a+' / '+b+' 글자 대비가 낮아요. 4.5:1 이상으로 조정해 주세요.');
+    if(contrast(t.accent,'#FFFFFF')<4.5) throw Error('버튼의 흰색 글자가 읽히도록 강조색을 어둡게 해 주세요.');
+  }
   function validate(input) {
     if (typeof input==='string') { if(input.length>8192) throw Error('테마 파일은 8KB 이하여야 해요.'); input=JSON.parse(input); }
     if(!input || typeof input!=='object' || Array.isArray(input) || !['name,tokens,version','name,tokens,version,visual'].includes(Object.keys(input).sort().join(','))) throw Error('version, name, tokens와 선택적인 visual만 사용할 수 있어요.');
@@ -33,12 +42,18 @@
     const t=input.tokens;
     if(!t || typeof t!=='object' || Array.isArray(t) || Object.keys(t).sort().join(',')!==KEYS.slice().sort().join(',')) throw Error('색상 토큰 9개를 정확히 입력해 주세요.');
     for(const k of KEYS) if(typeof t[k]!=='string' || !/^#[0-9a-f]{6}$/i.test(t[k])) throw Error('색상은 #RRGGBB 형식만 사용할 수 있어요.');
-    const pairs=[['text','bg'],['text','card'],['muted','bg'],['muted','card'],['accent','bg'],['accent','card'],['accent','soft'],['danger','card'],['danger','dangerSoft']];
-    for(const [a,b] of pairs) if(contrast(t[a],t[b])<4.5) throw Error(a+' / '+b+' 글자 대비가 낮아요. 4.5:1 이상으로 조정해 주세요.');
-    if(contrast(t.accent,'#FFFFFF')<4.5) throw Error('버튼의 흰색 글자가 읽히도록 강조색을 어둡게 해 주세요.');
-    return {version:1,name:input.name,tokens:Object.fromEntries(KEYS.map(k=>[k,t[k].toUpperCase()])),...(input.visual?{visual:validateVisual(input.visual)}:{})};
+    const tokens={...Object.fromEntries(KEYS.map(k=>[k,t[k].toUpperCase()])),...SURFACES};
+    if(Object.entries(SURFACES).some(([k,v])=>t[k].toUpperCase()!==v)){
+      // A previously valid dark/colored ThemeV1 file keeps its identity. Replace
+      // only foregrounds that cannot be read on the now-fixed surfaces. Never
+      // rescue malformed or previously illegible data, or mutate the input object.
+      checkContrast(t);
+      for(const k of COLORS)if(PAIRS.some(([a,b])=>a===k&&contrast(tokens[a],tokens[b])<4.5)||(k==='accent'&&contrast(tokens.accent,'#FFFFFF')<4.5))tokens[k]=DEFAULT.tokens[k];
+    }
+    checkContrast(tokens);
+    return {version:1,name:input.name,tokens,...(input.visual?{visual:validateVisual(input.visual)}:{})};
   }
-  function portable(t) { return {version:1,name:t.name,tokens:t.tokens,...(t.visual?{visual:validateVisual(t.visual)}:{})}; }
+  function portable(t) { return {version:1,name:t.name,tokens:{...t.tokens},...(t.visual?{visual:validateVisual(t.visual)}:{})}; }
   themes.forEach(t=>validate(portable(t)));
   let current={id:'default'}, account='guest', client=null, statusEl=null, selectEl=null, pending=false, generation=0;
   let ownership=0, resetDraft=()=>{}, refreshUI=()=>{};
@@ -65,9 +80,8 @@
     delete el.dataset.oharuTheme;
     if(current.id!=='default') {
       const theme=current.id==='custom'?current.theme:themes.find(t=>t.id===current.id);
-      for(const k of KEYS) el.style.setProperty(MAP[k],theme.tokens[k]);
+      for(const k of COLORS) el.style.setProperty(MAP[k],theme.tokens[k]);
       el.style.setProperty('--text-faint',theme.tokens.muted);
-      el.style.setProperty('--theme-bg-rgb',theme.tokens.bg.slice(1).match(/../g).map(x=>parseInt(x,16)).join(' '));
       el.dataset.oharuTheme=current.id;
     }
     if(selectEl) { let custom=selectEl.querySelector('[value="custom"]'); if(current.id==='custom' && !custom) { custom=root.document.createElement('option'); custom.value='custom'; selectEl.append(custom); } if(custom) { if(current.id==='custom') custom.textContent=current.theme.name; else custom.remove(); } selectEl.value=current.id; }
@@ -111,7 +125,7 @@
     });
     refresh();
   }
-  const prompt='오하루 테마 JSON을 만들어 주세요. 할 일, 계정 정보, API 키는 필요하지 않습니다. 코드 블록 없이 JSON만 출력하세요. 구조는 '+JSON.stringify(portable(themes[1]))+'. version=1, name은 1~40자, tokens의 9개 키 값은 #RRGGBB만 가능합니다. 현재는 색상 테마만 지원합니다. 선택적인 visual은 scene=none, pattern=none, pet=none, motion=off만 허용합니다. text와 muted는 bg/card에, accent는 bg/card/soft에, danger는 card/dangerSoft에 WCAG 대비 4.5:1 이상이어야 합니다. accent 위 흰색 버튼 글자도 4.5:1 이상이어야 합니다. URL, CSS, JavaScript, 사용자 자산, 추가 속성은 금지합니다. 원하는 분위기: ';
+  const prompt='오하루 테마 JSON을 만들어 주세요. 할 일, 계정 정보, API 키는 필요하지 않습니다. 코드 블록 없이 JSON만 출력하세요. 구조는 '+JSON.stringify(portable(themes[1]))+'. version=1, name은 1~40자, tokens의 9개 키 값은 #RRGGBB만 가능합니다. 버튼·글자색(text, muted, accent, danger)만 변경합니다. bg=#F2F4F6, card=#FFFFFF, soft=#E8F3FF, line=#F2F4F6, dangerSoft=#FEECEE는 고정입니다. 카드 배경·형태·폰트·레이아웃은 유지합니다. 선택적인 visual은 scene=none, pattern=none, pet=none, motion=off만 허용합니다. text와 muted는 bg/card에, accent는 bg/card/soft에, danger는 card/dangerSoft에 WCAG 대비 4.5:1 이상이어야 합니다. accent 위 흰색 버튼 글자도 4.5:1 이상이어야 합니다. URL, CSS, JavaScript, 사용자 자산, 추가 속성은 금지합니다. 원하는 분위기: ';
   function previewImage(theme) {
     const t=validate(portable(theme)).tokens;
     const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 180"><rect width="280" height="180" fill="'+t.bg+'"/><rect x="20" y="19" width="50" height="6" rx="3" fill="'+t.muted+'"/><rect x="20" y="36" width="143" height="12" rx="5" fill="'+t.text+'"/><rect x="215" y="20" width="42" height="25" rx="8" fill="'+t.accent+'"/><rect x="20" y="65" width="240" height="92" rx="14" fill="'+t.card+'"/><circle cx="40" cy="88" r="6" stroke="'+t.muted+'" fill="none"/><rect x="58" y="84" width="144" height="7" rx="3" fill="'+t.text+'"/><rect x="58" y="97" width="48" height="4" rx="2" fill="'+t.muted+'"/><circle cx="40" cy="127" r="6" fill="'+t.accent+'"/><rect x="58" y="123" width="112" height="7" rx="3" fill="'+t.muted+'"/></svg>';
@@ -122,7 +136,7 @@
     if(!host || root.document.getElementById('oharu-theme-settings')) return;
     const section=root.document.createElement('section');section.id='oharu-theme-settings';section.className='oharu-theme-settings';
     section.innerHTML=`<details id="oharu-theme-panel"><summary class="theme-entry"><span class="theme-entry-art" aria-hidden="true"></span><span><strong data-theme-ko="나만의 스타일로 꾸며보세요!" data-theme-en="Make Oharu your own"></strong><span data-theme-ko="테마 설정" data-theme-en="Theme settings"></span></span><span class="theme-entry-arrow" aria-hidden="true">›</span></summary>
-      <div class="theme-panel-content"><p class="settings-note" data-theme-ko="마음에 드는 테마를 고르고 미리 확인해 보세요." data-theme-en="Choose a theme and preview it before applying."></p><div class="theme-grid" aria-label="Themes"></div>
+      <div class="theme-panel-content"><p class="settings-note" data-theme-ko="버튼·글자색을 미리 확인해 보세요. 화면과 카드 배경은 유지해요." data-theme-en="Preview button and text colors. Page and card backgrounds stay the same."></p><div class="theme-grid" aria-label="Themes"></div>
       <label for="oharu-theme-select" data-theme-ko="빠르게 고르기" data-theme-en="Choose a theme"></label><select id="oharu-theme-select"></select>
       <div class="oharu-theme-actions"><button type="button" data-action="reset" data-theme-ko="오하루 기본으로" data-theme-en="Restore Oharu default"></button></div>
       </div></details>
@@ -175,11 +189,11 @@
     section.addEventListener('click',async event=>{const action=event.target.closest('[data-action]')?.dataset.action;if(!action)return;try{
       if(action==='reset')await save({id:'default'});
       if(action==='file')section.querySelector('input[type="file"]').click();
-      if(action==='copy'){previewTheme=null;previewValue=null;preview.hidden=true;const englishPrompt='Create an Oharu color theme as JSON only, without a code fence. No tasks, account details or API keys are needed. Use this structure: '+JSON.stringify(portable(themes[1]))+'. version=1; name has 1–40 characters; exactly nine token keys, with #RRGGBB colors. Optional visual is limited to scene=none, pattern=none, pet=none, motion=off. Contrast must be at least 4.5:1 for text and muted on bg/card, accent on bg/card/soft, danger on card/dangerSoft, and white text on accent. URLs, CSS, JavaScript, custom assets and other properties are prohibited. Desired mood: ';const value=(english()?englishPrompt:prompt)+section.querySelector('#oharu-theme-mood').value.trim();try{await root.navigator.clipboard.writeText(value);message(text('요청문을 복사했어요. AI에 붙여넣어 주세요.','Prompt copied. Paste it into your AI.'));}catch(_){area.value=value;area.focus();area.select();message(text('자동 복사가 허용되지 않았어요. 선택된 요청문을 직접 복사해 주세요.','Copy is unavailable. Copy the selected prompt manually.'));}}
+      if(action==='copy'){previewTheme=null;previewValue=null;preview.hidden=true;const englishPrompt='Create an Oharu color theme as JSON only, without a code fence. No tasks, account details or API keys are needed. Use this structure: '+JSON.stringify(portable(themes[1]))+'. version=1; name has 1–40 characters; exactly nine token keys, with #RRGGBB colors. Change only text, muted, accent and danger colors. Keep bg=#F2F4F6, card=#FFFFFF, soft=#E8F3FF, line=#F2F4F6 and dangerSoft=#FEECEE fixed. Preserve card backgrounds, shapes, fonts and layout. Optional visual is limited to scene=none, pattern=none, pet=none, motion=off. Contrast must be at least 4.5:1 for text and muted on bg/card, accent on bg/card/soft, danger on card/dangerSoft, and white text on accent. URLs, CSS, JavaScript, custom assets and other properties are prohibited. Desired mood: ';const value=(english()?englishPrompt:prompt)+section.querySelector('#oharu-theme-mood').value.trim();try{await root.navigator.clipboard.writeText(value);message(text('요청문을 복사했어요. AI에 붙여넣어 주세요.','Prompt copied. Paste it into your AI.'));}catch(_){area.value=value;area.focus();area.select();message(text('자동 복사가 허용되지 않았어요. 선택된 요청문을 직접 복사해 주세요.','Copy is unavailable. Copy the selected prompt manually.'));}}
       if(action==='import'){const theme=validate(area.value);stage(theme,{id:'custom',theme});}
       if(action==='confirm'&&previewTheme&&previewOwner===ownership){const epoch=ownership;previous=JSON.parse(JSON.stringify(current));previousOwner=epoch;await save(previewValue);if(epoch===ownership){undo.hidden=false;preview.hidden=true;}}
       if(action==='undo'&&previous&&previousOwner===ownership){const value=previous;previous=null;previousOwner=-1;undo.hidden=true;await save(value);}
-      if(action==='export'){previewTheme=null;previewValue=null;preview.hidden=true;area.value=JSON.stringify(portable(current.id==='default'?DEFAULT:current.id==='custom'?current.theme:themes.find(t=>t.id===current.id)),null,2);section.querySelector('#oharu-theme-ai').open=true;area.focus();area.select();message(text('현재 테마 JSON이에요. 다른 기기에서도 가져올 수 있어요.','This is your current theme JSON. You can import it on another device.'));}
+      if(action==='export'){previewTheme=null;previewValue=null;preview.hidden=true;area.value=JSON.stringify(portable(current.id==='default'?DEFAULT:current.id==='custom'?current.theme:themes.find(t=>t.id===current.id)),null,2);if(root.OharuThemeNavigation)root.OharuThemeNavigation.selectTab('ai');else section.querySelector('#oharu-theme-ai').open=true;area.focus();area.select();message(text('현재 테마 JSON이에요. 다른 기기에서도 가져올 수 있어요.','This is your current theme JSON. You can import it on another device.'));}
     }catch(e){message(text('적용하지 않았어요: '+e.message,'Not applied. Check the JSON format, allowed fields, colors and text contrast.'));}});
     api.localize=refreshUI;
   }

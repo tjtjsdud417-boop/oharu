@@ -824,6 +824,7 @@
 <!-- oharu-launch-assets:start -->
 <link rel="stylesheet" href="./theme-system.css">
 <script src="./theme-system.js"></script>
+<script src="./theme-navigation.js"></script>
 <script src="./settings-experience.js"></script>
 <script src="./reminders.js"></script>
 <!-- oharu-launch-assets:end -->
@@ -1945,6 +1946,10 @@ function render() {
 }
 
 // ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
+window.OharuThemeRoute = {
+  enter() { history.pushState({...history.state, oharuThemeDetail:true}, '', location.href); },
+  restore() { switchView('set'); }
+};
 function switchView(v) {
   view = v;
   $("calBtn").classList.toggle("on", v === "cal");
@@ -1952,6 +1957,7 @@ function switchView(v) {
   $("todayView").hidden = v !== "today";
   $("calView").hidden = v !== "cal";
   $("setView").hidden = v !== "set";
+  window.OharuThemeNavigation?.viewChanged(v);
   if (v === "cal") { calCursor = new Date(); selDate = todayStr(); }
   render();
 }

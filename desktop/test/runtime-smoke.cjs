@@ -35,7 +35,7 @@ const timeout = setTimeout(() => { console.error("Runtime smoke timed out"); ele
 
 electron.app.whenReady().then(async () => {
   await electron.session.defaultSession.protocol.handle("https", () => new Response(
-    '<!doctype html><html><head><meta charset="utf-8"></head><body><h1>Runtime fixture</h1></body></html>',
+    '<!doctype html><html><head><meta charset="utf-8"></head><body><h1>Runtime fixture</h1><span id="appVersion">web-fixture</span></body></html>',
     {headers: {"content-type": "text/html; charset=utf-8"}}
   ));
   const filename = path.join(root, "main.js");
@@ -62,6 +62,7 @@ electron.app.whenReady().then(async () => {
   assert.equal(prefs.contextIsolation, true);
   assert.equal(prefs.sandbox, true);
   assert.equal(await run("typeof require"), "undefined");
+  assert.equal(await run("document.getElementById('appVersion').textContent"), "v" + electron.app.getVersion());
   assert.equal((await run("desktopBridge.getPrefs()")).autoLaunch, false);
   assert.equal(await run("desktopBridge.setAlwaysOnTop(true)"), true);
   assert.equal((await run("desktopBridge.getPrefs()")).alwaysOnTop, true);

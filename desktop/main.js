@@ -303,6 +303,14 @@ function createWindow() {
     win.webContents.insertCSS(DRAG_CSS).catch((e) => {
       console.error("드래그 CSS 주입 실패:", e);
     });
+    // The shared web source reports its web version. Show the installed Windows
+    // package version after either the online page or its identical fallback loads.
+    if (isTrustedAppUrl(win.webContents.getURL(), getFallbackHtmlPath())) {
+      win.webContents.executeJavaScript(`(() => {
+        const element = document.getElementById("appVersion");
+        if (element) element.textContent = ${JSON.stringify("v" + app.getVersion())};
+      })()`).catch(console.error);
+    }
   });
 
   win.webContents.on("did-fail-load", (_event, _code, _desc, validatedURL) => {
