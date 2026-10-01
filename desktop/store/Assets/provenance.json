@@ -1,0 +1,29 @@
+{
+  "source": "source-icon.ico",
+  "sourceSHA256": "0FF88410C94FB1B0786A89EEE931CF5BAAF92B357583B9C9E9A206C9E36F137D",
+  "sourceFrame": "256x256",
+  "operation": "Full-frame proportional downscale only; transparent 32bpp ARGB; GDI+ HighQualityBicubic",
+  "generator": "generate-assets.ps1",
+  "generatorSHA256": "92FD6592E0D699335EE98DCB8942F3CC95A4FD46A101717824DE74587A3D5853",
+  "generatorHashNormalization": "UTF-8 with LF line endings",
+  "outputs": [
+    {
+      "file": "Square44x44Logo.png",
+      "width": 44,
+      "height": 44,
+      "sha256": "B59421C7A1B0689465B93351E9932798B65C1FCD7A47F538847B25A39C087131"
+    },
+    {
+      "file": "StoreLogo.png",
+      "width": 50,
+      "height": 50,
+      "sha256": "BF3F806650BEC7F802AEB699EE3A79785DA3648B5828B25F639BB65607400756"
+    },
+    {
+      "file": "Square150x150Logo.png",
+      "width": 150,
+      "height": 150,
+      "sha256": "3BAD7218D450C7C31D2A8646B57AC4A31B044E6A6D96BF827098D0C3D318899D"
+    }
+  ]
+}

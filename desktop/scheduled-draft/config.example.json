@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "mode": "source-only",
+  "installedAumid": "",
+  "activationClsid": "",
+  "nativeHostPath": "",
+  "identityVerified": false,
+  "activationVerified": false,
+  "userOptIn": false,
+  "nativeBuildAndDeviceTestsPassed": false,
+  "snapshotContract": "authoritative-account-snapshot-v1",
+  "showTaskTitles": false
+}

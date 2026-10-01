@@ -1,0 +1,102 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
+const { chromium } = require('playwright');
+const root = path.resolve(__dirname, '..');
+const base = process.env.OHARU_CHECK_URL || 'http://127.0.0.1:4173/';
+const out = path.join(root, 'output/playwright', process.env.OHARU_CHECK_URL ? 'production' : '');
+fs.mkdirSync(out, { recursive: true });
+(async () => {
+  const browser = await chromium.launch({ headless: true, channel: 'chrome' });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // Isolated synthetic guest flow. Never signs in or alters production data.
+  await context.route('**/rest/v1/page_visits', route => route.fulfill({ status: 204 }));
+  await context.route('**/_vercel/insights/script.js', route => route.fulfill({ body: '' }));
+  const baseline=execFileSync('git',['show','7d1dcd366b46e32d65a21b70ae1fcfe23333db10:web/index.html'],{cwd:root,encoding:'utf8'});
+  await context.route('**/baseline', route => route.fulfill({ contentType: 'text/html', body: baseline }));
+  const page = await context.newPage();
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto(new URL('baseline',base).href);
+  await page.locator('#mainView').waitFor({ state: 'visible' });
+  const geometry = () => page.evaluate(() => Object.fromEntries(['.wrap','header','.composer','#input','#addBtn'].map(s => { const e=document.querySelector(s); if (!e) return [s,null]; const r=e.getBoundingClientRect(); return [s,[r.x,r.y,r.width,r.height]]; })));
+  const before = await geometry();
+  await page.screenshot({path:path.join(out,'default-before.png'),fullPage:true});
+  await page.goto(base);
+  await page.locator('#mainView').waitFor({ state: 'visible' });
+  assert.deepEqual(await geometry(), before, 'default layout changed');
+  await page.screenshot({path:path.join(out,'default-after.png'),fullPage:true});
+  await page.locator('#input').fill('출시 확인용 테스트');
+  await page.locator('#input').press('Enter');
+  await page.getByText('출시 확인용 테스트', {exact:true}).waitFor();
+  assert.equal(await page.locator('.item').count(),1);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('oneul.v3')).todos.length),1,'guest add persisted more than once');
+  await page.locator('#setBtn').click();
+  assert.equal(await page.locator('#oharu-theme-select option').count(),10);
+  for (const option of await page.locator('#oharu-theme-select option').evaluateAll(nodes => nodes.map(n=>n.value))) {
+    await page.locator('#oharu-theme-select').selectOption(option);
+    await page.locator('#setBtn').click();
+    assert.deepEqual(await geometry(), before, `theme ${option} changed layout`);
+    await page.locator('#setBtn').click();
+  }
+  await page.locator('#oharu-theme-select').selectOption('forest');
+  await page.reload();
+  await page.locator('#setBtn').click();
+  assert.equal(await page.locator('#oharu-theme-select').inputValue(),'forest');
+  await page.getByText('AI로 나만의 테마 만들기', {exact:true}).click();
+  await page.locator('#oharu-theme-json').fill('{"version":1,"name":"unsafe","tokens":{},"css":"body{}"}');
+  await page.locator('[data-action="import"]').click();
+  assert.match(await page.locator('.oharu-theme-status').innerText(),/적용하지/);
+  const exported = await page.evaluate(()=>JSON.stringify(window.OharuThemes.exportTheme()));
+  await page.locator('#oharu-theme-json').fill(exported);
+  await page.locator('[data-action="import"]').click();
+  assert.equal(await page.locator('#oharu-theme-select').inputValue(),'forest');
+  await page.locator('[data-action="confirm"]').click();
+  assert.equal(await page.locator('#oharu-theme-select').inputValue(),'custom');
+  await page.locator('[data-action="undo"]').click();
+  assert.equal(await page.locator('#oharu-theme-select').inputValue(),'forest');
+  await page.screenshot({path:path.join(out,'theme-settings-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.screenshot({path:path.join(out,'theme-settings-mobile.png'),fullPage:true});
+  await page.locator('[data-action="reset"]').click();
+  await page.locator('#setBtn').click();
+  await page.locator('.item .check').click();
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('.item.done').count(),1);
+  await page.locator('.item .del').click();
+  assert.equal(await page.locator('.item').count(),0);
+  // Permission denial is a simulated API branch, not a real OS popup acceptance.
+  await page.evaluate(()=>{ Object.defineProperty(window,'Notification',{value:class {static permission='denied';static requestPermission(){return Promise.resolve('denied');}},configurable:true}); });
+  await page.locator('#setBtn').click();
+  await page.locator('#reminderEnable').click();
+  assert.match(await page.locator('#reminderStatus').innerText(),/허용되지/);
+  assert.equal(await page.locator('#reminderEnable').innerText(),'알림 켜기');
+  assert.deepEqual(errors,[]);
+  await page.evaluate(()=>{
+    window.__notifications=[];
+    if (navigator.serviceWorker) Object.defineProperty(navigator.serviceWorker,'getRegistration',{value:async()=>({showNotification:async(title,options)=>window.__notifications.push({title,...options})}),configurable:true});
+    Object.defineProperty(window,'Notification',{value:class {
+      static permission='granted';static requestPermission(){return Promise.resolve('granted');}
+      constructor(title,options){window.__notifications.push({title,...options});}
+    },configurable:true});
+  });
+  await page.locator('#reminderEnable').click();
+  assert.equal(await page.locator('#reminderEnable').innerText(),'알림 끄기');
+  await page.locator('#setBtn').click();
+  await page.locator('#input').fill('알림 시각 검증');
+  const hhmm=await page.evaluate(()=>{const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;});
+  await page.locator('#timeInput').fill(hhmm);
+  await page.locator('#addBtn').click();
+  await page.waitForFunction(()=>window.__notifications.length===1);
+  await page.waitForTimeout(2200);
+  assert.equal(await page.evaluate(()=>window.__notifications.length),1,'duplicate reminder');
+  await page.locator('.item .del').click();
+  await page.locator('#setBtn').click();
+  await page.locator('#reminderEnable').click();
+  assert.equal(await page.locator('#reminderEnable').innerText(),'알림 켜기');
+  const result = {passed:true,checks:['default geometry preserved','all 10 theme geometry preserved','guest create/complete/delete','theme persisted reload','invalid JSON rejected','preview/apply/undo','390px no horizontal overflow','permission denial UI','granted simulated notification fires once','notification disable'],pageErrors:errors,screenshots:fs.readdirSync(out).filter(x=>x.endsWith('.png'))};
+  fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(result,null,2));
+  console.log(JSON.stringify(result,null,2));
+  await browser.close();
+})().catch(error=>{console.error(error);process.exit(1);});

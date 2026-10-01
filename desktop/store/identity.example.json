@@ -1,0 +1,16 @@
+{
+  "source": "partner-center-product-identity",
+  "confirmedFromPartnerCenter": false,
+  "name": "",
+  "publisher": "",
+  "publisherDisplayName": "",
+  "displayName": "",
+  "version": "1.8.0.0",
+  "maxVersionTested": "",
+  "runtimeChecks": {
+    "packagedIdentityAndNotifications": false,
+    "startupAndProtocolActivation": false,
+    "existingUserDataPreserved": false,
+    "installUpgradeUninstall": false
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oharu.today/theme-schema.json",
+  "title": "Oharu ThemeV1",
+  "description": "Button and text colors only. Page/card surfaces, separators, shapes, fonts and layout stay unchanged. The nine ThemeV1 fields remain compatible with older files; the runtime normalizes reserved surface colors to their fixed brand values before contrast checks. Only none/off visuals are enabled. Imports remain drafts until explicit Apply. No URL, CSS, JavaScript, layout or account fields are accepted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "name",
+    "tokens"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[^\\u0000-\\u001f<>]+$",
+      "description": "The current JavaScript validator also limits the name to 40 UTF-16 code units; astral Unicode symbols use two units."
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scene",
+        "pattern",
+        "pet",
+        "motion"
+      ],
+      "properties": {
+        "scene": {
+          "const": "none"
+        },
+        "pattern": {
+          "const": "none"
+        },
+        "pet": {
+          "const": "none"
+        },
+        "motion": {
+          "const": "off"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bg",
+        "card",
+        "text",
+        "muted",
+        "accent",
+        "soft",
+        "line",
+        "danger",
+        "dangerSoft"
+      ],
+      "properties": {
+        "bg": {
+          "$ref": "#/$defs/color",
+          "description": "Reserved surface token, normalized to #F2F4F6. A valid legacy #RRGGBB value is accepted for compatibility but never recolors this surface.",
+          "default": "#F2F4F6",
+          "readOnly": true
+        },
+        "card": {
+          "$ref": "#/$defs/color",
+          "description": "Reserved surface token, normalized to #FFFFFF. A valid legacy #RRGGBB value is accepted for compatibility but never recolors this surface.",
+          "default": "#FFFFFF",
+          "readOnly": true
+        },
+        "text": {
+          "$ref": "#/$defs/color"
+        },
+        "muted": {
+          "$ref": "#/$defs/color"
+        },
+        "accent": {
+          "$ref": "#/$defs/color"
+        },
+        "soft": {
+          "$ref": "#/$defs/color",
+          "description": "Reserved surface token, normalized to #E8F3FF. A valid legacy #RRGGBB value is accepted for compatibility but never recolors this surface.",
+          "default": "#E8F3FF",
+          "readOnly": true
+        },
+        "line": {
+          "$ref": "#/$defs/color",
+          "description": "Reserved surface token, normalized to #F2F4F6. A valid legacy #RRGGBB value is accepted for compatibility but never recolors this surface.",
+          "default": "#F2F4F6",
+          "readOnly": true
+        },
+        "danger": {
+          "$ref": "#/$defs/color"
+        },
+        "dangerSoft": {
+          "$ref": "#/$defs/color",
+          "description": "Reserved surface token, normalized to #FEECEE. A valid legacy #RRGGBB value is accepted for compatibility but never recolors this surface.",
+          "default": "#FEECEE",
+          "readOnly": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    }
+  },
+  "$comment": "The runtime normalizes bg/card/soft/line/dangerSoft to #F2F4F6/#FFFFFF/#E8F3FF/#F2F4F6/#FEECEE. It then enforces text/bg, text/card, muted/bg, muted/card, accent/bg, accent/card, accent/soft, danger/card, danger/dangerSoft and #FFFFFF/accent WCAG contrast >=4.5:1. Saved legacy themes are checked against their original surfaces before unreadable foregrounds are replaced with readable brand values; restoring never writes account metadata. File imports are limited to 8192 bytes; JSON string validation limits input to 8192 UTF-16 code units."
+}

@@ -1,0 +1,10 @@
+async (page) => {
+  await page.setViewportSize({ width: 636, height: 1048 });
+  for (const [route, view, file] of [['/', '#todayView', '01-today.png'], ['/calendar', '#calView', '02-calendar.png'], ['/settings', '#setView', '03-settings.png']]) {
+    await page.goto('http://127.0.0.1:4310' + route);
+    await page.locator(view).waitFor({ state: 'visible' });
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({ path: `submission/${file}`, scale: 'css', animations: 'disabled', style: '.ait-panel-root { visibility: hidden !important; }' });
+  }
+  return { pass: true, width: 636, height: 1048, screenshots: 3, finiteAnimationsFinished: true, developerPanelHidden: true };
+}

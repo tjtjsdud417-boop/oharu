@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>오하루 - 오늘 할 일에 집중하는 무료 투두리스트</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="theme-color" content="#F2F4F6">
+
+<style>
+  :root {
+    --bg: #F2F4F6;
+    --card: #FFFFFF;
+    --text: #191F28;
+    --text-sub: #8B95A1;
+    --text-faint: #B0B8C1;
+    --blue: #3182F6;
+    --blue-soft: #E8F3FF;
+    --line: #F2F4F6;
+    --danger: #F04452;
+    --danger-soft: #FEECEE;
+    --radius: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: rgb(242 244 246 / var(--bg-alpha, 1));
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 20px 24px;
+    padding-top: max(28px, env(safe-area-inset-top, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  /* ── 헤더 ─────────────────────────────── */
+  .head { padding: 4px 4px 20px; position: relative; }
+  .head-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-width: 0; }
+  .head-top .date { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .head h1 { min-width: 0; overflow-wrap: anywhere; }
+  .head .date { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: -0.01em; }
+  .head h1 { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+  .head h1 .num { color: var(--blue); }
+  .progress { margin-top: 16px; height: 6px; border-radius: 3px; background: #E5E8EB; overflow: hidden; }
+  .progress > i {
+    display: block; height: 100%; width: 0%; border-radius: 3px;
+    background: var(--blue);
+    transition: width .45s cubic-bezier(.22,1,.36,1);
+  }
+  .topbtns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; max-width: 100%; margin-inline-start: auto; }
+  .topbtns > button { flex-shrink: 0; max-width: 100%; }
+  .topbtns .textbtn { height: auto; min-height: 36px; padding-block: 8px; line-height: 1.35; white-space: normal; overflow-wrap: anywhere; }
+  .iconbtn {
+    width: 36px; height: 36px;
+    border: none; border-radius: 12px;
+    background: var(--card);
+    color: var(--text-sub);
+    cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .12s, color .12s, transform .1s;
+  }
+  .iconbtn:hover { color: var(--text); }
+  .iconbtn:active { transform: scale(.94); }
+  .iconbtn.on { background: var(--blue); color: #fff; }
+  .iconbtn svg { width: 18px; height: 18px; }
+  .textbtn {
+    height: 36px; padding: 0 14px;
+    border: none; border-radius: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(2,32,71,.05);
+    transition: background .15s, transform .1s;
+  }
+  .textbtn:hover { background: #1B64DA; }
+  .textbtn:active { transform: scale(.96); }
+
+  /* ── 입력 ─────────────────────────────── */
+  .composer {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 6px 6px 6px 18px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    border: 1.5px solid transparent;
+    transition: border-color .15s;
+  }
+  .composer:focus-within { border-color: var(--blue); }
+  .composer input[type="text"] {
+    flex: 1; border: none; outline: none;
+    font: inherit; font-size: 15.5px; font-weight: 500;
+    color: var(--text); background: transparent; min-width: 0;
+  }
+  .composer input[type="text"]::placeholder { color: var(--text-faint); }
+  .clock {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    border-radius: 12px;
+    color: var(--text-faint);
+    cursor: pointer; flex-shrink: 0;
+    transition: background .12s, color .12s;
+    padding: 0 4px; gap: 4px;
+  }
+  .clock:hover { background: var(--bg); color: var(--text-sub); }
+  .clock.set { color: var(--blue); background: var(--blue-soft); font-size: 12.5px; font-weight: 700; padding: 0 10px; }
+  .clock svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .clock .t { white-space: nowrap; letter-spacing: -0.01em; }
+  .clock input[type="time"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .clock .clear {
+    display: none; width: 15px; height: 15px; border-radius: 50%;
+    background: #C9D8F0; color: #fff;
+    align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+    position: relative; z-index: 2; flex-shrink: 0;
+  }
+  .clock.set .clear { display: flex; }
+  .clock .clear:hover { background: var(--blue); }
+  .composer .add {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 14px; font-weight: 700;
+    padding: 10px 16px; border-radius: 14px;
+    cursor: pointer; flex-shrink: 0;
+    transition: transform .1s, background .15s;
+  }
+  .composer .add:hover { background: #1B64DA; }
+  .composer .add:active { transform: scale(.96); }
+
+  .carry {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .carry-text { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.5; }
+  .carry-btns { display: flex; gap: 6px; flex-shrink: 0; }
+  #carryBring {
+    border: none; background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 14px; border-radius: 12px; cursor: pointer;
+  }
+  #carryDismiss {
+    border: none; background: var(--bg); color: var(--text-sub);
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 12px; border-radius: 12px; cursor: pointer;
+  }
+
+  /* ── 리스트 ───────────────────────────── */
+  .list {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    overflow: hidden;
+  }
+  .list:empty { display: none; }
+  .item {
+    display: flex; align-items: center; gap: 14px;
+    position: relative;
+    padding: 15px 22px 15px 18px;
+    cursor: pointer;
+    transition: background .12s;
+    animation: slideIn .25s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .item + .item { border-top: 1px solid var(--line); }
+  .item:hover { background: #FAFBFC; }
+  .check {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid #D1D6DB;
+    flex-shrink: 0; display: grid; place-items: center;
+    transition: border-color .15s, background .15s;
+  }
+  .check svg {
+    width: 13px; stroke: #fff; stroke-width: 3.2; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 20; stroke-dashoffset: 20;
+  }
+  .item.done .check { background: var(--blue); border-color: var(--blue); animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+  .item.done .check svg { animation: draw .25s .05s ease-out forwards; }
+  @keyframes pop { 50% { transform: scale(1.15); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .body { flex: 1; min-width: 0; }
+  .body .time {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11.5px; font-weight: 700;
+    color: var(--blue); background: var(--blue-soft);
+    padding: 2px 7px; border-radius: 6px;
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .body .time.late { color: var(--danger); background: var(--danger-soft); }
+  .item.done .body .time { color: var(--text-faint); background: var(--bg); }
+  .body .label {
+    font-size: 15.5px; font-weight: 500; letter-spacing: -0.01em;
+    line-height: 1.45; word-break: break-all;
+    transition: color .2s;
+  }
+  .item.done .label { color: var(--text-faint); text-decoration: line-through; text-decoration-color: #D1D6DB; }
+  .del {
+    border: none; background: none; cursor: pointer;
+    color: var(--text-faint);
+    width: 28px; height: 28px; border-radius: 8px;
+    display: grid; place-items: center;
+    opacity: 0;
+    transition: opacity .12s, background .12s, color .12s;
+    flex-shrink: 0;
+  }
+  .item:hover .del { opacity: 1; }
+  .del:hover { background: var(--danger-soft); color: var(--danger); }
+  @media (hover: none) { .del { opacity: .6; } }
+  .grab {
+    position: absolute; top: 0; right: 0; bottom: 0; width: 18px;
+    border-radius: 0;
+    background: #F4F6F8;
+    display: grid; place-items: center;
+    color: #C4CBD4; cursor: grab;
+    touch-action: none; user-select: none;
+    flex-shrink: 0;
+  }
+  .grab:active { cursor: grabbing; }
+  .grab svg { width: 4px; height: 14px; fill: currentColor; }
+  .item.grab-first .grab { border-radius: 0 var(--radius) 0 0; }
+  .item.grab-last .grab { border-radius: 0 0 var(--radius) 0; }
+  .item.grab-first.grab-last .grab { border-radius: 0 var(--radius) var(--radius) 0; }
+  @media (hover: hover) {
+    .grab { color: #D8DDE4; }
+    .item:hover .grab { color: #8B95A1; background: #E9EDF1; }
+  }
+  @media (hover: none) {
+    .grab { color: #C4CBD4; background: #F4F6F8; }
+  }
+  .item.dragging {
+    position: relative; z-index: 2;
+    box-shadow: 0 8px 20px rgba(2,32,71,.14);
+    transform: scale(1.02);
+    transition: none;
+  }
+  .item:not(.dragging) { transition: transform .15s, background .12s; }
+
+  .empty {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 44px 20px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+  }
+  .empty .emoji { font-size: 34px; }
+  .empty p { margin-top: 10px; font-size: 14.5px; color: var(--text-sub); font-weight: 500; line-height: 1.5; }
+
+  /* ── 로그인 유도 카드 (게스트 모드) ─────────── */
+  .nudge {
+    margin-top: 14px;
+    background: var(--blue-soft);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nudge .nudge-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1B64DA;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+  .nudge .nudge-btn {
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s, transform .1s;
+  }
+  .nudge .nudge-btn:hover { background: #1B64DA; }
+  .nudge .nudge-btn:active { transform: scale(.96); }
+
+  /* ── 설정 보기 ─────────────────────────── */
+  .set-card {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 4px 0 6px;
+  }
+  .set-card .set-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-faint);
+    padding: 12px 18px 6px;
+    letter-spacing: .02em;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+  .set-row + .set-row { border-top: 1px solid var(--line); }
+  .set-row .sub { color: var(--text-sub); font-size: 13px; font-weight: 500; }
+  .set-row a { color: var(--blue); text-decoration: none; font-weight: 600; font-size: 13.5px; }
+  .set-btn {
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .12s, transform .1s;
+  }
+  .set-btn:hover { background: #E5E8EB; }
+  .set-btn:active { transform: scale(.96); }
+  .set-btn.danger { color: var(--danger); }
+  .set-btn.primary { background: var(--blue); color: #fff; }
+  .set-btn.primary:hover { background: #1B64DA; }
+  .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
+  .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .set-row select {
+    border: 1.5px solid #E5E8EB; border-radius: 10px;
+    padding: 6px 10px; font: inherit; font-size: 13px; font-weight: 600;
+    background: var(--card); color: var(--text); cursor: pointer;
+  }
+  .tog { position: relative; display: inline-flex; flex-shrink: 0; }
+  .tog input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tog i {
+    display: block; width: 44px; height: 26px; border-radius: 13px;
+    background: #D1D6DB; cursor: pointer; transition: background .2s;
+    position: relative;
+  }
+  .tog i::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: transform .2s;
+  }
+  .tog input:checked + i { background: var(--blue); }
+  .tog input:checked + i::after { transform: translateX(18px); }
+
+  /* ── AI 연동(MCP) ──────────────────────── */
+  .mcp-reveal { margin: 0 18px 12px; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 12px; }
+  .mcp-warn { color: var(--danger); font-weight: 600; font-size: 12px; margin-bottom: 6px; }
+  .mcp-reveal .mcp-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .mcp-reveal .mcp-val { flex: 1; min-width: 0; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--card); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; }
+  .mcp-reveal .mcp-copy { flex-shrink: 0; border: none; background: var(--blue); color: #fff; font-weight: 700; font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  .mcp-reveal .mcp-copy:active { transform: scale(.96); }
+  .mcp-token-item { padding: 10px 18px; font-size: 13px; }
+  .mcp-token-item + .mcp-token-item { border-top: 1px solid var(--line); }
+  .mcp-token-item .mcp-token-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .mcp-token-item .mcp-token-meta { color: var(--text-sub); font-size: 11.5px; margin-top: 2px; }
+
+  /* ── 캘린더 보기 ──────────────────────── */
+  .cal {
+    margin-top: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 18px 16px 14px;
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4px 14px;
+  }
+  .cal-head .month { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .cal-head .nav { display: flex; gap: 4px; }
+  .cal-head .nav button {
+    border: none; background: var(--bg); color: var(--text-sub);
+    width: 30px; height: 30px; border-radius: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 700;
+    display: grid; place-items: center;
+    transition: background .12s, color .12s;
+  }
+  .cal-head .nav button:hover { color: var(--text); background: #E5E8EB; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-grid .dow {
+    text-align: center;
+    font-size: 11px; font-weight: 700; color: var(--text-faint);
+    padding: 4px 0 8px;
+  }
+  .cal-grid .dow.sun { color: #F08085; }
+  .day {
+    aspect-ratio: 1;
+    border: none; background: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    color: var(--text);
+    transition: background .12s;
+    position: relative;
+  }
+  .day:hover { background: var(--bg); }
+  .day .n { font-size: 13px; font-weight: 600; line-height: 1; }
+  .day.other { color: var(--text-faint); }
+  .day.today .n {
+    background: var(--blue); color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .day.sel { background: var(--blue-soft); }
+  .day .cnt {
+    font-size: 9px; font-weight: 800;
+    min-width: 14px; height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: #E5E8EB; color: var(--text-sub);
+    display: grid; place-items: center;
+    line-height: 1;
+  }
+  .day .cnt.all-done { background: var(--blue); color: #fff; }
+  .day .cnt.has-left { background: var(--danger-soft); color: var(--danger); }
+  .day .cnt.future { background: var(--blue-soft); color: var(--blue); }
+
+  .day-detail { margin-top: 14px; }
+  .day-detail .composer {
+    margin-bottom: 10px;
+    padding: 4px 4px 4px 14px;
+  }
+  .day-detail .composer input[type="text"] { font-size: 14px; }
+  .day-detail .composer .clock { min-width: 32px; height: 32px; }
+  .day-detail .composer .clock svg { width: 16px; height: 16px; }
+  .day-detail .composer .add { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
+  .day-detail .dd-title {
+    font-size: 13px; font-weight: 700; color: var(--text-sub);
+    padding: 0 6px 8px;
+  }
+  .day-detail .list { margin-top: 0; }
+  .day-detail .none {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    padding: 22px;
+    text-align: center;
+    font-size: 13.5px; font-weight: 500; color: var(--text-faint);
+  }
+
+  /* ── 로그인 화면 ──────────────────────── */
+  .auth {
+    margin: auto 0;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 36px 28px 28px;
+    box-shadow: 0 1px 2px rgba(2,32,71,.04);
+    text-align: center;
+  }
+  .auth .emoji { font-size: 40px; }
+  .auth .logo { width: 44px; height: 40px; display: block; margin: 0 auto; }
+  .auth h2 { margin-top: 14px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .auth p { margin-top: 8px; font-size: 14px; color: var(--text-sub); font-weight: 500; line-height: 1.55; }
+  .auth .row { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .auth input {
+    border: 1.5px solid #E5E8EB; border-radius: 14px;
+    padding: 14px 16px;
+    font: inherit; font-size: 15px; font-weight: 500;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .auth input:focus { border-color: var(--blue); }
+  .btn {
+    border: none; border-radius: 14px;
+    padding: 14px;
+    font: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.primary { background: var(--blue); color: #fff; }
+  .btn.primary:hover { background: #1B64DA; }
+  .btn.google { background: #fff; color: var(--text); border: 1.5px solid #E5E8EB; }
+  .btn.google:hover { background: #FAFBFC; }
+  .btn.google svg { width: 18px; height: 18px; }
+  .divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 18px 0 0;
+    color: var(--text-faint);
+    font-size: 12px; font-weight: 600;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E5E8EB; }
+  .auth .switch {
+    margin-top: 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-sub);
+  }
+  .auth .switch a { color: var(--blue); cursor: pointer; text-decoration: none; }
+  .auth .msg { margin-top: 14px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--blue); min-height: 1em; }
+  .auth .msg.err { color: var(--danger); }
+
+  .spacer { flex: 1; min-height: 20px; }
+  .seo-line { margin-top: 12px; text-align: center; font-size: 11px; color: var(--text-faint); }
+
+  /* ── PC 위젯 다운로드 카드 (웹·넓은 화면) ── */
+  .dl-card {
+    display: none;
+    position: fixed; right: 24px; bottom: 24px; z-index: 1000;
+    width: 280px; padding: 18px 18px 16px;
+    background: var(--card); border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(2,32,71,.10), 0 1px 2px rgba(2,32,71,.04);
+    align-items: flex-start; gap: 12px;
+  }
+  @media (min-width: 1080px) {
+    .dl-card:not([hidden]) { display: flex; }
+  }
+  .dl-card .dl-icon { width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; }
+  .dl-card .dl-body { flex: 1; min-width: 0; }
+  .dl-card .dl-title { font-size: 14.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+  .dl-card .dl-sub { margin-top: 4px; font-size: 12.5px; font-weight: 500; color: var(--text-sub); line-height: 1.45; }
+  .dl-card .dl-btn {
+    display: inline-block; margin-top: 12px;
+    background: var(--blue); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 9px 16px; border-radius: 12px;
+    text-decoration: none; transition: background .15s;
+  }
+  .dl-card .dl-btn:hover { background: #1B64DA; }
+
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="./src/toss.css"></head>
+<body>
+<div class="app"><p id="tossStatus" role="status">이 기기에만 저장돼요. 토스 앱을 삭제하면 기록도 삭제될 수 있어요.</p>
+
+  <!-- ══ 로그인 화면 ══ -->
+  <div class="auth" id="authView" hidden>
+    <svg class="logo" viewBox="0 0 98.55 88.94" width="44" height="40" xmlns="http://www.w3.org/2000/svg" aria-label="오하루 로고" role="img" id="authLogo">
+      <g fill="#2b76f3">
+        <rect x="28.75" y="1.53" width="69.8" height="15.93" rx="7.96"/>
+        <rect x="0" y="37.27" width="98.55" height="15.93" rx="7.96"/>
+        <rect x="0" y="73.01" width="98.55" height="15.93" rx="7.96"/>
+        <circle cx="9.5" cy="9.5" r="9.5"/>
+      </g>
+    </svg>
+    <h2 id="authH2">오하루</h2>
+    <p id="authSub">오늘 할 일에만 집중하는<br>가장 단순한 투두리스트</p>
+    <div class="row">
+      <button class="btn google" id="googleBtn">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.7l6.2 5.2C41 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+        <span id="googleBtnText">구글로 계속하기</span>
+      </button>
+      <div class="divider" id="authDivider">또는 이메일로</div>
+      <input id="email" type="email" placeholder="이메일 주소" autocomplete="email">
+      <input id="pw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+      <button class="btn primary" id="emailBtn">로그인</button>
+    </div>
+    <div class="switch" id="switchLine">
+      처음이신가요? <a id="switchLink">이메일로 가입하기</a>
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div class="switch" id="backLine" hidden><a id="backLink">← 돌아가기</a></div>
+  </div>
+
+  <!-- ══ 메인 화면 ══ -->
+  <div id="mainView" hidden style="display:flex;flex-direction:column;flex:1;">
+    <header class="head">
+      <div class="head-top">
+      <div class="date" id="dateLine"></div>
+      <div class="topbtns">
+        <button class="textbtn" id="loginTopBtn" hidden>로그인</button>
+        <button class="iconbtn" id="calBtn" title="목록 보기" aria-label="달력으로 전체 보기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="5" width="18" height="16" rx="3"/>
+            <path d="M3 10h18M8 3v4M16 3v4"/>
+          </svg>
+        </button>
+        <button class="iconbtn" id="setBtn" title="설정" aria-label="설정">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+      </div>
+      <h1 id="headline"></h1>
+      <div class="progress"><i id="bar"></i></div>
+    </header>
+
+    <!-- 기본: 오늘 투두 -->
+    <div id="todayView">
+      <div class="composer">
+        <input id="input" type="text" maxlength="80" placeholder="오늘 할 일을 적어보세요" autocomplete="off">
+        <div class="clock" id="clock" title="시간 설정 (선택)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span class="t" id="clockText"></span>
+          <span class="clear" id="clockClear" title="시간 해제">×</span>
+          <input type="time" id="timeInput">
+        </div>
+        <button class="add" id="addBtn">추가</button>
+      </div>
+      <div class="carry" id="carryCard" hidden>
+        <div class="carry-text" id="carryText"></div>
+        <div class="carry-btns">
+          <button id="carryBring"></button>
+          <button id="carryDismiss"></button>
+        </div>
+      </div>
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty" hidden>
+        <div class="emoji">☀️</div>
+        <p id="emptyText">아직 등록한 일이 없어요.<br>가장 중요한 일 하나부터 적어보세요.</p>
+      </div>
+    </div>
+
+    <!-- 목록(캘린더) 보기: 버튼 눌렀을 때만 -->
+    <div id="calView" hidden>
+      <div class="cal">
+        <div class="cal-head">
+          <div class="month" id="calMonth"></div>
+          <div class="nav">
+            <button id="prevM" aria-label="이전 달">‹</button>
+            <button id="nextM" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="day-detail" id="dayDetail"></div>
+    </div>
+
+    <!-- 설정 보기: 설정 버튼 눌렀을 때만 -->
+    <div id="setView" hidden>
+      <div class="set-card">
+        <div class="set-title" id="setAccountTitle">계정</div>
+        <div class="set-row" id="setAccount"></div>
+      </div>
+      <div class="set-card" id="setMcp">
+        <div class="set-title" id="setMcpTitle">AI 연동</div>
+        <div id="mcpReveal" class="mcp-reveal" hidden></div>
+        <div id="mcpRows"></div>
+      </div>
+      <div class="set-card" id="setDesign">
+        <div class="set-title" id="setDesignTitle">화면</div>
+        <div class="set-row">
+          <span id="setLangLabel">언어</span>
+          <select id="langSelect" aria-label="Language">
+            <option value="auto">자동</option>
+            <option value="ko">한국어</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div class="set-row" id="setBgAlphaRow" hidden>
+          <span id="setBgAlphaLabel">배경 투명도</span>
+          <input type="range" id="bgAlphaRange" min="30" max="100" step="5" value="100" aria-label="배경 투명도">
+          <span class="pct" id="bgAlphaVal">100%</span>
+        </div>
+      </div>
+      <div class="set-card" id="setApp" hidden>
+        <div class="set-title" id="setAppTitle">위젯</div>
+        <div class="set-row">
+          <span id="setAlwaysOnTopLabel">항상 위에 고정</span>
+          <label class="tog"><input type="checkbox" id="alwaysOnTopToggle" aria-label="항상 위에 고정"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span id="setAutoLaunchLabel">PC 시작 시 자동 실행</span>
+          <label class="tog"><input type="checkbox" id="autoLaunchToggle" aria-label="PC 시작 시 자동 실행"><i></i></label>
+        </div>
+        <div class="set-row">
+          <span id="setQuitLabel">앱 종료</span>
+          <button type="button" class="set-btn danger" id="quitAppBtn">종료</button>
+        </div>
+      </div>
+      <div class="set-card">
+        <div class="set-title" id="setAboutTitle">정보</div>
+        <div class="set-row"><span id="setVersionLabel">버전</span><span class="sub" id="appVersion"></span></div>
+        <div class="set-row"><span id="setPrivacyLabel">개인정보처리방침</span><span id="setPrivacyLink">확인 준비 중</span></div>
+        <div class="set-row" id="setPcWidgetRow" hidden><span id="setPcWidgetLabel">PC 위젯</span><a  target="_blank" rel="noopener" id="setPcWidgetLink">다운로드</a></div>
+        <span id="setWebLabel" hidden></span>
+        <p class="toss-note">문의처 · 약관 · 개인정보 안내 확인 준비 중<br>계정 동기화 · 알림 · 결제는 제공하지 않아요.</p>
+      </div>
+    </div>
+
+    <!-- 게스트 모드에서만 노출되는 로그인 유도 -->
+    <div class="nudge" id="nudge" hidden>
+      <div class="nudge-text" id="nudgeText">오하루는 오늘 할 일에만 집중하는 투두리스트예요.<br>할 일이 이 기기에만 저장되고 있어요.<br>로그인하면 폰·PC 어디서든 이어져요.</div>
+      <button class="nudge-btn" id="nudgeLoginBtn">로그인</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <p class="seo-line" id="seoLine">오하루 — 오늘 할 일에만 집중하는 무료 투두리스트 · 웹과 윈도우 위젯 지원</p>
+  </div>
+
+</div>
+
+<aside class="dl-card" id="dlCard" hidden>
+  <svg class="dl-icon" viewBox="0 0 36 36" aria-hidden="true">
+    <rect x="4" y="6" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="6" width="12" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="4" y="19" width="14" height="11" rx="1.5" fill="#0078D4"/>
+    <rect x="20" y="19" width="12" height="11" rx="1.5" fill="#50E6FF"/>
+  </svg>
+  <div class="dl-body">
+    <div class="dl-title" id="dlTitle"></div>
+    <div class="dl-sub" id="dlSub"></div>
+    <a class="dl-btn" id="dlBtn"  target="_blank" rel="noopener"></a>
+  </div>
+</aside>
+
+<!-- oharu-launch-assets:start -->
+
+
+
+<!-- oharu-launch-assets:end -->
+
+<script type="module" src="./src/app.js"></script></body>
+</html>

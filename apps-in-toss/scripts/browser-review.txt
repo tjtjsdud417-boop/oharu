@@ -1,0 +1,42 @@
+async (page) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const assert = (condition, message) => { if (!condition) throw new Error(message); };
+  await page.getByRole('checkbox', { name: '오늘 할 일 정리하기 순서 변경 삭제' }).check();
+  const input = page.getByRole('textbox', { name: '오늘 할 일을 적어보세요' });
+  for (const text of ['오후에 20분 산책하기', '읽고 싶은 책 한 장 읽기']) {
+    await input.fill(text);
+    await page.getByRole('button', { name: '추가', exact: true }).click();
+  }
+  await input.fill('조합 중 테스트');
+  await input.dispatchEvent('keydown', { key: 'Enter', isComposing: true });
+  assert(await page.getByRole('checkbox').count() === 3, 'IME composition must not add');
+  await input.fill('삭제 검증 항목');
+  await page.getByRole('button', { name: '추가', exact: true }).click();
+  await page.getByRole('checkbox').filter({ hasText: '삭제 검증 항목' }).getByRole('button', { name: '삭제' }).click();
+  await page.reload();
+  await page.getByRole('checkbox').first().waitFor();
+  assert(await page.getByRole('checkbox').count() === 3, 'add/delete persistence');
+  assert(await page.getByRole('checkbox').filter({ hasText: '오늘 할 일 정리하기' }).isChecked(), 'completion persistence');
+  await page.setViewportSize({ width: 636, height: 1048 });
+  const capture = async file => page.screenshot({ path: `submission/${file}`, scale: 'css', animations: 'disabled', style: '.ait-panel-root { visibility: hidden !important; }' });
+  await capture('01-today.png');
+  await page.getByRole('button', { name: '달력으로 전체 보기' }).click();
+  await capture('02-calendar.png');
+  await page.getByRole('button', { name: '설정', exact: true }).click();
+  const settingsText = await page.locator('#setView').innerText();
+  assert(settingsText.includes('기기 간 동기화 안 됨'), 'sync disclaimer missing');
+  assert(settingsText.includes('계정 동기화 · 알림 · 결제는 제공하지 않아요.'), 'unsupported-feature disclosure missing');
+  assert(await page.locator('#setView button, #setView a, #setView input').count() === 0, 'unsupported setting has active action');
+  assert(await page.locator('#authView, #loginTopBtn, #nudge, #setMcp, #dlCard').count() === 0, 'legacy entry points remain');
+  await capture('03-settings.png');
+  await page.goto('http://127.0.0.1:4310/calendar');
+  await page.locator('#calView').waitFor({ state: 'visible' });
+  await page.setViewportSize({ width: 360, height: 740 });
+  const sizing = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth, colorScheme: getComputedStyle(document.documentElement).colorScheme }));
+  assert(sizing.document <= sizing.viewport, 'horizontal overflow');
+  assert(sizing.colorScheme === 'light', 'light mode');
+  await page.screenshot({ path: 'output/review/calendar-360.png', scale: 'css', style: '.ait-panel-root { visibility: hidden !important; }' });
+  assert(errors.length === 0, 'runtime errors: ' + errors.join(';'));
+  return { pass: true, checks: ['add', 'complete', 'delete', 'reload persistence', 'IME composition', 'calendar direct entry', 'no horizontal overflow 360px', 'light mode', 'sync/push/payment unavailable text', 'no active unsupported controls'], settingsText, sizing, pageErrors: errors, screenshotMode: 'Real AIT Devtools app DOM; developer panel hidden only during capture; no native Toss bar simulated' };
+}

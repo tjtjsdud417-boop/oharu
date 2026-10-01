@@ -109,6 +109,11 @@
     width: 100%;
     max-width: 420px;
     padding: 28px 20px 24px;
+    padding-top: max(28px, env(safe-area-inset-top, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    min-width: 0;
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -116,6 +121,9 @@
 
   /* ── 헤더 ─────────────────────────────── */
   .head { padding: 4px 4px 20px; position: relative; }
+  .head-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-width: 0; }
+  .head-top .date { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .head h1 { min-width: 0; overflow-wrap: anywhere; }
   .head .date { font-size: 13px; font-weight: 600; color: var(--text-sub); letter-spacing: -0.01em; }
   .head h1 { margin-top: 6px; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
   .head h1 .num { color: var(--blue); }
@@ -125,7 +133,9 @@
     background: var(--blue);
     transition: width .45s cubic-bezier(.22,1,.36,1);
   }
-  .topbtns { position: absolute; top: 2px; right: 0; display: flex; gap: 6px; }
+  .topbtns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; min-width: 0; max-width: 100%; margin-inline-start: auto; }
+  .topbtns > button { flex-shrink: 0; max-width: 100%; }
+  .topbtns .textbtn { height: auto; min-height: 36px; padding-block: 8px; line-height: 1.35; white-space: normal; overflow-wrap: anywhere; }
   .iconbtn {
     width: 36px; height: 36px;
     border: none; border-radius: 12px;
@@ -406,6 +416,9 @@
   .set-btn.danger { color: var(--danger); }
   .set-btn.primary { background: var(--blue); color: #fff; }
   .set-btn.primary:hover { background: #1B64DA; }
+  #setMcp .set-row { flex-wrap: wrap; }
+  #setMcp .set-row select { min-width: 0; max-width: 100%; }
+  #setMcp .set-row .set-btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   .set-row input[type="range"] { flex: 1; accent-color: var(--blue); min-width: 0; }
   .set-row .pct { width: 44px; text-align: right; color: var(--text-sub); font-size: 13px; font-weight: 600; flex-shrink: 0; }
   .set-row select {
@@ -609,6 +622,20 @@
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  .account-with-deletion { flex-wrap: wrap; }
+  .account-delete-web { display: block; flex-basis: 100%; min-width: 0; min-height: 44px; padding-block: 10px; overflow-wrap: anywhere; white-space: normal; }
+  .account-delete-web-notice { flex-basis: 100%; min-width: 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .account-delete-dialog { width: min(420px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); margin: auto; border: 1px solid var(--line); border-radius: 16px; padding: 20px; background: var(--card); color: var(--text); overflow: auto; font: inherit; }
+  .account-delete-dialog::backdrop { background: rgba(0,0,0,.45); }
+  .account-delete-dialog h2 { font-size: 1.25rem; margin-bottom: 12px; }
+  .account-delete-dialog p, .account-delete-dialog label { display: block; font-size: 1rem; line-height: 1.5; margin: 12px 0; overflow-wrap: anywhere; }
+  .account-delete-dialog input { display: block; width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--text-sub); border-radius: 8px; font: inherit; font-size: max(16px, 1rem); }
+  .account-delete-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .account-delete-actions button { min-height: 44px; padding: 10px 14px; font: inherit; border-radius: 8px; border: 1px solid var(--text-sub); color: var(--text); background: var(--card); }
+  .account-delete-actions .danger { background: var(--danger); color: white; }
+  .account-delete-dialog :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .account-delete-dialog [hidden] { display: none; }
+  .account-delete-dialog button:not([type=submit]) { min-height: 44px; }
 </style>
 </head>
 <body>
@@ -646,6 +673,7 @@
   <!-- ══ 메인 화면 ══ -->
   <div id="mainView" hidden style="display:flex;flex-direction:column;flex:1;">
     <header class="head">
+      <div class="head-top">
       <div class="date" id="dateLine"></div>
       <div class="topbtns">
         <button class="textbtn" id="loginTopBtn" hidden>로그인</button>
@@ -661,6 +689,7 @@
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
+      </div>
       </div>
       <h1 id="headline"></h1>
       <div class="progress"><i id="bar"></i></div>
@@ -711,6 +740,7 @@
 
     <!-- 설정 보기: 설정 버튼 눌렀을 때만 -->
     <div id="setView" hidden>
+      <div class="set-card" id="setThemes"></div>
       <div class="set-card">
         <div class="set-title" id="setAccountTitle">계정</div>
         <div class="set-row" id="setAccount"></div>
@@ -791,6 +821,13 @@
   </div>
 </aside>
 
+<!-- oharu-launch-assets:start -->
+<link rel="stylesheet" href="./theme-system.css">
+<script src="./theme-system.js"></script>
+<script src="./theme-navigation.js"></script>
+<script src="./settings-experience.js"></script>
+<script src="./reminders.js"></script>
+<!-- oharu-launch-assets:end -->
 <script type="module">
 /* ═══════════════════════════════════════════════
    설정 — Supabase 프로젝트의 두 값을 채우면
@@ -892,8 +929,8 @@ const T = {
     carryBring: "오늘로 가져오기",
     carryDismiss: "괜찮아요",
     setMcpTitle: "AI 연동",
-    mcpLoginRequired: "로그인하면 클로드·챗지피티·제미나이 같은 AI에서 오하루로 할 일을 바로 추가할 수 있어요.",
-    mcpDesc: "AI의 MCP(커넥터) 설정에 아래 연결 정보를 등록하면, 대화 중에 오하루로 할 일이 자동으로 추가돼요. AI마다 따로 발급하는 걸 권해요.",
+    mcpLoginRequired: "로그인하면 호환되는 MCP 클라이언트용 개인 토큰을 관리할 수 있어요. 서비스별 연결 지원 범위를 먼저 확인해주세요. 테마 JSON 만들기는 로그인 없이 아래에서 사용할 수 있어요.",
+    mcpDesc: "개인 토큰 발급은 AI 연결 성공을 뜻하지 않아요. 호환되는 MCP 클라이언트에서만 사용하고, 토큰이 들어간 주소를 공개하지 마세요. ChatGPT 공개 앱용 OAuth 연결은 아직 준비 중이에요. 별도 API 키 없는 테마 JSON 방식은 아래에서 사용할 수 있어요.",
     mcpCreateBtn: "토큰 발급",
     mcpRevokeBtn: "폐기",
     mcpRevokeConfirm: "이 토큰을 폐기할까요? 연결된 AI에서 더 이상 오하루에 접근할 수 없어요.",
@@ -903,8 +940,8 @@ const T = {
     mcpLastUsed: "최근 사용",
     mcpNamePh: "연동할 AI",
     mcpTokenWarn: "이 화면을 벗어나면 다시 볼 수 없어요. 지금 복사해서 안전한 곳에 붙여넣으세요.",
-    mcpUrlWithTokenLabel: "전체 주소 (클로드·제미나이 등 — URL 하나만 입력할 때)",
-    mcpUrlLabel: "서버 주소 (챗지피티 등 — URL/토큰을 따로 입력할 때)",
+    mcpUrlWithTokenLabel: "개인 토큰 포함 주소 (호환성을 확인한 클라이언트 전용)",
+    mcpUrlLabel: "서버 주소 (클라이언트의 공식 인증 방식을 확인하세요)",
     mcpTokenLabel: "토큰",
     mcpCopyBtn: "복사",
     mcpCopied: "복사됨",
@@ -912,7 +949,7 @@ const T = {
     mcpOptClaude: "클로드",
     mcpOptChatgpt: "챗지피티",
     mcpOptGemini: "제미나이",
-    mcpOptOther: "기타 AI",
+    mcpOptOther: "호환 MCP 클라이언트",
   },
   en: {
     title: "Oharu — Today's To-dos",
@@ -993,8 +1030,8 @@ const T = {
     carryBring: "Bring to today",
     carryDismiss: "Not now",
     setMcpTitle: "AI connection",
-    mcpLoginRequired: "Log in to let AI assistants like Claude, ChatGPT, or Gemini add to-dos to Oharu directly.",
-    mcpDesc: "Add the connection info below to your AI's MCP (connector) settings, and to-dos will be added to Oharu automatically during chats. We recommend issuing a separate token per AI.",
+    mcpLoginRequired: "Sign in to manage personal tokens for compatible MCP clients. Check each service's supported connection method first. Theme JSON works below without signing in.",
+    mcpDesc: "Issuing a personal token does not confirm an AI connection. Use only compatible MCP clients and never publish token-bearing URLs. OAuth for a public ChatGPT app is not available yet. The theme JSON flow below needs no separate API key.",
     mcpCreateBtn: "Issue token",
     mcpRevokeBtn: "Revoke",
     mcpRevokeConfirm: "Revoke this token? The connected AI will no longer be able to access Oharu.",
@@ -1004,8 +1041,8 @@ const T = {
     mcpLastUsed: "Last used",
     mcpNamePh: "AI to connect",
     mcpTokenWarn: "You won't be able to see this again after leaving this screen. Copy it now and store it somewhere safe.",
-    mcpUrlWithTokenLabel: "Full URL (Claude, Gemini, etc. — when only one URL field is provided)",
-    mcpUrlLabel: "Server URL (ChatGPT, etc. — when URL and token are entered separately)",
+    mcpUrlWithTokenLabel: "Personal token URL (only for clients with verified support)",
+    mcpUrlLabel: "Server URL (check the client's official authentication method)",
     mcpTokenLabel: "Token",
     mcpCopyBtn: "Copy",
     mcpCopied: "Copied",
@@ -1013,7 +1050,7 @@ const T = {
     mcpOptClaude: "Claude",
     mcpOptChatgpt: "ChatGPT",
     mcpOptGemini: "Gemini",
-    mcpOptOther: "Other AI",
+    mcpOptOther: "Compatible MCP client",
   },
   ja: {
     title: "Oharu — 今日のやること",
@@ -1392,9 +1429,9 @@ function localRepo() {
     });
   }
   return {
-    async load() { return state.todos; },
-    async add(t) { state.todos.push(t); write(state); },
-    async update(t) { state.todos = state.todos.map(x => x.id === t.id ? t : x); write(state); },
+    async load() { return state.todos.map(t => ({ ...t })); },
+    async add(t) { state.todos.push({ ...t }); write(state); },
+    async update(t) { state.todos = state.todos.map(x => x.id === t.id ? { ...t } : x); write(state); },
     async remove(id) { state.todos = state.todos.filter(x => x.id !== id); write(state); },
     async setOrder(id, value) {
       state.todos = state.todos.map(item => item.id === id ? { ...item, sortOrder: value } : item);
@@ -1416,7 +1453,7 @@ function cloudRepo() {
   return {
     async load() {
       const { data, error } = await supabase.from("todos").select("*").order("created_at");
-      if (error) { console.error(error); return []; }
+      if (error) { console.error(error); return null; }
       return data.map(map);
     },
     async add(t) {
@@ -1454,6 +1491,8 @@ let calCursor = new Date();     // 캘린더가 보고 있는 달
 let selDate = todayStr();       // 캘린더에서 선택한 날짜
 let lastLoadedTodosJson = "";
 let lastLoadedDate = "";
+let reminderDataReady = false;
+window.OharuReminders?.mount(() => reminderDataReady ? todos : null);
 
 const byDate = date => todos.filter(t => t.todoDate === date);
 
@@ -1900,12 +1939,17 @@ function renderCal() {
 }
 
 function render() {
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
   renderHead();
   if (view === "today") renderToday();
   else if (view === "cal") renderCal();
 }
 
 // ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
+window.OharuThemeRoute = {
+  enter() { history.pushState({...history.state, oharuThemeDetail:true}, '', location.href); },
+  restore() { switchView('set'); }
+};
 function switchView(v) {
   view = v;
   $("calBtn").classList.toggle("on", v === "cal");
@@ -1913,6 +1957,7 @@ function switchView(v) {
   $("todayView").hidden = v !== "today";
   $("calView").hidden = v !== "cal";
   $("setView").hidden = v !== "set";
+  window.OharuThemeNavigation?.viewChanged(v);
   if (v === "cal") { calCursor = new Date(); selDate = todayStr(); }
   render();
 }
@@ -1922,7 +1967,7 @@ $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); rende
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
 // ── 설정 ───────────────────────────────────────
-const APP_VERSION = "1.7.6";
+const APP_VERSION = "1.8.0";
 let openLoginScreen = null; // 모드(로컬/클라우드)별로 연결됨
 
 applyTexts();
@@ -1935,6 +1980,224 @@ $("langSelect").addEventListener("change", () => {
   location.reload();
 });
 
+// ACCOUNT_DELETION_BEGIN: only the Oharu backend receives reauthentication secrets.
+let deletionCleanupActive=false;
+let deletionDialog=null, deletionOwner=null, deletionEpoch=0, deletionBusy=false, deletionConfirmed=false;
+const DELETION_INTENT_KEY='oharu.account-deletion.intent.v1', DELETION_TTL=180000;
+const deletionEntryURL=new URL(location.href);
+const deletionOAuthError=/[?#&](error|error_description)=/.test(location.search+location.hash);
+let deletionOAuthProof=null, deletionEntryHandled=false, deletionHadIntent=false;
+function clearDeletionIntent(){ try{sessionStorage.removeItem(DELETION_INTENT_KEY);}catch{} }
+function readDeletionIntent(){
+  try {
+    const raw=sessionStorage.getItem(DELETION_INTENT_KEY);if(!raw)return null;deletionHadIntent=true;
+    const value=JSON.parse(raw);
+    if(!value || Object.keys(value).sort().join(',')!=='nonce,ownerID,startedAt' || typeof value.ownerID!=='string' || !value.ownerID || typeof value.nonce!=='string' || value.nonce.length<16 || !Number.isFinite(value.startedAt) || Date.now()-value.startedAt<0 || Date.now()-value.startedAt>DELETION_TTL)throw Error('intent');
+    return value;
+  }catch{clearDeletionIntent();return null;}
+}
+const deletionInitialIntent=readDeletionIntent();
+const deletionEntryRequested=deletionEntryURL.searchParams.get('account')==='delete' || deletionHadIntent;
+let deletionExchangePromise=null;
+function verifiedDeletionClaims(claims,intent){
+  const now=Date.now()/1000;
+  if(!claims || claims.iss!==SUPABASE_URL+'/auth/v1' || claims.sub!==intent.ownerID || claims.role!=='authenticated' || !(claims.aud==='authenticated'||Array.isArray(claims.aud)&&claims.aud.includes('authenticated')) || typeof claims.session_id!=='string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(claims.session_id) || !Number.isFinite(claims.exp) || claims.exp<=now)throw Error('claims');
+  if(!Array.isArray(claims.amr) || !claims.amr.some(item=>item?.method==='oauth' && Number.isFinite(item.timestamp) && now-item.timestamp<=180 && item.timestamp<=now+5 && item.timestamp>=intent.startedAt/1000-5))throw Error('amr');
+  return claims.session_id;
+}
+function verifyDeletionOAuthReturn(){
+  if(deletionExchangePromise)return deletionExchangePromise;
+  deletionExchangePromise=(async()=>{
+    if(!deletionHadIntent)return;
+    deletionOAuthProof=null;
+    const intent=deletionInitialIntent,epoch=deletionEpoch;
+    try {
+      const code=deletionEntryURL.searchParams.get('code');
+      if(!intent || deletionOAuthError || !code || code.length>4096 || Date.now()-intent.startedAt>DELETION_TTL)throw Error('callback');
+      // Only this path exchanges deletion callback codes; automatic URL exchange is disabled.
+      const exchanged=await supabase.auth.exchangeCodeForSession(code);
+      const session=exchanged.data?.session;
+      if(exchanged.error || !session?.access_token || session.user?.id!==intent.ownerID || exchanged.data?.user?.id!==intent.ownerID)throw Error('exchange');
+      const verified=await supabase.auth.getClaims(session.access_token);
+      if(verified.error)throw Error('signature');
+      const sessionID=verifiedDeletionClaims(verified.data?.claims,intent);
+      const latest=await supabase.auth.getSession();
+      if(latest.error || latest.data?.session?.user?.id!==intent.ownerID || latest.data?.session?.access_token!==session.access_token || deletionEpoch!==epoch || Date.now()-intent.startedAt>DELETION_TTL)throw Error('session-changed');
+      // This UI proof comes only from this successful PKCE transaction + verified OAuth AMR.
+      deletionOAuthProof={...intent,sessionID};
+    }catch{deletionOAuthProof=null;}
+    finally{
+      clearDeletionIntent();
+      const clean=new URL(location.href);clean.searchParams.delete('code');
+      try{history.replaceState(history.state,'',clean.href);}catch{}
+    }
+  })();
+  return deletionExchangePromise;
+}
+const deletionTranslations={"Permanently delete account":["アカウントを完全に削除","永久删除账户","Eliminar cuenta permanentemente"],"This account and its saved tasks and theme will be permanently deleted. This cannot be undone. Separate guest data on this device will be kept.":["このアカウントと保存されたタスク・テーマを完全に削除します。取り消せません。この端末の別のゲストデータは残ります。","此账户及其保存的任务和主题将被永久删除，无法撤销。此设备上的独立访客数据将保留。","La cuenta, sus tareas y su tema se eliminarán permanentemente. No se puede deshacer. Se conservarán los datos de invitado independientes de este dispositivo."],"Account to delete: ":["削除するアカウント: ","要删除的账户：","Cuenta que se eliminará: "],"Confirm with your current password":["現在のパスワードで本人確認","输入当前密码以验证身份","Confirma con tu contraseña actual"],"Type DELETE to confirm permanent deletion":["完全削除を確認するには DELETE と入力","输入 DELETE 以确认永久删除","Escribe DELETE para confirmar la eliminación permanente"],"Cancel":["キャンセル","取消","Cancelar"],"Delete permanently":["完全に削除","永久删除","Eliminar permanentemente"],"Your account was deleted. Return to the start screen.":["アカウントを削除しました。開始画面に戻ってください。","账户已删除。请返回初始页面。","Se eliminó tu cuenta. Vuelve a la pantalla inicial."],"Return to start":["開始画面に戻る","返回初始页面","Volver al inicio"],"The server account was deleted, but cleanup on this device failed. Retry local cleanup.":["サーバーのアカウントは削除されましたが、端末の後処理に失敗しました。再試行してください。","服务器账户已删除，但此设备的清理失败。请重试设备清理。","La cuenta del servidor se eliminó, pero falló la limpieza del dispositivo. Reintenta la limpieza local."],"Retry local cleanup":["端末の後処理を再試行","重试设备清理","Reintentar limpieza local"],"Enter your password and exactly DELETE.":["パスワードと正確に DELETE を入力してください。","请输入密码，并准确输入 DELETE。","Introduce tu contraseña y escribe exactamente DELETE."],"Requesting deletion. A sent request cannot be cancelled.":["削除を要求しています。送信済みの要求は取り消せません。","正在请求删除。已发送的请求无法取消。","Solicitando eliminación. No se puede cancelar una solicitud enviada."],"The server account was deleted, but the current login could not be verified. Device cleanup was stopped. Reopen the app to check.":["サーバーのアカウントは削除されましたが、現在のログインを確認できず端末の後処理を中止しました。アプリを開き直して確認してください。","服务器账户已删除，但无法验证当前登录状态，已停止设备清理。请重新打开应用检查。","La cuenta del servidor se eliminó, pero no se pudo verificar la sesión actual. Se detuvo la limpieza. Abre de nuevo la app para comprobarlo."],"Check your login and password. Deletion was not confirmed.":["ログイン状態とパスワードを確認してください。削除完了は確認できませんでした。","请检查登录状态和密码。尚未确认删除成功。","Comprueba tu sesión y contraseña. No se confirmó la eliminación."],"Too many requests. Please try again later.":["要求が多すぎます。しばらくして再試行してください。","请求过多，请稍后重试。","Demasiadas solicitudes. Inténtalo más tarde."],"Deletion was not confirmed. Check the network or service availability. Device data and login were kept.":["削除完了を確認できませんでした。ネットワークやサービスの状態を確認してください。端末のデータとログインは保持しました。","尚未确认删除成功。请检查网络或服务状态。设备数据和登录状态已保留。","No se confirmó la eliminación. Comprueba la red o el servicio. Se conservaron los datos del dispositivo y la sesión."],"Delete account":["アカウント削除","删除账户","Eliminar cuenta"],"Account deletion is not available yet. Your account and device data were kept.":["アカウント削除はまだ利用できません。アカウントと端末データは保持しました。","账户删除服务尚不可用。账户和设备数据已保留。","La eliminación de cuentas aún no está disponible. Se conservaron tu cuenta y los datos del dispositivo."]};
+Object.assign(deletionTranslations,{"This account needs another verification method. Contact support before deleting it. Nothing was deleted.":["このアカウントには別の本人確認が必要です。削除する前にサポートへお問い合わせください。削除は行っていません。","此账户需要其他验证方式。请在删除前联系支持。未删除任何内容。","Esta cuenta necesita otro método de verificación. Contacta con soporte antes de eliminarla. No se eliminó nada."],"Account files need verification before deletion. Contact support. Nothing was deleted.":["削除前にアカウントのファイル確認が必要です。サポートへお問い合わせください。削除は行っていません。","删除前需要验证账户文件。请联系支持。未删除任何内容。","Es necesario verificar los archivos de la cuenta antes de eliminarla. Contacta con soporte. No se eliminó nada."],"The server could not confirm deletion. Your device session was kept. Check the account before trying again.":["サーバーで削除完了を確認できませんでした。端末のログインは保持しました。再試行前にアカウントを確認してください。","服务器无法确认删除结果。设备登录状态已保留。请先检查账户再重试。","El servidor no pudo confirmar la eliminación. Se conservó la sesión del dispositivo. Comprueba la cuenta antes de reintentar."]});
+Object.assign(deletionTranslations,{"Delete a Google or other sign-in account":["Googleなど別のログイン方法のアカウントを削除","删除 Google 或其他登录方式的账户","Eliminar una cuenta de Google u otro acceso"],"Web account deletion is being prepared. Check availability on the deletion page.":["ウェブでのアカウント削除は準備中です。削除ページで利用状況を確認してください。","网页账户删除功能正在准备中，请在删除页面查看可用状态。","La eliminación de cuentas en la web está en preparación. Consulta su disponibilidad en la página de eliminación."],"For Google or another sign-in provider, verify and delete on the Oharu website. You do not need to create a new password.":["Googleなど外部ログインの場合は、Oharuのウェブサイトで本人確認して削除してください。新しいパスワードを作る必要はありません。","使用 Google 或其他登录服务的账户，请在 Oharu 网站验证并删除。无需创建新密码。","Si usas Google u otro proveedor, verifica y elimina la cuenta en la web de Oharu. No necesitas crear una contraseña nueva."],"Your sign-in method could not be checked. You can use the account deletion page instead.":["ログイン方法を確認できませんでした。アカウント削除ページをご利用ください。","无法确认登录方式。你也可以使用账户删除页面。","No se pudo comprobar tu método de acceso. Puedes usar la página de eliminación de cuentas."]});
+function deletionText(ko,en) { return LANG === 'ko' ? ko : deletionTranslations[en]?.[{ja:0,zh:1,es:2}[LANG]] || en; }
+
+const deletionMessages={
+  google:['Google로 다시 확인','Verify again with Google','Google で再確認','通过 Google 再次验证','Verificar de nuevo con Google'],
+  googleHint:['비밀번호를 새로 만들 필요가 없습니다. 삭제할 계정과 같은 Google 계정을 선택하세요.','No new password is needed. Choose the same Google account you want to delete.','新しいパスワードは不要です。削除するアカウントと同じ Google アカウントを選択してください。','无需创建新密码。请选择要删除的同一个 Google 账户。','No necesitas una contraseña nueva. Elige la misma cuenta de Google que quieres eliminar.'],
+  verified:['Google 계정이 일치합니다. 아래에 DELETE를 입력하고 최종 삭제를 직접 확인하세요.','The Google account matches. Type DELETE below and confirm deletion yourself.','Google アカウントが一致しました。DELETE と入力し、最後に削除を確認してください。','Google 账户一致。请在下方输入 DELETE 并亲自确认删除。','La cuenta de Google coincide. Escribe DELETE y confirma personalmente la eliminación.'],
+  retry:['본인 확인이 취소됐거나 만료됐거나 계정이 다릅니다. 삭제하지 않았습니다. 삭제할 계정으로 다시 확인하세요.','Verification was cancelled, expired, or used a different account. Nothing was deleted. Verify the intended account again.','本人確認が中止・期限切れ、または別のアカウントです。削除していません。対象アカウントで再確認してください。','验证已取消、过期或使用了不同账户。未删除任何内容。请使用目标账户重新验证。','La verificación se canceló, caducó o usó otra cuenta. No se eliminó nada. Verifica la cuenta deseada de nuevo.'],
+  login:['계정 삭제를 위해 먼저 로그인하세요. 로그인 후 설정 > 계정 삭제에서 계속할 수 있습니다.','Sign in first to delete your account. Then continue in Settings > Delete account.','アカウント削除にはログインが必要です。その後、設定のアカウント削除から続けてください。','请先登录，然后前往设置 > 删除账户继续。','Inicia sesión y continúa en Ajustes > Eliminar cuenta.'],
+  browser:['Google 계정 삭제는 Oharu 웹에서 본인 확인 후 진행하세요.','Verify your Google account and delete it on the Oharu website.','Google アカウントの本人確認と削除は Oharu のウェブサイトで行ってください。','请在 Oharu 网站验证并删除 Google 账户。','Verifica y elimina tu cuenta de Google en la web de Oharu.'],
+  web:['웹에서 계정 삭제 열기','Open account deletion on the web','ウェブでアカウント削除を開く','在网页打开账户删除','Abrir eliminación de cuenta en la web'],
+  otp:['인증 앱의 6자리 코드','6-digit code from your authenticator','認証アプリの6桁コード','身份验证器的6位代码','Código de 6 dígitos del autenticador'],
+  otpError:['인증 앱 코드를 확인하세요. 삭제하지 않았습니다.','Check your authenticator code. Nothing was deleted.','認証アプリのコードを確認してください。削除していません。','请检查身份验证器代码。未删除任何内容。','Comprueba el código del autenticador. No se eliminó nada.'],
+  unsupported:['이 로그인 방법의 재확인을 완료할 수 없습니다. 고객지원에 문의하세요. 삭제하지 않았습니다.','This sign-in method could not be verified. Contact support. Nothing was deleted.','このログイン方法を再確認できません。サポートにお問い合わせください。削除していません。','无法验证此登录方式。请联系支持。未删除任何内容。','No se pudo verificar este método de acceso. Contacta con soporte. No se eliminó nada.'],
+  confirmation:['정확히 DELETE를 입력하세요.','Type exactly DELETE.','正確に DELETE と入力してください。','请准确输入 DELETE。','Escribe exactamente DELETE.'],
+  checking:['로그인 방법을 확인하고 있습니다.','Checking your sign-in method.','ログイン方法を確認しています。','正在检查登录方式。','Comprobando tu método de acceso.'],
+  storage:['이 브라우저에서 안전한 재확인 정보를 저장할 수 없습니다. 브라우저 설정을 확인한 뒤 다시 시도하세요.','This browser cannot store the verification intent. Check browser settings and retry.','このブラウザーでは再確認情報を保存できません。設定を確認して再試行してください。','浏览器无法保存验证意图。请检查浏览器设置后重试。','Este navegador no puede guardar la intención de verificación. Comprueba los ajustes y reintenta.']
+};
+function deletionMessage(key){return deletionMessages[key][{ko:0,en:1,ja:2,zh:3,es:4}[LANG]??1];}
+function invalidateAccountDeletion(nextOwner){
+  if(deletionOwner && nextOwner!==deletionOwner){
+    deletionEpoch++;deletionOwner=null;deletionBusy=false;deletionConfirmed=false;deletionOAuthProof=null;clearDeletionIntent();
+    if(deletionDialog){for(const input of deletionDialog.querySelectorAll('input'))input.value='';deletionDialog.close();}
+  }
+}
+function accountDeletionWebLink(){
+  const link=document.createElement('a');link.href='https://oharu.today/?account=delete';link.target='_blank';link.rel='noopener noreferrer';link.className='account-delete-web';link.textContent=deletionMessage('web');return link;
+}
+function handleDeletionEntry(email){
+  if(!deletionEntryRequested || deletionEntryHandled)return;
+  deletionEntryHandled=true;switchView('set');
+  if(deletionHadIntent&&!deletionInitialIntent){const notice=document.createElement('p');notice.className='account-delete-web-notice';notice.setAttribute('role','status');notice.textContent=deletionMessage('retry');$('setAccount').append(notice);return;}
+  if(deletionInitialIntent){
+    clearDeletionIntent();
+    if(!deletionOAuthProof || currentUserId!==deletionOAuthProof.ownerID || Date.now()-deletionOAuthProof.startedAt>DELETION_TTL){
+      deletionOAuthProof=null;
+      const notice=document.createElement('p');notice.className='account-delete-web-notice';notice.setAttribute('role','status');notice.textContent=deletionMessage('retry');$('setAccount').append(notice);return;
+    }
+  }
+  if(currentUserId)openDeleteAccount(email||t('signedIn'));
+  else {const notice=document.createElement('p');notice.className='account-delete-web-notice';notice.setAttribute('role','status');notice.textContent=deletionMessage('login');$('setAccount').append(notice);}
+}
+function openDeleteAccount(email){
+  if(!currentUserId || !supabase || deletionDialog?.open)return;
+  const owner=currentUserId,epoch=++deletionEpoch;
+  deletionOwner=owner;deletionBusy=false;deletionConfirmed=false;
+  deletionDialog?.remove();
+  const dialog=document.createElement('dialog');deletionDialog=dialog;dialog.className='account-delete-dialog';dialog.id='accountDeleteDialog';dialog.setAttribute('aria-labelledby','accountDeleteTitle');dialog.setAttribute('aria-describedby','accountDeleteDescription');
+  const title=document.createElement('h2');title.id='accountDeleteTitle';title.textContent=deletionText('계정 영구 삭제','Permanently delete account');
+  const description=document.createElement('p');description.id='accountDeleteDescription';description.textContent=deletionText('이 계정과 서버에 저장된 할 일·테마 정보가 영구 삭제됩니다. 되돌릴 수 없습니다. 이 기기의 별도 게스트 데이터는 삭제하지 않습니다.','This account and its saved tasks and theme will be permanently deleted. This cannot be undone. Separate guest data on this device will be kept.');
+  const account=document.createElement('p');account.textContent=deletionText('삭제할 계정: ','Account to delete: ')+email;
+  const form=document.createElement('form');form.noValidate=true;
+  const passwordLabel=document.createElement('label');passwordLabel.textContent=deletionText('현재 비밀번호로 본인 확인','Confirm with your current password');
+  const password=document.createElement('input');password.type='password';password.name='password';password.maxLength=1024;password.autocomplete='current-password';passwordLabel.append(password);passwordLabel.hidden=true;
+  const google=document.createElement('button');google.type='button';google.id='deleteGoogleReauth';google.textContent=deletionMessage('google');google.hidden=true;
+  const hint=document.createElement('p');hint.hidden=true;
+  const otpLabel=document.createElement('label');otpLabel.textContent=deletionMessage('otp');otpLabel.hidden=true;
+  const otp=document.createElement('input');otp.name='otp';otp.inputMode='numeric';otp.autocomplete='one-time-code';otp.maxLength=6;otp.pattern='[0-9]{6}';otpLabel.append(otp);
+  const confirmLabel=document.createElement('label');confirmLabel.textContent=deletionText('영구 삭제에 동의하면 DELETE를 입력하세요','Type DELETE to confirm permanent deletion');confirmLabel.hidden=true;
+  const confirmation=document.createElement('input');confirmation.name='confirmation';confirmation.autocomplete='off';confirmation.autocapitalize='characters';confirmation.spellcheck=false;confirmLabel.append(confirmation);
+  const status=document.createElement('p');status.id='accountDeleteStatus';status.setAttribute('role','status');status.setAttribute('aria-live','polite');status.textContent=deletionMessage('checking');
+  const actions=document.createElement('div');actions.className='account-delete-actions';
+  const cancel=document.createElement('button');cancel.type='button';cancel.textContent=deletionText('취소','Cancel');
+  const submit=document.createElement('button');submit.type='submit';submit.className='danger';submit.textContent=deletionText('영구 삭제','Delete permanently');submit.disabled=true;submit.hidden=true;
+  actions.append(cancel,submit);form.append(google,hint,passwordLabel,otpLabel,confirmLabel,status,actions);dialog.append(title,description,account,form);document.body.append(dialog);
+  let mode=null,factorID=null;
+  const stillOwner=()=>deletionEpoch===epoch && currentUserId===owner;
+  const validProof=()=>deletionOAuthProof?.ownerID===owner && Date.now()>=deletionOAuthProof.startedAt && Date.now()-deletionOAuthProof.startedAt<=DELETION_TTL;
+  const clearFields=()=>{password.value='';otp.value='';confirmation.value='';};
+  const close=()=>{if(deletionBusy||deletionConfirmed)return;deletionEpoch++;clearFields();clearDeletionIntent();deletionOAuthProof=null;dialog.close();$('deleteAccountBtn')?.focus();};
+  cancel.onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();close();});dialog.addEventListener('close',clearFields);
+  const busy=value=>{deletionBusy=value;submit.disabled=value;google.disabled=value;cancel.disabled=value||deletionConfirmed;for(const input of [password,otp,confirmation])input.disabled=value||deletionConfirmed;dialog.setAttribute('aria-busy',String(value));};
+  google.onclick=async()=>{
+    if(deletionBusy||!stillOwner())return;
+    busy(true);clearFields();deletionOAuthProof=null;clearDeletionIntent();
+    try {
+      const {data,error}=await supabase.auth.getUser();if(!stillOwner())return;
+      if(error||data?.user?.id!==owner)throw Error('owner');
+      const intent={ownerID:owner,nonce:crypto.randomUUID(),startedAt:Date.now()};
+      try{sessionStorage.setItem(DELETION_INTENT_KEY,JSON.stringify(intent));if(sessionStorage.getItem(DELETION_INTENT_KEY)!==JSON.stringify(intent))throw Error('storage');}catch{throw Error('storage');}
+      const result=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname,queryParams:{prompt:'select_account'}}});
+      if(result.error)throw Error('oauth');
+    }catch(error){clearDeletionIntent();if(stillOwner())status.textContent=deletionMessage(error.message==='storage'?'storage':'retry');}
+    finally{if(stillOwner())busy(false);}
+  };
+  async function cleanup(){
+    if(!stillOwner())return;
+    deletionCleanupActive=true;
+    try {
+      const latest=await supabase.auth.getSession();if(!stillOwner())return;
+      if(latest.error||latest.data?.session?.user?.id!==owner)throw Error('cleanup-owner');
+      localStorage.removeItem('oharu.theme.v1.'+owner);
+      await window.OharuReminders?.clear();if(!stillOwner())return;
+      const check=await supabase.auth.getSession();if(!stillOwner()||check.error||check.data?.session?.user?.id!==owner)throw Error('cleanup-owner');
+      const {error}=await supabase.auth.signOut({scope:'local'});if(error)throw Error('cleanup');if(!stillOwner())return;
+      todos=[];reminderDataReady=false;clearDeletionIntent();deletionOAuthProof=null;
+      status.textContent=deletionText('계정을 삭제했습니다. 시작 화면으로 돌아가세요.','Your account was deleted. Return to the start screen.');
+      submit.textContent=deletionText('시작 화면으로','Return to start');submit.type='button';submit.onclick=()=>location.assign(location.origin+location.pathname);submit.disabled=false;
+    }catch{if(stillOwner()){status.textContent=deletionText('서버 계정은 삭제됐지만 이 기기의 정리가 완료되지 않았습니다. 정리를 다시 시도하세요.','The server account was deleted, but cleanup on this device failed. Retry local cleanup.');submit.textContent=deletionText('기기 정리 다시 시도','Retry local cleanup');submit.disabled=false;}}
+    finally{deletionCleanupActive=false;if(stillOwner()){deletionBusy=false;dialog.setAttribute('aria-busy','false');}}
+  }
+  form.onsubmit=async event=>{
+    event.preventDefault();if(deletionBusy||!stillOwner())return;
+    if(deletionConfirmed){busy(true);await cleanup();return;}
+    if(!mode)return;
+    if(confirmation.value!=='DELETE'){status.textContent=deletionMessage('confirmation');return;}
+    if(mode==='oauth'&&!validProof()){clearDeletionIntent();deletionOAuthProof=null;confirmLabel.hidden=true;submit.hidden=true;status.textContent=deletionMessage('retry');return;}
+    if(mode==='password'&&!password.value){status.textContent=deletionText('비밀번호와 정확한 DELETE 확인을 입력하세요.','Enter your password and exactly DELETE.');return;}
+    if(factorID&&!/^\d{6}$/.test(otp.value)){status.textContent=deletionMessage('otpError');return;}
+    busy(true);status.textContent=deletionText('삭제를 요청하고 있습니다. 전송된 요청은 취소할 수 없습니다.','Requesting deletion. A sent request cannot be cancelled.');
+    const secret=password.value,code=otp.value;password.value='';otp.value='';let timer,serverDeleted=false;
+    try {
+      let auth=await supabase.auth.getSession();if(!stillOwner())return;
+      if(auth.error||auth.data?.session?.user?.id!==owner)throw Error('unauthenticated');
+      if(factorID){const verified=await supabase.auth.mfa.challengeAndVerify({factorId:factorID,code});if(!stillOwner())return;if(verified.error)throw Error('otp');auth=await supabase.auth.getSession();if(!stillOwner())return;}
+      const session=auth.data?.session;
+      if(auth.error||session?.user?.id!==owner||!session.access_token)throw Error('unauthenticated');
+      if(mode==='oauth'){
+        if(!validProof())throw Error('oauth');
+        const proof=deletionOAuthProof,verified=await supabase.auth.getClaims(session.access_token);if(!stillOwner())return;
+        if(verified.error)throw Error('oauth');
+        let sessionID;try{sessionID=verifiedDeletionClaims(verified.data?.claims,proof);}catch{throw Error('oauth');}
+        if(sessionID!==proof.sessionID || !validProof())throw Error('oauth');
+        const latest=await supabase.auth.getSession();if(!stillOwner())return;
+        if(latest.error||latest.data?.session?.access_token!==session.access_token||latest.data?.session?.user?.id!==owner)throw Error('oauth');
+      }
+      const controller=new AbortController();timer=setTimeout(()=>controller.abort(),30000);
+      const body=mode==='oauth'?{reauthentication:'oauth',confirmation:'DELETE'}:{password:secret,confirmation:'DELETE'};
+      const response=await fetch(SUPABASE_URL+'/functions/v1/delete-account',{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+session.access_token},body:JSON.stringify(body),signal:controller.signal});
+      const result=await response.json().catch(()=>null);clearTimeout(timer);if(!stillOwner())return;
+      if(!response.ok||result?.deleted!==true){
+        const value=result?.code;
+        throw Error(['oauth_reauthentication_required','oauth_reauthentication_failed','oauth_reauthentication_expired','recent_oauth_required','reauthentication_proof_invalid','google_reauthentication_required'].includes(value)?'oauth':['mfa_reauthentication_required','mfa_reauthentication_failed','recent_mfa_required'].includes(value)?'otp':['password_reauthentication_unsupported','mfa_reauthentication_unsupported'].includes(value)?'unsupported':['storage_objects_block_deletion','storage_verification_required','storage_verification_failed'].includes(value)?'storage-block':value==='account_deletion_unconfirmed'?'unconfirmed':value==='deletion_not_enabled'?'disabled':response.status===401||value==='reauthentication_failed'?'unauthenticated':response.status===429?'rate-limit':'delete-failed');
+      }
+      serverDeleted=true;
+      const latest=await supabase.auth.getSession();if(!stillOwner())return;if(latest.error||latest.data?.session?.user?.id!==owner)throw Error('owner-verification');
+      deletionConfirmed=true;clearFields();await cleanup();
+    }catch(error){
+      if(!stillOwner())return;
+      if(serverDeleted){deletionConfirmed=true;deletionBusy=false;cancel.disabled=true;submit.disabled=false;submit.type='button';submit.textContent=deletionText('시작 화면으로','Return to start');submit.onclick=()=>location.reload();dialog.setAttribute('aria-busy','false');status.textContent=deletionText('서버 계정은 삭제됐지만 현재 로그인 상태를 확인할 수 없어 기기의 정리를 중단했습니다. 앱을 다시 열어 확인하세요.','The server account was deleted, but the current login could not be verified. Device cleanup was stopped. Reopen the app to check.');return;}
+      if(error.message==='oauth'){deletionOAuthProof=null;clearDeletionIntent();confirmLabel.hidden=true;submit.hidden=true;}
+      status.textContent=error.message==='oauth'?deletionMessage('retry'):error.message==='otp'?deletionMessage('otpError'):error.message==='unsupported'?deletionMessage('unsupported'):error.message==='storage-block'?deletionText('삭제 전 계정 파일 확인이 필요합니다. 고객지원에 문의하세요. 아무것도 삭제하지 않았습니다.','Account files need verification before deletion. Contact support. Nothing was deleted.'):error.message==='unconfirmed'?deletionText('서버에서 삭제 완료를 확인하지 못했습니다. 기기의 로그인은 유지했습니다. 다시 시도하기 전 계정을 확인하세요.','The server could not confirm deletion. Your device session was kept. Check the account before trying again.'):error.message==='disabled'?deletionText('계정 삭제 기능이 아직 활성화되지 않았습니다. 계정과 기기의 데이터는 유지했습니다.','Account deletion is not available yet. Your account and device data were kept.'):error.message==='unauthenticated'?deletionText('로그인 상태 또는 비밀번호를 확인하세요. 삭제 완료를 확인하지 못했습니다.','Check your login and password. Deletion was not confirmed.'):error.message==='rate-limit'?deletionText('요청이 너무 많습니다. 잠시 후 다시 시도하세요.','Too many requests. Please try again later.'):deletionText('삭제 완료를 확인하지 못했습니다. 네트워크 또는 서비스 상태를 확인하세요. 기기의 데이터와 로그인은 유지했습니다.','Deletion was not confirmed. Check the network or service availability. Device data and login were kept.');
+    }finally{clearTimeout(timer);if(stillOwner()&&!deletionConfirmed)busy(false);}
+  };
+  dialog.showModal();cancel.focus();
+  (async()=>{
+    const {data,error}=await supabase.auth.getUser();if(!stillOwner()||!dialog.open)return;
+    const user=data?.user;if(error||user?.id!==owner)throw Error('owner');
+    const providers=[...(user.identities||[]).map(x=>x.provider),...(user.app_metadata?.providers||[]),user.app_metadata?.provider].filter(Boolean);
+    if(providers.includes('google'))mode='oauth';else if(providers.includes('email')&&!providers.some(x=>x!=='email'))mode='password';else throw Error('unsupported');
+    if(mode==='oauth'&&IS_DESKTOP){hint.hidden=false;hint.textContent=deletionMessage('browser');form.insertBefore(accountDeletionWebLink(),status);status.textContent='';return;}
+    const factors=await supabase.auth.mfa.listFactors();if(!stillOwner()||!dialog.open)return;if(factors.error)throw Error('mfa');
+    const verified=(factors.data?.all||factors.data?.totp||[]).filter(f=>f.status==='verified');
+    if(verified.some(f=>f.factor_type!=='totp'))throw Error('unsupported');factorID=verified.find(f=>f.factor_type==='totp')?.id||null;
+    otpLabel.hidden=!factorID;
+    if(mode==='oauth'){google.hidden=false;hint.hidden=false;hint.textContent=deletionMessage('googleHint');const ready=validProof();confirmLabel.hidden=!ready;submit.hidden=!ready;status.textContent=ready?deletionMessage('verified'):'';}
+    else {passwordLabel.hidden=false;confirmLabel.hidden=false;submit.hidden=false;status.textContent='';}
+    submit.disabled=false;
+  })().catch(()=>{if(stillOwner()&&dialog.open){mode=null;submit.hidden=true;status.textContent=deletionMessage('unsupported');}});
+}
+// ACCOUNT_DELETION_END
+
 function renderAccount(email) {
   const el = $("setAccount");
   el.innerHTML = "";
@@ -1946,7 +2209,7 @@ function renderAccount(email) {
     left.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
     right.textContent = t("logout");
     right.classList.add("danger");
-    right.onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+    right.onclick = async () => { await window.OharuReminders?.clear(); await supabase.auth.signOut(); location.reload(); };
   } else {
     left.innerHTML = t("guestMode");
     right.textContent = t("login");
@@ -1954,6 +2217,10 @@ function renderAccount(email) {
     right.onclick = () => { if (openLoginScreen) openLoginScreen(); };
   }
   el.append(left, right);
+  el.classList.add('account-with-deletion');
+  if(email && currentUserId) {
+    const remove=document.createElement('button');remove.id='deleteAccountBtn';remove.type='button';remove.className='set-btn danger';remove.textContent=deletionText('계정 삭제','Delete account');remove.onclick=()=>openDeleteAccount(email);el.append(remove);
+  }
 }
 
 function applyBgAlpha(p) {
@@ -1994,7 +2261,7 @@ if (IS_DESKTOP) {
 }
 
 // ── AI 연동(MCP) ─────────────────────────────
-// 클로드/챗지피티/제미나이 같은 AI가 개인 토큰으로 오하루에 할 일을 추가할
+// 호환성이 확인된 MCP 클라이언트가 개인 토큰으로 오하루에 할 일을 추가할
 // 수 있게 하는 기능. 기존 todos CRUD 흐름과는 완전히 분리된 애드온이며,
 // public.todos 테이블/RLS는 이 코드에서 전혀 건드리지 않는다.
 const MCP_BASE_URL = SUPABASE_URL + "/functions/v1/mcp";
@@ -2036,7 +2303,6 @@ function mcpShowReveal(plainToken) {
   if (!box) return;
   box.hidden = false;
   box.innerHTML = "";
-  const fullUrl = MCP_BASE_URL + "/" + plainToken;
 
   const warn = document.createElement("div");
   warn.className = "mcp-warn";
@@ -2067,7 +2333,6 @@ function mcpShowReveal(plainToken) {
     return wrap;
   };
 
-  box.appendChild(mkRow(t("mcpUrlWithTokenLabel"), fullUrl));
   box.appendChild(mkRow(t("mcpUrlLabel"), MCP_BASE_URL));
   box.appendChild(mkRow(t("mcpTokenLabel"), plainToken));
 
@@ -2132,7 +2397,7 @@ async function renderMcp(loggedIn) {
   createRow.className = "set-row";
   const select = document.createElement("select");
   select.setAttribute("aria-label", t("mcpNamePh"));
-  [["클로드", "mcpOptClaude"], ["챗지피티", "mcpOptChatgpt"], ["제미나이", "mcpOptGemini"], ["기타", "mcpOptOther"]].forEach(([v, k]) => {
+  [["개인 MCP 클라이언트", "mcpOptOther"]].forEach(([v, k]) => {
     const o = document.createElement("option");
     o.value = v; o.textContent = t(k);
     select.appendChild(o);
@@ -2204,7 +2469,9 @@ $("input").addEventListener("keydown", e => {
 // ── 과거 미완료 가져오기 ───────────────────────
 $("carryBring").onclick = async () => {
   await repo.carryOver();
-  todos = await repo.load();
+  const carried = await repo.load();
+  if (!carried) return;
+  todos = carried; reminderDataReady = true;
   render();
   rememberLoadedState();
 };
@@ -2220,6 +2487,7 @@ function todosSnapshot(items) {
   return JSON.stringify([...items].sort((a, b) => String(a.id).localeCompare(String(b.id))));
 }
 function rememberLoadedState() {
+  window.OharuReminders?.sync(reminderDataReady ? todos : null, currentUserId);
   lastLoadedTodosJson = todosSnapshot(todos);
   lastLoadedDate = todayStr();
 }
@@ -2233,20 +2501,31 @@ async function startApp(r, { canLogout = false, guest = false, email = null, use
   $("mainView").hidden = false;
   $("nudge").hidden = !guest;
   renderAccount(canLogout ? (email || t("signedIn")) : null);
+  handleDeletionEntry(email);
   renderMcp(!!canLogout); // 별도 애드온 — 실패해도 메인 투두 흐름에 영향 없음(fire-and-forget)
   await repo.rollover();
-  todos = await repo.load();
+  if (currentUserId !== userId || deletionConfirmed) return;
+  const initialTodos = await repo.load();
+  if (currentUserId !== userId || deletionConfirmed) return;
+  if (initialTodos) { todos = initialTodos; reminderDataReady = true; }
   await backfillTodaySortOrder();
+  if (currentUserId !== userId || deletionConfirmed) return;
   render();
   rememberLoadedState();
   setInterval(async () => {
+    if (currentUserId !== userId || deletionConfirmed) return;
     await repo.rollover();
+    if (currentUserId !== userId || deletionConfirmed) return;
     const loaded = await repo.load();
+    if (currentUserId !== userId || deletionConfirmed) return;
+    if (!loaded) return;
+    reminderDataReady = true;
     const loadedJson = todosSnapshot(loaded);
     const dateChanged = todayStr() !== lastLoadedDate;
     if (loadedJson === lastLoadedTodosJson && !dateChanged) return;
     todos = loaded;
     await backfillTodaySortOrder();
+    if (currentUserId !== userId || deletionConfirmed) return;
     render();
     rememberLoadedState();
   }, 60 * 1000);
@@ -2275,12 +2554,15 @@ if (!CLOUD) {
   if (sw) sw.onclick = previewMsg;
 } else {
   const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "pkce" } });
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: "pkce", detectSessionInUrl: !deletionHadIntent } });
+  await verifyDeletionOAuthReturn();
+  window.OharuThemes?.connect(supabase);
 
   // 게스트(localStorage) 할 일을 로그인된 계정 DB로 이전
   // 여러 경로(부팅/로그인 이벤트)에서 동시에 불려도 실제 실행은 1회, 모두 같은 완료를 기다린다
   let migratePromise = null;
   function migrateLocalIfAny() {
+    if (deletionEntryRequested) return Promise.resolve(); // Deletion must not migrate separate guest data.
     if (!migratePromise) migratePromise = (async () => {
       try {
         const raw = localStorage.getItem("oneul.v3");
@@ -2386,6 +2668,16 @@ if (!CLOUD) {
   // 주의: supabase-js는 onAuthStateChange 콜백 "안"에서 다른 Supabase 함수를 직접 await하면
   // 교착(멈춤)될 수 있다. 공식 권장대로 setTimeout으로 콜백 밖에서 실행한다.
   supabase.auth.onAuthStateChange((_e, sess) => {
+    if (deletionCleanupActive && _e === "SIGNED_OUT") return;
+    invalidateAccountDeletion(sess?.user?.id || null);
+    // Clear old-owner reminders on every auth boundary, including other tabs.
+    if (_e === "SIGNED_OUT" || (currentUserId && sess?.user?.id && sess.user.id !== currentUserId)) {
+      currentUserId = null; todos = []; reminderDataReady = false;
+      $("mainView").hidden = true;
+      window.OharuReminders?.clear();
+      setTimeout(() => { location.reload(); }, 0);
+      return;
+    }
     if (!sess) return;
     setTimeout(async () => {
       if (guestMode) {

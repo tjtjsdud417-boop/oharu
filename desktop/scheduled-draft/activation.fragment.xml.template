@@ -1,0 +1,16 @@
+<!-- Review only. Not a standalone manifest. Never register placeholder identities.
+     Add desktop/com namespaces to real approved MSIX manifest before integration.
+     Native host must implement Windows App SDK activation BEFORE using this. -->
+<Extensions xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+            xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10">
+  <desktop:Extension Category="windows.toastNotificationActivation">
+    <desktop:ToastNotificationActivation ToastActivatorCLSID="__VERIFIED_ACTIVATION_CLSID__" />
+  </desktop:Extension>
+  <com:Extension Category="windows.comServer">
+    <com:ComServer>
+      <com:ExeServer Executable="__VERIFIED_NATIVE_HOST_PATH__" DisplayName="Oharu" Arguments="----AppNotificationActivated:">
+        <com:Class Id="__VERIFIED_ACTIVATION_CLSID__" />
+      </com:ExeServer>
+    </com:ComServer>
+  </com:Extension>
+</Extensions>

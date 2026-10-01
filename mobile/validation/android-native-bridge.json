@@ -1,0 +1,82 @@
+{
+  "ready": true,
+  "count": 2,
+  "persisted": 2,
+  "unique": 2,
+  "tasks": [
+    {
+      "id": "f5d244cc-a9b8-42e7-817c-04a38d43a921",
+      "time": "10:51"
+    },
+    {
+      "id": "2673ce10-ff55-4b6d-95f9-c30e8ce1df54",
+      "time": "10:59"
+    }
+  ],
+  "before": [
+    {
+      "kind": "widgets",
+      "status": "updated",
+      "count": 1
+    },
+    {
+      "kind": "widgets",
+      "status": "updated",
+      "count": 2
+    },
+    {
+      "kind": "reminders",
+      "requestId": "10",
+      "status": "scheduled",
+      "scheduled": 1,
+      "omitted": 0,
+      "failed": 0,
+      "precision": "system-controlled"
+    },
+    {
+      "kind": "reminders",
+      "requestId": "12",
+      "status": "scheduled",
+      "scheduled": 2,
+      "omitted": 0,
+      "failed": 0,
+      "precision": "system-controlled"
+    }
+  ],
+  "after": [
+    {
+      "kind": "widgets",
+      "status": "updated",
+      "count": 1
+    },
+    {
+      "kind": "widgets",
+      "status": "updated",
+      "count": 2
+    },
+    {
+      "kind": "reminders",
+      "requestId": "10",
+      "status": "scheduled",
+      "scheduled": 1,
+      "omitted": 0,
+      "failed": 0,
+      "precision": "system-controlled"
+    },
+    {
+      "kind": "reminders",
+      "requestId": "12",
+      "status": "scheduled",
+      "scheduled": 2,
+      "omitted": 0,
+      "failed": 0,
+      "precision": "system-controlled"
+    }
+  ],
+  "frame": [
+    {
+      "qaFrame": true,
+      "sent": true
+    }
+  ]
+}

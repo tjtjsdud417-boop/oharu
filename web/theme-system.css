@@ -1,0 +1,131 @@
+/* Foreground/button colors only; existing body and card surfaces stay unchanged. */
+html[data-oharu-theme] .btn.google { background: var(--card); }
+html[data-oharu-theme] .nudge .nudge-text { color: var(--blue); }
+html[data-oharu-theme] .grab,
+html[data-oharu-theme] .item:hover .grab { color: var(--text-sub); background: var(--bg); }
+html[data-oharu-theme] .cal-grid .dow.sun { color: var(--danger); }
+html[data-oharu-theme] .set-btn:hover,
+html[data-oharu-theme] .cal-head .nav button:hover { background: var(--blue-soft); }
+html[data-oharu-theme] .textbtn:hover,
+html[data-oharu-theme] .composer .add:hover,
+html[data-oharu-theme] .nudge .nudge-btn:hover,
+html[data-oharu-theme] .set-btn.primary:hover,
+html[data-oharu-theme] .btn.primary:hover,
+html[data-oharu-theme] .dl-card .dl-btn:hover { background: var(--blue); }
+/* Decorative separators may be subtle; actionable boundaries use a tested token. */
+html[data-oharu-theme] .check,
+html[data-oharu-theme] .composer,
+html[data-oharu-theme] .auth input,
+html[data-oharu-theme] .set-row select,
+html[data-oharu-theme] .btn.google,
+html[data-oharu-theme] .oharu-theme-settings select,
+html[data-oharu-theme] .oharu-theme-settings textarea,
+html[data-oharu-theme] .oharu-theme-settings button,
+html[data-oharu-theme] .oharu-theme-settings a { border-color: var(--text-sub); }
+html[data-oharu-theme] .item.done .check,
+html[data-oharu-theme] .composer:focus-within,
+html[data-oharu-theme] .auth input:focus { border-color: var(--blue); }
+html[data-oharu-theme] .tog i { background: var(--text-sub); }
+html[data-oharu-theme] .tog input:checked + i { background: var(--blue); }
+html[data-oharu-theme] :is(button,a,select,input,textarea,[tabindex]):focus-visible,
+html[data-oharu-theme] .tog input:focus-visible + i { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-settings { border-top: 1px solid var(--line); padding: 16px 18px; color: var(--text); }
+.oharu-theme-settings label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.oharu-theme-settings select,.oharu-theme-settings textarea { width: 100%; max-width: 100%; border: 1px solid #80909F; border-radius: 10px; padding: 10px; background: var(--card); color: var(--text); font: inherit; }
+.oharu-theme-settings textarea { resize: vertical; font-size: 12px; }
+.oharu-theme-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.oharu-theme-settings button,.oharu-theme-settings a { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 12px; border: 1px solid #80909F; border-radius: 10px; color: var(--text); background: var(--card); font: inherit; font-size: 13px; cursor: pointer; text-decoration: none; }
+.oharu-theme-settings p { font-size: 12px; line-height: 1.7; margin: 10px 0; overflow-wrap: anywhere; }
+.oharu-theme-settings summary { cursor: pointer; min-height: 44px; padding: 12px 0; font-size: 14px; }
+.oharu-theme-settings input[type=file] { max-width: 100%; margin: 4px 0 12px; }
+.oharu-theme-settings :focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+.oharu-theme-preview { padding: 12px; border-radius: 12px; margin-top: 12px; }
+.oharu-theme-sample { padding: 16px; border-radius: 10px; line-height: 1.6; }
+.oharu-theme-settings [hidden] { display: none; }
+
+/* Settings share one padding and description rhythm across browser and native HTML. */
+#setView .set-card { min-width: 0; }
+html:not([data-oharu-theme]) #setView { --text-sub: #526070; --text-faint: #526070; --danger: #AF2434; --danger-soft: #FEECEE; }
+#setView .set-row { flex-wrap: wrap; gap: 12px; }
+#setView .set-row > span { min-width: 0; overflow-wrap: anywhere; }
+#setView :is(button,a,select,input,textarea) { max-width: 100%; }
+#setView button, #setView a { white-space: normal; overflow-wrap: anywhere; }
+.settings-body { padding: 0 18px 16px; }
+.settings-note { margin: 8px 0; color: var(--text-sub); font-size: calc(13px * var(--ios-font-scale, 1)); line-height: 1.65; overflow-wrap: anywhere; }
+.settings-detail { margin: 10px 18px 16px; }
+.settings-detail summary { padding: 10px 0; min-height: 44px; color: var(--text-sub); font-size: calc(13px * var(--ios-font-scale, 1)); cursor: pointer; }
+.settings-detail .settings-note { margin: 4px 0 12px; }
+#reminderStatus { margin: 0 18px 8px; }
+.settings-advanced > summary { padding: 18px; min-height: 44px; font-size: calc(14px * var(--ios-font-scale, 1)); color: var(--text-sub); cursor: pointer; }
+.settings-advanced #setMcp { border-top: 1px solid var(--line); }
+.settings-ai .settings-note { margin-top: 0; }
+.ai-provider-list { display: grid; gap: 10px; margin-top: 14px; }
+.ai-provider { display: grid; gap: 6px; }
+.ai-provider-button { display: block; width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--bg); color: var(--text); font: inherit; font-weight: 650; font-size: calc(15px * var(--ios-font-scale, 1)); min-height: 48px; cursor: pointer; }
+.ai-provider-button:hover,.ai-provider-button[aria-expanded=true] { border-color: var(--blue); background: var(--blue-soft); }
+.ai-provider-status { font-size: calc(12px * var(--ios-font-scale, 1)); line-height: 1.6; padding: 0 4px; color: var(--text-sub); }
+.ai-connection-guide { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); line-height: 1.6; }
+.ai-connection-guide .settings-detail { margin: 12px 0 0; }
+#setAccountManagement .account-with-deletion { align-items: center; }
+#setAccountManagement #deleteAccountBtn { margin-left: auto; min-height: 44px; }
+.oharu-theme-settings { border: 0; padding: 0; }
+.theme-entry,.theme-ai-entry { list-style: none; display: flex; align-items: center; gap: 12px; padding: 18px; min-height: 84px; cursor: pointer; }
+.oharu-theme-settings .theme-entry,.oharu-theme-settings .theme-ai-entry { padding: 18px; font-family: inherit; }
+.theme-entry strong,.theme-ai-entry strong { overflow-wrap: anywhere; }
+.oharu-theme-settings .settings-note { margin: 8px 0; font-size: calc(13px * var(--ios-font-scale, 1)); line-height: 1.65; }
+.theme-entry::-webkit-details-marker,.theme-ai-entry::-webkit-details-marker { display: none; }
+.theme-entry > span:nth-child(2),.theme-ai-entry > span:nth-child(2) { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.theme-entry strong { font-size: calc(17px * var(--ios-font-scale, 1)); line-height: 1.5; }
+.theme-entry span span { font-size: calc(14px * var(--ios-font-scale, 1)); color: var(--blue); font-weight: 600; }
+.theme-entry-art { width: 64px; height: 64px; flex: 0 0 64px; position: relative; }
+.theme-entry-art img { position: absolute; width: 51px; height: 54px; object-fit: cover; border-radius: 8px; background: var(--bg); border: 2px solid var(--card); transform: rotate(-9deg); top: 0; left: 0; }
+.theme-entry-art img + img { transform: rotate(9deg); left: 13px; top: 9px; }
+.theme-entry-arrow { font-size: 28px; color: var(--text-sub); }
+.theme-panel-content { padding: 0 18px 18px; }
+.theme-ai-entry { border-top: 1px solid var(--line); background: var(--blue-soft); border-radius: 0 0 20px 20px; }
+.theme-ai-entry > span:first-child { color: var(--blue); font-size: 28px; }
+.theme-ai-entry strong { font-size: calc(15px * var(--ios-font-scale, 1)); line-height: 1.55; }
+.theme-ai-entry small { color: var(--text-sub); font-size: calc(12px * var(--ios-font-scale, 1)); line-height: 1.6; }
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,max(calc((100% - 12px) / 2),calc(90px * var(--ios-font-scale, 1)))),1fr)); gap: 12px; margin: 16px 0 22px; }
+.oharu-theme-settings .theme-card { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; min-width: 0; text-align: left; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.theme-card img { width: 100%; height: 116px; object-fit: cover; background: var(--bg); pointer-events: none; }
+.theme-card-name { display: block; padding: 10px 10px 3px; font-size: calc(13px * var(--ios-font-scale, 1)); line-height: 1.55; overflow-wrap: anywhere; }
+.theme-card-state { display: block; padding: 0 10px 11px; font-size: calc(11px * var(--ios-font-scale, 1)); line-height: 1.6; color: var(--text-sub); }
+.theme-card[aria-pressed=true] { border: 2px solid var(--blue); }
+.theme-card:hover { border-color: var(--blue); }
+.oharu-theme-settings :is(input[type=text],input:not([type]),textarea,select) { width: 100%; min-width: 0; box-sizing: border-box; font: inherit; font-size: calc(14px * var(--ios-font-scale, 1)); }
+.oharu-theme-settings input:not([type]) { border: 1px solid var(--text-sub); border-radius: 10px; padding: 12px; color: var(--text); background: var(--card); }
+.oharu-theme-settings label { font-size: calc(14px * var(--ios-font-scale, 1)); line-height: 1.6; }
+.oharu-theme-settings :is(button,a) { font-size: calc(13px * var(--ios-font-scale, 1)); line-height: 1.6; white-space: normal; overflow-wrap: anywhere; }
+.oharu-theme-settings .theme-primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 650; }
+.theme-file-details { margin-top: 14px; }
+.oharu-theme-preview { margin: 16px 18px; border: 1px solid var(--line); }
+.theme-preview-art { width: 100%; max-height: 180px; object-fit: cover; border-radius: 9px; display: block; margin-bottom: 12px; }
+.oharu-theme-sample { display: grid; gap: 10px; }
+.theme-preview-name { font-size: calc(17px * var(--ios-font-scale, 1)); }
+.theme-preview-task { border: 1px solid currentColor; border-radius: 8px; padding: 12px; font-size: calc(13px * var(--ios-font-scale, 1)); }
+.theme-motion-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 0 18px 8px; }
+.theme-motion-row .settings-note { flex-basis: 100%; }
+.theme-motion-row input { width: 22px; height: 22px; accent-color: var(--blue); }
+.oharu-theme-status { padding: 0 18px; }
+.oharu-theme-settings > [data-action=undo] { margin: 0 18px 18px; }
+#setView :is(button,a,summary,select,input,textarea):focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+/* Original brand blue remains in the design; small filled controls use a readable shade. */
+html:not([data-oharu-theme]) :is(#loginTopBtn,.set-btn.primary,.btn.primary,.theme-primary,.composer .add,.nudge .nudge-btn) { background-color: #205FC1; color: #fff; }
+html:not([data-oharu-theme]) :is(.set-row a,.theme-entry span span) { color: #205FC1; }
+@media (max-width:359px) { .theme-entry-art { width: 48px; flex-basis: 48px; } .theme-entry-art img { width: 38px; height: 45px; } .theme-entry-art img + img { left: 8px; } }
+@media (min-width:720px) { .theme-grid { grid-template-columns: repeat(auto-fit,minmax(min(100%,max(calc((100% - 24px) / 3),calc(90px * var(--ios-font-scale, 1)))),1fr)); } }
+/* The main settings list contains one entry; theme controls live in a detail view. */
+#setView.theme-detail-open > :not(#themeDetailView) { display: none; }
+#themeDetailView[hidden],.theme-tabs [hidden],#themeDetailView [role=tabpanel][hidden] { display: none; }
+#setThemes .theme-settings-entry { width: 100%; border: 0; border-radius: 20px; background: var(--card); color: var(--text); text-align: left; font: inherit; }
+#setThemes .theme-settings-entry strong { font-size: calc(17px * var(--ios-font-scale, 1)); }
+.theme-detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 18px; }
+.theme-detail-head h2 { min-width: 0; margin: 0; font-size: calc(22px * var(--ios-font-scale, 1)); line-height: 1.45; overflow-wrap: anywhere; }
+.ios-app .theme-detail-head { display: none; }
+.theme-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.theme-tabs [role=tab] { flex: 1 1 calc(130px * var(--ios-font-scale, 1)); min-height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--card); color: var(--text); font: inherit; font-size: calc(14px * var(--ios-font-scale, 1)); line-height: 1.6; cursor: pointer; }
+.theme-tabs [aria-selected=true] { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); font-weight: 650; }
+#themeDetailView .oharu-theme-settings { border-radius: 20px; background: var(--card); border: 1px solid var(--line); }
+#themeDetailView .theme-panel-content { padding-top: 18px; }
+.ai-connection-guide [disabled] { cursor: default; color: var(--text-sub); }

@@ -1,0 +1,6 @@
+:root { color-scheme: light; }
+body { padding: var(--toss-top, env(safe-area-inset-top, 0px)) var(--toss-right, env(safe-area-inset-right, 0px)) var(--toss-bottom, env(safe-area-inset-bottom, 0px)) var(--toss-left, env(safe-area-inset-left, 0px)); }
+#authView, #loginTopBtn, #nudge, #setMcp, #setApp, #dlCard, #seoLine, #setPcWidgetRow, #setDesign { display: none !important; }
+#tossStatus { padding: 10px 22px; margin: 0; font-size: 12px; color: #6b7684; line-height: 1.5; }
+#tossStatus[role=alert] { color: #b42318; background: #fff1f0; }
+.toss-note { color: #6b7684; font-size: 13px; line-height: 1.7; }

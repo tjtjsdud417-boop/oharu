@@ -3,3 +3,5 @@ desktop/dist/
 web/.env.local
 .tmp.driveupload/
 web/_diag.mjs
+.playwright-cli/
+output/
