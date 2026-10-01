@@ -159,6 +159,11 @@
   .ios-app .ios-menu button { max-width: 100%; overflow-wrap: anywhere; }
   .ios-app .composer { flex-wrap: wrap; }
   .ios-app .composer input[type=text] { flex-basis: 120px; font-size: max(16px, 1rem); }
+  @media (max-height: 420px) {
+    .ios-app .ios-main-scroll { padding-block: 12px; }
+    .ios-app .ios-menu { flex-wrap: nowrap; justify-content: flex-start; overflow: auto; max-height: 45%; min-height: 0; }
+    .ios-app .ios-menu button { flex: 0 0 auto; max-width: none; }
+  }
 
 
   /* ── 입력 ─────────────────────────────── */
@@ -603,6 +608,20 @@
     text-decoration: none; transition: background .15s;
   }
   .dl-card .dl-btn:hover { background: #1B64DA; }
+
+
+  .account-with-deletion { flex-wrap: wrap; }
+  .account-delete-web { display: block; flex-basis: 100%; min-width: 0; min-height: 44px; padding-block: 10px; overflow-wrap: anywhere; white-space: normal; }
+  .account-delete-web-notice { flex-basis: 100%; min-width: 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .account-delete-dialog { width: min(420px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); margin: auto; border: 1px solid var(--line); border-radius: 16px; padding: 20px; background: var(--card); color: var(--text); overflow: auto; font: inherit; }
+  .account-delete-dialog::backdrop { background: rgba(0,0,0,.45); }
+  .account-delete-dialog h2 { font-size: 1.25rem; margin-bottom: 12px; }
+  .account-delete-dialog p, .account-delete-dialog label { display: block; font-size: 1rem; line-height: 1.5; margin: 12px 0; overflow-wrap: anywhere; }
+  .account-delete-dialog input { display: block; width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--text-sub); border-radius: 8px; font: inherit; font-size: max(16px, 1rem); }
+  .account-delete-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .account-delete-actions button { min-height: 44px; padding: 10px 14px; font: inherit; border-radius: 8px; border: 1px solid var(--text-sub); color: var(--text); background: var(--card); }
+  .account-delete-actions .danger { background: var(--danger); color: white; }
+  .account-delete-dialog :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -1739,10 +1758,10 @@ function setupIOSMenu() {
   $('backLink').replaceWith(back);
   $('authView').prepend($('backLine'));
   $('authH2').tabIndex = -1;
-  history.replaceState({oharuIOS: true, screen: 'today'}, '', location.href);
+  history.replaceState({oharuIOS: true, screen: 'today', routeId: 0}, '', location.href);
   window.addEventListener('popstate', restoreIOSRoute);
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && (!$('authView').hidden || view !== 'today')) {
+    if (event.key === 'Escape' && !deletionDialog?.open && (!$('authView').hidden || view !== 'today')) {
       event.preventDefault(); closeIOSScreen();
     }
   });
@@ -2180,8 +2199,10 @@ function buildFutureComposer() {
   input.maxLength = 80;
   input.placeholder = t("futurePh");
   input.autocomplete = "off";
-
-  let localTime = null;
+  const draft = IS_IOS_APP ? iosCalendarDrafts.get(selDate) : null;
+  if (IS_IOS_APP) comp.dataset.iosDraftDate=selDate;
+  if (draft) input.value=draft.text;
+  let localTime = draft?.time || null;
   const clockEl = document.createElement("div");
   clockEl.className = "clock";
   clockEl.title = t("clockTitle");
@@ -2205,6 +2226,7 @@ function buildFutureComposer() {
   const timeIn = document.createElement("input");
   timeIn.type = "time";
   clockEl.append(clockSvg, clockTextEl, clearEl, timeIn);
+  if (draft) { timeIn.value=localTime || ''; clockEl.classList.toggle('set',!!localTime); clockTextEl.textContent=localTime ? fmtTime(localTime) : ''; }
 
   timeIn.addEventListener("change", () => {
     localTime = timeIn.value || null;
@@ -2226,6 +2248,7 @@ function buildFutureComposer() {
     if (!text) return;
     const newTodo = { id: newId(), text, time: localTime, done: false, todoDate: selDate, sortOrder: nextSortOrder(selDate, localTime), createdAt: new Date().toISOString() };
     todos.push(newTodo);
+    if (IS_IOS_APP) { input.value=''; timeIn.value=''; localTime=null; }
     render();
     await repo.add(newTodo);
     rememberLoadedState();
@@ -2243,6 +2266,7 @@ function buildFutureComposer() {
 }
 
 function renderCal() {
+  stashIOSCalendarDraft();
   const y = calCursor.getFullYear(), m = calCursor.getMonth();
   $("calMonth").textContent = fmtCalMonth(y, m);
   const grid = $("calGrid");
@@ -2323,14 +2347,30 @@ function render() {
 
 // ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
 // iOS uses same-document history so native edge-swipe and visible Back agree.
+// UI snapshots live only in this document, never in persistent history/storage.
+let iosRouteId = 0, iosRouteSequence = 0;
+const iosRoutes = new Map();
+const iosCalendarDrafts = new Map();
+function captureIOSRoute() {
+  return {screen:$('authView').hidden ? view : 'auth', view, scroll:$('iosMainScroll')?.scrollTop || 0,
+    cal:calCursor.toISOString(), date:selDate, focus:document.activeElement?.id || ''};
+}
 function saveIOSRoute() {
   if (!IS_IOS_APP) return;
-  const screen = $('authView').hidden ? view : 'auth';
-  history.replaceState({oharuIOS:true, screen, view, scroll:$('iosMainScroll')?.scrollTop || 0,
-    cal:calCursor.toISOString(), date:selDate, focus:document.activeElement?.id || ''}, '', location.href);
+  iosRoutes.set(iosRouteId, captureIOSRoute());
 }
 function pushIOSRoute(screen) {
-  history.pushState({oharuIOS:true, screen, view}, '', location.href);
+  iosRouteId = ++iosRouteSequence;
+  history.pushState({oharuIOS:true, screen, routeId:iosRouteId}, '', location.href);
+}
+function stashIOSCalendarDraft() {
+  if (!IS_IOS_APP) return;
+  const comp=$('dayDetail').querySelector('[data-ios-draft-date]');
+  if (!comp) return;
+  const date=comp.dataset.iosDraftDate;
+  iosCalendarDrafts.delete(date);
+  iosCalendarDrafts.set(date,{text:comp.querySelector('input[type=text]').value, time:comp.querySelector('input[type=time]').value});
+  if (iosCalendarDrafts.size>32) iosCalendarDrafts.delete(iosCalendarDrafts.keys().next().value);
 }
 function openIOSAuth() {
   if (!IS_IOS_APP || !$('authView').hidden) return;
@@ -2344,12 +2384,20 @@ function closeIOSScreen() {
   else { $('authView').hidden=true; $('mainView').hidden=false; switchView('today', true); }
 }
 function restoreIOSRoute(event) {
+  if (deletionDialog?.open && !deletionBusy && !deletionConfirmed) {
+    deletionEpoch++; deletionDialog.querySelector('[name=password]').value=''; deletionDialog.close();
+  }
   let state=event.state;
   if (!state?.oharuIOS) return;
+  // popstate arrives after history changed; capture the outgoing DOM using its
+  // remembered key, not the now-current browser entry.
+  saveIOSRoute(); stashIOSCalendarDraft();
+  iosRouteId=Number.isInteger(state.routeId) ? state.routeId : ++iosRouteSequence;
+  state={...state,...iosRoutes.get(iosRouteId)};
   // A saved login route is presentation only, never an authentication source.
   // Successful auth may reload the document while earlier history entries remain.
   if (state.screen === 'auth' && currentUserId) {
-    state={oharuIOS:true, screen:view}; history.replaceState(state, '', location.href);
+    state={oharuIOS:true, screen:view, routeId:iosRouteId}; history.replaceState(state, '', location.href);
   }
   document.activeElement?.blur();
   $('authView').hidden=state.screen !== 'auth'; $('mainView').hidden=state.screen === 'auth';
@@ -2403,6 +2451,176 @@ $("langSelect").addEventListener("change", () => {
   location.reload();
 });
 
+// ACCOUNT_DELETION_BEGIN: restricted UI, only this app's backend receives secrets.
+let deletionCleanupActive = false;
+let deletionDialog = null, deletionOwner = null, deletionEpoch = 0, deletionBusy = false, deletionConfirmed = false;
+const deletionTranslations={"Permanently delete account":["アカウントを完全に削除","永久删除账户","Eliminar cuenta permanentemente"],"This account and its saved tasks and theme will be permanently deleted. This cannot be undone. Separate guest data on this device will be kept.":["このアカウントと保存されたタスク・テーマを完全に削除します。取り消せません。この端末の別のゲストデータは残ります。","此账户及其保存的任务和主题将被永久删除，无法撤销。此设备上的独立访客数据将保留。","La cuenta, sus tareas y su tema se eliminarán permanentemente. No se puede deshacer. Se conservarán los datos de invitado independientes de este dispositivo."],"Account to delete: ":["削除するアカウント: ","要删除的账户：","Cuenta que se eliminará: "],"Confirm with your current password":["現在のパスワードで本人確認","输入当前密码以验证身份","Confirma con tu contraseña actual"],"Type DELETE to confirm permanent deletion":["完全削除を確認するには DELETE と入力","输入 DELETE 以确认永久删除","Escribe DELETE para confirmar la eliminación permanente"],"Cancel":["キャンセル","取消","Cancelar"],"Delete permanently":["完全に削除","永久删除","Eliminar permanentemente"],"Your account was deleted. Return to the start screen.":["アカウントを削除しました。開始画面に戻ってください。","账户已删除。请返回初始页面。","Se eliminó tu cuenta. Vuelve a la pantalla inicial."],"Return to start":["開始画面に戻る","返回初始页面","Volver al inicio"],"The server account was deleted, but cleanup on this device failed. Retry local cleanup.":["サーバーのアカウントは削除されましたが、端末の後処理に失敗しました。再試行してください。","服务器账户已删除，但此设备的清理失败。请重试设备清理。","La cuenta del servidor se eliminó, pero falló la limpieza del dispositivo. Reintenta la limpieza local."],"Retry local cleanup":["端末の後処理を再試行","重试设备清理","Reintentar limpieza local"],"Enter your password and exactly DELETE.":["パスワードと正確に DELETE を入力してください。","请输入密码，并准确输入 DELETE。","Introduce tu contraseña y escribe exactamente DELETE."],"Requesting deletion. A sent request cannot be cancelled.":["削除を要求しています。送信済みの要求は取り消せません。","正在请求删除。已发送的请求无法取消。","Solicitando eliminación. No se puede cancelar una solicitud enviada."],"The server account was deleted, but the current login could not be verified. Device cleanup was stopped. Reopen the app to check.":["サーバーのアカウントは削除されましたが、現在のログインを確認できず端末の後処理を中止しました。アプリを開き直して確認してください。","服务器账户已删除，但无法验证当前登录状态，已停止设备清理。请重新打开应用检查。","La cuenta del servidor se eliminó, pero no se pudo verificar la sesión actual. Se detuvo la limpieza. Abre de nuevo la app para comprobarlo."],"Check your login and password. Deletion was not confirmed.":["ログイン状態とパスワードを確認してください。削除完了は確認できませんでした。","请检查登录状态和密码。尚未确认删除成功。","Comprueba tu sesión y contraseña. No se confirmó la eliminación."],"Too many requests. Please try again later.":["要求が多すぎます。しばらくして再試行してください。","请求过多，请稍后重试。","Demasiadas solicitudes. Inténtalo más tarde."],"Deletion was not confirmed. Check the network or service availability. Device data and login were kept.":["削除完了を確認できませんでした。ネットワークやサービスの状態を確認してください。端末のデータとログインは保持しました。","尚未确认删除成功。请检查网络或服务状态。设备数据和登录状态已保留。","No se confirmó la eliminación. Comprueba la red o el servicio. Se conservaron los datos del dispositivo y la sesión."],"Delete account":["アカウント削除","删除账户","Eliminar cuenta"],"Account deletion is not available yet. Your account and device data were kept.":["アカウント削除はまだ利用できません。アカウントと端末データは保持しました。","账户删除服务尚不可用。账户和设备数据已保留。","La eliminación de cuentas aún no está disponible. Se conservaron tu cuenta y los datos del dispositivo."]};
+Object.assign(deletionTranslations,{"This account needs another verification method. Contact support before deleting it. Nothing was deleted.":["このアカウントには別の本人確認が必要です。削除する前にサポートへお問い合わせください。削除は行っていません。","此账户需要其他验证方式。请在删除前联系支持。未删除任何内容。","Esta cuenta necesita otro método de verificación. Contacta con soporte antes de eliminarla. No se eliminó nada."],"Account files need verification before deletion. Contact support. Nothing was deleted.":["削除前にアカウントのファイル確認が必要です。サポートへお問い合わせください。削除は行っていません。","删除前需要验证账户文件。请联系支持。未删除任何内容。","Es necesario verificar los archivos de la cuenta antes de eliminarla. Contacta con soporte. No se eliminó nada."],"The server could not confirm deletion. Your device session was kept. Check the account before trying again.":["サーバーで削除完了を確認できませんでした。端末のログインは保持しました。再試行前にアカウントを確認してください。","服务器无法确认删除结果。设备登录状态已保留。请先检查账户再重试。","El servidor no pudo confirmar la eliminación. Se conservó la sesión del dispositivo. Comprueba la cuenta antes de reintentar."]});
+Object.assign(deletionTranslations,{"Delete a Google or other sign-in account":["Googleなど別のログイン方法のアカウントを削除","删除 Google 或其他登录方式的账户","Eliminar una cuenta de Google u otro acceso"],"Web account deletion is being prepared. Check availability on the deletion page.":["ウェブでのアカウント削除は準備中です。削除ページで利用状況を確認してください。","网页账户删除功能正在准备中，请在删除页面查看可用状态。","La eliminación de cuentas en la web está en preparación. Consulta su disponibilidad en la página de eliminación."],"For Google or another sign-in provider, verify and delete on the Oharu website. You do not need to create a new password.":["Googleなど外部ログインの場合は、Oharuのウェブサイトで本人確認して削除してください。新しいパスワードを作る必要はありません。","使用 Google 或其他登录服务的账户，请在 Oharu 网站验证并删除。无需创建新密码。","Si usas Google u otro proveedor, verifica y elimina la cuenta en la web de Oharu. No necesitas crear una contraseña nueva."],"Your sign-in method could not be checked. You can use the account deletion page instead.":["ログイン方法を確認できませんでした。アカウント削除ページをご利用ください。","无法确认登录方式。你也可以使用账户删除页面。","No se pudo comprobar tu método de acceso. Puedes usar la página de eliminación de cuentas."]});
+Object.assign(deletionTranslations,{"Clear account data on this device":["この端末のアカウントデータを消去","清理此设备上的账号数据","Limpiar los datos de la cuenta en este dispositivo"],"The account or sign-in session is unavailable. Clearing its data on this device.":["アカウントまたはログインセッションを利用できません。この端末の該当データを消去しています。","账号或登录会话不可用。正在清理此设备上的相关数据。","La cuenta o la sesion no esta disponible. Limpiando sus datos en este dispositivo."],"The account or sign-in session is unavailable. Its data on this device was cleared. Return to the start screen.":["アカウントまたはログインセッションを利用できません。この端末の該当データを消去しました。開始画面に戻ってください。","账号或登录会话不可用。已清理此设备上的相关数据。请返回开始页面。","La cuenta o la sesion no esta disponible. Se limpiaron sus datos en este dispositivo. Vuelve al inicio."],"The account or sign-in session is unavailable, but cleanup on this device failed. Retry local cleanup.":["アカウントまたはログインセッションを利用できませんが、この端末のデータ消去に失敗しました。もう一度お試しください。","账号或登录会话不可用，但此设备上的清理失败。请重试本地清理。","La cuenta o la sesion no esta disponible, pero fallo la limpieza del dispositivo. Reintenta la limpieza local."]});
+function deletionText(ko,en) { return LANG === 'ko' ? ko : deletionTranslations[en]?.[{ja:0,zh:1,es:2}[LANG]] || en; }
+let accountIdentityEpoch=0, externalAccountCheckPending=false;
+function invalidateAccountDeletion(nextOwner) {
+  if(nextOwner!==currentUserId)accountIdentityEpoch++;
+  if (deletionOwner && nextOwner !== deletionOwner) {
+    deletionEpoch++; deletionOwner=null; deletionBusy=false; deletionConfirmed=false;
+    if(deletionDialog) { deletionDialog.querySelector('[name=password]').value=''; deletionDialog.close(); }
+    window.dispatchEvent(new Event('oharu:deletion-owner-changed'));
+  }
+}
+let deletionNativeSequence=0;
+async function confirmDeletionNativeClear(stillOwner) {
+  await window.OharuReminders?.clear();
+  if(!stillOwner())throw Error('owner-changed');
+  if(!window.ReactNativeWebView?.postMessage)return;
+  const base='account-delete:'+String(++deletionNativeSequence), reminderId=base+':r', widgetId=base+':w';
+  await new Promise((resolve,reject)=>{
+    let reminderDone=false, widgetDone=false;
+    const finish=error=>{clearTimeout(timer);window.removeEventListener('oharu:native-reminders',onReminder);window.removeEventListener('oharu:native-widgets',onWidget);window.removeEventListener('oharu:deletion-owner-changed',onOwner);error?reject(error):resolve();};
+    const check=()=>{if(!stillOwner())return finish(Error('owner-changed'));if(reminderDone&&widgetDone)finish();};
+    const onOwner=()=>{if(!stillOwner())finish(Error('owner-changed'));};
+    const onReminder=event=>{const r=event.detail;if(r?.requestId!==reminderId)return;if(r.status!=='disabled'||r.failed||r.scheduled!==0)return finish(Error('native-clear'));reminderDone=true;check();};
+    const onWidget=event=>{const r=event.detail;if(r?.requestId!==widgetId)return;if(!(r.status==='updated'&&r.count===0)&&!(IS_IOS_APP&&r.status==='unavailable'))return finish(Error('widget-clear'));widgetDone=true;check();};
+    const timer=setTimeout(()=>finish(Error('native-timeout')),8000);
+    window.addEventListener('oharu:native-reminders',onReminder);window.addEventListener('oharu:native-widgets',onWidget);window.addEventListener('oharu:deletion-owner-changed',onOwner);
+    try {for(const [type,requestId] of [['oharu:reminders:sync',reminderId],['oharu:widgets:sync',widgetId]])window.ReactNativeWebView.postMessage(JSON.stringify({type,version:1,requestId,enabled:false,tasks:[]}));}catch(error){finish(error);}
+  });
+}
+let accountRequestSequence=0;
+function requestNativeAccountDeletion(accessToken,password) {
+  const requestId='account:'+Date.now()+':'+String(++accountRequestSequence);
+  return new Promise((resolve,reject)=>{
+    const onResult=event=>{const r=event.detail;if(r?.requestId!==requestId)return;clearTimeout(timer);window.removeEventListener('oharu:native-account',onResult);resolve({ok:r.httpStatus>=200&&r.httpStatus<300,status:r.httpStatus,json:async()=>({deleted:r.deleted===true,code:r.code})});};
+    const timer=setTimeout(()=>{window.removeEventListener('oharu:native-account',onResult);reject(Error('native-timeout'));},30000);
+    window.addEventListener('oharu:native-account',onResult);
+    try {window.ReactNativeWebView.postMessage(JSON.stringify({type:'oharu:account:delete',requestId,accessToken,password,confirmation:'DELETE'}));}catch(error){clearTimeout(timer);window.removeEventListener('oharu:native-account',onResult);reject(error);}
+  });
+}
+function accountDeletionWebLink(id) {
+  const link=document.createElement('a');link.id=id;link.className='account-delete-web';link.href='https://oharu.today/?account=delete';link.target='_blank';link.rel='noopener noreferrer';
+  link.textContent=deletionText('Google 등 다른 로그인 계정 삭제','Delete a Google or other sign-in account');return link;
+}
+function openDeleteAccount(email, confirmedAbsent=false) {
+  if (!currentUserId || !supabase) return;
+  if (deletionDialog?.open) return;
+  const owner=currentUserId, epoch=++deletionEpoch;
+  deletionOwner=owner; deletionBusy=false; deletionConfirmed=false;
+  if(deletionDialog) deletionDialog.remove();
+  const dialog=document.createElement('dialog'); deletionDialog=dialog;
+  dialog.className='account-delete-dialog'; dialog.id='accountDeleteDialog';
+  dialog.setAttribute('aria-labelledby','accountDeleteTitle'); dialog.setAttribute('aria-describedby','accountDeleteDescription');
+  const title=document.createElement('h2'); title.id='accountDeleteTitle'; title.textContent=deletionText('계정 영구 삭제','Permanently delete account');
+  const description=document.createElement('p'); description.id='accountDeleteDescription'; description.textContent=deletionText('이 계정과 서버에 저장된 할 일·테마 정보가 영구 삭제됩니다. 되돌릴 수 없습니다. 이 기기의 별도 게스트 데이터는 삭제하지 않습니다.','This account and its saved tasks and theme will be permanently deleted. This cannot be undone. Separate guest data on this device will be kept.');
+  const account=document.createElement('p'); account.textContent=deletionText('삭제할 계정: ','Account to delete: ')+email;
+  const form=document.createElement('form'); form.noValidate=true;
+  const passwordLabel=document.createElement('label'); passwordLabel.textContent=deletionText('현재 비밀번호로 본인 확인','Confirm with your current password');
+  const password=document.createElement('input'); password.type='password'; password.name='password'; password.maxLength=1024; password.autocomplete='current-password'; password.required=true; passwordLabel.append(password);
+  const confirmLabel=document.createElement('label'); confirmLabel.textContent=deletionText('영구 삭제에 동의하면 DELETE를 입력하세요','Type DELETE to confirm permanent deletion');
+  const confirmation=document.createElement('input'); confirmation.name='confirmation'; confirmation.autocomplete='off'; confirmation.autocapitalize='characters'; confirmation.spellcheck=false; confirmation.required=true; confirmLabel.append(confirmation);
+  const status=document.createElement('p'); status.id='accountDeleteStatus'; status.setAttribute('role','status'); status.setAttribute('aria-live','polite');
+  const actions=document.createElement('div'); actions.className='account-delete-actions';
+  const cancel=document.createElement('button'); cancel.type='button'; cancel.textContent=deletionText('취소','Cancel');
+  const submit=document.createElement('button'); submit.type='submit'; submit.className='danger'; submit.textContent=deletionText('영구 삭제','Delete permanently');
+  actions.append(cancel,submit); form.append(passwordLabel,confirmLabel,status,actions); dialog.append(title,description,account,form); document.body.append(dialog);
+  const stillOwner=()=>deletionEpoch===epoch && currentUserId===owner;
+  const close=()=>{if(deletionBusy || deletionConfirmed)return;deletionEpoch++;password.value='';dialog.close();$('deleteAccountBtn')?.focus();};
+  cancel.onclick=close;
+  dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
+  dialog.addEventListener('close',()=>{password.value='';confirmation.value='';});
+  const busy=value=>{deletionBusy=value;submit.disabled=value;cancel.disabled=value||deletionConfirmed;password.disabled=value||deletionConfirmed;confirmation.disabled=value||deletionConfirmed;dialog.setAttribute('aria-busy',String(value));};
+  async function cleanup() {
+    if(!stillOwner())return;
+    deletionCleanupActive=true;
+    try {
+      // Only this deleted owner's cache is removed; never clear all localStorage.
+      todos=[];reminderDataReady=false;iosCalendarDrafts.clear();iosRoutes.clear();
+      render();
+      localStorage.removeItem('oharu.theme.v1.'+owner);
+      await confirmDeletionNativeClear(stillOwner);
+      if(!stillOwner())return;
+      const {error}=await supabase.auth.signOut({scope:'local'});
+      if(error)throw Error('cleanup');
+      if(!stillOwner())return;
+      status.textContent=confirmedAbsent ? deletionText('계정 또는 로그인 세션을 사용할 수 없어 이 기기의 해당 계정 데이터를 정리했습니다. 시작 화면으로 돌아가세요.','The account or sign-in session is unavailable. Its data on this device was cleared. Return to the start screen.') : deletionText('계정을 삭제했습니다. 시작 화면으로 돌아가세요.','Your account was deleted. Return to the start screen.');
+      submit.textContent=deletionText('시작 화면으로','Return to start'); submit.type='button';submit.onclick=()=>location.reload();submit.disabled=false;
+    } catch {
+      if(!stillOwner())return;
+      status.textContent=confirmedAbsent ? deletionText('계정 또는 로그인 세션을 사용할 수 없지만 이 기기의 정리를 완료하지 못했습니다. 기기 정리를 다시 시도하세요.','The account or sign-in session is unavailable, but cleanup on this device failed. Retry local cleanup.') : deletionText('서버 계정은 삭제됐지만 이 기기의 정리가 완료되지 않았습니다. 정리를 다시 시도하세요.','The server account was deleted, but cleanup on this device failed. Retry local cleanup.');
+      submit.textContent=deletionText('기기 정리 다시 시도','Retry local cleanup');submit.disabled=false;
+    } finally {deletionCleanupActive=false;deletionBusy=false;dialog.setAttribute('aria-busy','false');}
+  }
+  form.onsubmit=async event=>{
+    event.preventDefault();if(deletionBusy||!stillOwner())return;
+    if(deletionConfirmed){busy(true);await cleanup();return;}
+    if(!password.value || confirmation.value!=='DELETE'){status.textContent=deletionText('비밀번호와 정확한 DELETE 확인을 입력하세요.','Enter your password and exactly DELETE.');return;}
+    busy(true);status.textContent=deletionText('삭제를 요청하고 있습니다. 전송된 요청은 취소할 수 없습니다.','Requesting deletion. A sent request cannot be cancelled.');
+    const secret=password.value;password.value='';
+    let timer, serverDeleted=false;
+    try {
+      const {data,error}=await supabase.auth.getSession();
+      if(!stillOwner())return;
+      const session=data?.session;
+      if(error||session?.user?.id!==owner||!session.access_token)throw Error('unauthenticated');
+      const controller=new AbortController();timer=setTimeout(()=>controller.abort(),30000);
+      const response=window.ReactNativeWebView?.postMessage ? await requestNativeAccountDeletion(session.access_token,secret) : await fetch(SUPABASE_URL+'/functions/v1/delete-account',{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+session.access_token},body:JSON.stringify({password:secret,confirmation:'DELETE'}),signal:controller.signal});
+      const result=await response.json().catch(()=>null);
+      clearTimeout(timer);
+      if(!stillOwner())return;
+      if(!response.ok||result?.deleted!==true)throw Error(['password_reauthentication_unsupported','mfa_reauthentication_unsupported'].includes(result?.code)?'unsupported':['storage_objects_block_deletion','storage_verification_required','storage_verification_failed'].includes(result?.code)?'storage-block':result?.code==='account_deletion_unconfirmed'?'unconfirmed':result?.code==='deletion_not_enabled'?'disabled':response.status===401||result?.code==='reauthentication_failed'?'unauthenticated':response.status===429?'rate-limit':'delete-failed');
+      serverDeleted=true;
+      // Auth may have changed while the irreversible server request was in flight.
+      const latest=await supabase.auth.getSession();if(!stillOwner())return;if(latest.error||latest.data?.session?.user?.id!==owner)throw Error('owner-verification');
+      deletionConfirmed=true;password.value='';confirmation.value='';await cleanup();
+    } catch(error) {
+      if(serverDeleted && stillOwner()) { deletionConfirmed=true;deletionBusy=false;cancel.disabled=true;submit.disabled=false;submit.type='button';submit.textContent=deletionText('시작 화면으로','Return to start');submit.onclick=()=>location.reload();dialog.setAttribute('aria-busy','false');status.textContent=deletionText('서버 계정은 삭제됐지만 현재 로그인 상태를 확인할 수 없어 기기의 정리를 중단했습니다. 앱을 다시 열어 확인하세요.','The server account was deleted, but the current login could not be verified. Device cleanup was stopped. Reopen the app to check.');return; }
+      if(stillOwner())status.textContent=error.message==='unsupported'?deletionText('이 계정은 다른 본인 확인 방법이 필요합니다. 삭제 전 고객지원에 문의하세요. 아무것도 삭제하지 않았습니다.','This account needs another verification method. Contact support before deleting it. Nothing was deleted.'):error.message==='storage-block'?deletionText('삭제 전 계정 파일 확인이 필요합니다. 고객지원에 문의하세요. 아무것도 삭제하지 않았습니다.','Account files need verification before deletion. Contact support. Nothing was deleted.'):error.message==='unconfirmed'?deletionText('서버에서 삭제 완료를 확인하지 못했습니다. 기기의 로그인은 유지했습니다. 다시 시도하기 전 계정을 확인하세요.','The server could not confirm deletion. Your device session was kept. Check the account before trying again.'):error.message==='disabled'?deletionText('계정 삭제 기능이 아직 활성화되지 않았습니다. 계정과 기기의 데이터는 유지했습니다.','Account deletion is not available yet. Your account and device data were kept.'):error.message==='unauthenticated'?deletionText('로그인 상태 또는 비밀번호를 확인하세요. 삭제 완료를 확인하지 못했습니다.','Check your login and password. Deletion was not confirmed.'):error.message==='rate-limit'?deletionText('요청이 너무 많습니다. 잠시 후 다시 시도하세요.','Too many requests. Please try again later.'):deletionText('삭제 완료를 확인하지 못했습니다. 네트워크 또는 서비스 상태를 확인하세요. 기기의 데이터와 로그인은 유지했습니다.','Deletion was not confirmed. Check the network or service availability. Device data and login were kept.');
+    } finally {clearTimeout(timer);if(stillOwner()&&!deletionConfirmed)busy(false);}
+  };
+  if(confirmedAbsent) {
+    deletionConfirmed=true;passwordLabel.hidden=true;confirmLabel.hidden=true;account.hidden=true;
+    title.textContent=deletionText('이 기기의 계정 데이터 정리','Clear account data on this device');
+    description.textContent=deletionText('계정 또는 로그인 세션을 사용할 수 없어 이 기기의 해당 계정 데이터를 정리합니다.','The account or sign-in session is unavailable. Clearing its data on this device.');
+    submit.textContent=deletionText('기기 정리 다시 시도','Retry local cleanup');
+    dialog.showModal();busy(true);cleanup();return;
+  }
+  const webLink=accountDeletionWebLink('accountDeleteWebDialog');
+  dialog.insertBefore(webLink,form);
+  submit.disabled=true;
+  // Provider information is only a UI hint. The server remains the authority.
+  supabase.auth.getSession().then(({data,error})=>{
+    if(!stillOwner() || !dialog.open)return;
+    if(error)throw Error('provider-unavailable');
+    const user=data?.session?.user;
+    const providers=[...(user?.identities || []).map(identity=>identity.provider),...(user?.app_metadata?.providers || []),user?.app_metadata?.provider].filter(Boolean);
+    if(providers.some(provider=>provider!=='email')) {
+      password.value='';passwordLabel.hidden=true;confirmLabel.hidden=true;submit.hidden=true;
+      status.textContent=deletionText('Google 등 외부 로그인 계정은 Oharu 웹사이트에서 본인 확인 후 삭제하세요. 새 비밀번호를 만들 필요는 없습니다.','For Google or another sign-in provider, verify and delete on the Oharu website. You do not need to create a new password.');
+    } else submit.disabled=false;
+  }).catch(()=>{if(stillOwner()&&dialog.open){submit.disabled=false;status.textContent=deletionText('로그인 방법을 확인하지 못했습니다. 계정 삭제 웹페이지를 이용할 수도 있습니다.','Your sign-in method could not be checked. You can use the account deletion page instead.');}});
+  dialog.showModal();cancel.focus();
+}
+// A resume is not proof of deletion. Only explicit Auth absence codes permit
+// local cleanup, with owner + generation guards across the asynchronous read.
+async function verifyAccountOnResume() {
+  if(!IS_MOBILE || !window.ReactNativeWebView || !currentUserId ||
+     typeof supabase?.auth?.getUser!=='function' || externalAccountCheckPending ||
+     deletionBusy || deletionConfirmed || deletionDialog?.open)return;
+  const owner=currentUserId, identityEpoch=accountIdentityEpoch, dialogEpoch=deletionEpoch;
+  externalAccountCheckPending=true;
+  let timer;
+  try {
+    const result=await Promise.race([supabase.auth.getUser(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('timeout')),8000)})]);
+    if(currentUserId!==owner || accountIdentityEpoch!==identityEpoch || deletionEpoch!==dialogEpoch || deletionDialog?.open)return;
+    if(result?.data?.user || !['user_not_found','session_not_found'].includes(result?.error?.code))return;
+    openDeleteAccount('',true);
+  } catch { /* Offline, expired credentials, and unknown errors retain local data. */ }
+  finally {clearTimeout(timer);externalAccountCheckPending=false;}
+}
+window.addEventListener('oharu:reminders:resync',verifyAccountOnResume);
+window.addEventListener('focus',verifyAccountOnResume);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)verifyAccountOnResume();});
+// ACCOUNT_DELETION_END
+
 function renderAccount(email) {
   const el = $("setAccount");
   el.innerHTML = "";
@@ -2423,6 +2641,12 @@ function renderAccount(email) {
     right.onclick = () => { if (openLoginScreen) openLoginScreen(); };
   }
   el.append(left, right);
+  el.classList.add('account-with-deletion');
+  el.append(accountDeletionWebLink('accountDeleteWebLink'));
+  const webNotice=document.createElement('small');webNotice.className='account-delete-web-notice';webNotice.textContent=deletionText('계정 삭제 웹 기능을 준비 중입니다. 삭제 페이지에서 이용 가능 상태를 확인하세요.','Web account deletion is being prepared. Check availability on the deletion page.');el.append(webNotice);
+  if(email && currentUserId) {
+    const remove=document.createElement('button');remove.id='deleteAccountBtn';remove.type='button';remove.className='set-btn danger';remove.textContent=deletionText('계정 삭제','Delete account');remove.onclick=()=>openDeleteAccount(email);el.append(remove);
+  }
 }
 
 function applyBgAlpha(p) {
@@ -2695,6 +2919,8 @@ if (!CLOUD) {
   // 주의: supabase-js는 onAuthStateChange 콜백 "안"에서 다른 Supabase 함수를 직접 await하면
   // 교착(멈춤)될 수 있다. 공식 권장대로 setTimeout으로 콜백 밖에서 실행한다.
   supabase.auth.onAuthStateChange((_e, sess) => {
+    if (deletionCleanupActive && _e === "SIGNED_OUT") return;
+    invalidateAccountDeletion(sess?.user?.id || null);
     // Clear old-owner reminders on every auth boundary, including other tabs.
     if (_e === "SIGNED_OUT" || (currentUserId && sess?.user?.id && sess.user.id !== currentUserId)) {
       window.OharuReminders?.clear();

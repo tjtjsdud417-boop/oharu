@@ -41,3 +41,5 @@ test('CNG writes all native resources into supplied Android package',async()=>{
  for(const f of ['layout/oharu_widget.xml','xml/oharu_widget_info.xml','drawable/oharu_widget_background.xml','values/oharu_widget_strings.xml'])assert.ok((await fs.stat(path.join(dir,'app/src/main/res',f))).size>100);
  await assert.rejects(writeWidgetFiles(dir,'../escape'));
 });
+
+test('widget replies preserve validated request IDs for success and native failure',async()=>{for(const module of [null,{async updateSnapshot(){}},{async updateSnapshot(){throw Error('native')}}]){const result=await createWidgetService(module).handle(msg([],false));assert.equal(result.requestId,'w1');}assert.equal((await createWidgetService(null).handle('{}')).requestId,undefined);});

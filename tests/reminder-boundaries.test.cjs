@@ -10,8 +10,10 @@ test('remote logout and account replacement clear reminders independently of the
     const body=html.match(/supabase\.auth\.onAuthStateChange\(\(_e, sess\) => \{([\s\S]*?)\n  \}\);/)[1];
     for(const [event,session] of [['SIGNED_OUT',null],['SIGNED_IN',{user:{id:'B'}}]]){
       let cleared=0,deferred=0;
-      vm.runInNewContext(`(function(_e,sess){${body}})(event,session)`,{event,session,currentUserId:'A',window:{OharuReminders:{clear:()=>cleared++}},setTimeout:()=>deferred++});
+      const context={event,session,currentUserId:'A',todos:[{text:'old owner'}],reminderDataReady:true,deletionCleanupActive:false,invalidateAccountDeletion:()=>{},$:()=>({hidden:false}),window:{OharuReminders:{clear:()=>cleared++}},setTimeout:()=>deferred++};
+      vm.runInNewContext(`(function(_e,sess){${body}})(event,session)`,context);
       assert.equal(cleared,1);assert.equal(deferred,1);
+      if(file.startsWith('../web/')){assert.equal(context.todos.length,0);assert.equal(context.reminderDataReady,false);assert.equal(context.currentUserId,null);}
     }
   }
 });

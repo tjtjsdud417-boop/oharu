@@ -7,13 +7,13 @@ function widgetSnapshot(raw, now = Date.now()) {
 function createWidgetService(module) {
   let queue=Promise.resolve();
   return {handle(raw) {
-    let snapshot;
-    try {snapshot=widgetSnapshot(raw);} catch {return Promise.resolve({status:'invalid-message'});}
+    let snapshot, requestId;
+    try {snapshot=widgetSnapshot(raw);requestId=JSON.parse(raw).requestId;} catch {return Promise.resolve({status:'invalid-message'});}
     const result=queue.then(async()=>{
-      if (!module?.updateSnapshot) return {status:'unavailable'};
+      if (!module?.updateSnapshot) return {requestId,status:'unavailable'};
       await module.updateSnapshot(JSON.stringify(snapshot));
-      return {status:'updated',count:snapshot.length};
-    }).catch(()=>({status:'unavailable'}));
+      return {requestId,status:'updated',count:snapshot.length};
+    }).catch(()=>({requestId,status:'unavailable'}));
     queue=result;
     return result;
   }};

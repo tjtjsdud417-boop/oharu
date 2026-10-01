@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform, BackHan
 import * as Notifications from 'expo-notifications';
 import { createReminderService } from './reminders.cjs';
 import { createWidgetService } from './widget.cjs';
+import { createAccountDeletionService } from './account-deletion.cjs';
 import { StatusBar } from 'expo-status-bar';
 import { Asset } from 'expo-asset';
 import { WebView } from 'react-native-webview';
@@ -13,6 +14,7 @@ import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-nati
 const APP_HTML = require('./assets/web/app.html');
 Notifications.setNotificationHandler({handleNotification: async () => ({shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false})});
 const reminders = createReminderService(Notifications, Platform.OS);
+const accountDeletion = createAccountDeletionService();
 const widgets = createWidgetService(Platform.OS === 'android' ? NativeModules.OharuWidget : null);
 
 export default function App() {
@@ -172,7 +174,8 @@ function OharuContent() {
           else {
             let type;
             try { if (event.data.length <= 512000) type = JSON.parse(event.data).type; } catch { return; }
-            if (type === 'oharu:widgets:sync') widgets.handle(event.data).then(result => nativeEvent('oharu:native-widgets', result));
+            if (type === 'oharu:account:delete') accountDeletion.handle(event.data).then(result => nativeEvent('oharu:native-account', result));
+            else if (type === 'oharu:widgets:sync') widgets.handle(event.data).then(result => nativeEvent('oharu:native-widgets', result));
             else reminders.handle(event.data).then(result => nativeEvent('oharu:native-reminders', result));
           }
         }}

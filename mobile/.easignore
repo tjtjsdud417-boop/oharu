@@ -5,6 +5,7 @@
 !App.js
 !reminders.cjs
 !widget.cjs
+!account-deletion.cjs
 !patch-webview.cjs
 !plugins
 !plugins/**

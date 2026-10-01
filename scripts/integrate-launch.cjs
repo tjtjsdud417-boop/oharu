@@ -41,7 +41,8 @@ for (const name of ['web/index.html', 'mobile/assets/web/app.html']) {
   if (!html.includes('if (!loaded) return;')) html = html.replace(/    const loaded = await repo.load\(\);\r?\n/, '    const loaded = await repo.load();\n    if (!loaded) return;\n    reminderDataReady = true;\n');
   html = html.replace(/(?:await window\.OharuReminders\?\.clear\(\); )*await supabase.auth.signOut\(\); location.reload\(\);/, 'await window.OharuReminders?.clear(); await supabase.auth.signOut(); location.reload();');
   html = html.replace(/(?:\r?\n  window\.OharuThemes\?\.connect\(supabase\);)+/g, '');
-  html = html.replace(/(supabase = createClient\([^;]+;)/, '$1\n  window.OharuThemes?.connect(supabase);');
+  if (html.includes('await verifyDeletionOAuthReturn();')) html = html.replace('await verifyDeletionOAuthReturn();', 'await verifyDeletionOAuthReturn();\n  window.OharuThemes?.connect(supabase);');
+  else html = html.replace(/(supabase = createClient\([^;]+;)/, '$1\n  window.OharuThemes?.connect(supabase);');
   html = html.replace(/const APP_VERSION = "[^"]+";/, 'const APP_VERSION = "1.8.0";');
   fs.writeFileSync(filename, html);
   console.log(`Integrated ${name}`);
