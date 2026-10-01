@@ -1,5 +1,7 @@
 # Header spacing: local review handoff
 
+> Historical pre-deployment review record. Authorized deployment and build actions are now complete as recorded in [production web deployment](header-web-deployed-2026-10-01.md) and [final platform handoff](header-platform-delivery-2026-10-01.md). Source build commit remains `9bd379a3588ca919dfb56afd60c6ef76a7f336da`.
+
 ## Source and isolation
 
 - Source checkout (read-only): `C:/Users/pbuny/Documents/Codex/2026-09-30/task-8/oharu`.

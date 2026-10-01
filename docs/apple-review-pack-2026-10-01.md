@@ -1,4 +1,4 @@
-> Latest follow-up: account deletion backend and web are active; final iOS candidate is 1.0.0(12). [Exact evidence](account-deletion-release-2026-10-01.md). Physical-device recording, real-provider E2E and legal answers remain pending. Earlier preparation notes below are historical.
+> Latest follow-up: account deletion backend and web are active; the new final iOS candidate with the reviewed header fix is **1.0.0 (13)**, EAS build `c311f5b3-8c83-4220-b4c0-c9726d15d4a7`. Build and App Store Connect upload are complete. Apple processing state and export compliance completion must be read in the parent's authenticated ASC session. [Exact build 13 audit](ios-encryption-audit-build13.md), [account deletion evidence](account-deletion-release-2026-10-01.md). Physical-device recording, real-provider E2E and reviewer access remain pending. Earlier preparation notes below are historical.
 
 # Apple Guideline 2.1 대응 자료 — 제출 전 검토본
 
@@ -26,7 +26,7 @@ App: Oharu — personal daily task planner.
 
 Guest review: Launch the app and use Today to add two test tasks. Change a task's time, complete one task and delete the other. Open Calendar to select a date and create a dated task. Open Settings to select a theme. The guest planning flow does not require sign-in.
 
-Optional account flow: Email sign-up/sign-in is used for Supabase cloud synchronization. Reviewer test access has not yet been configured or verified. No password is included in this draft. The final candidate is iOS 1.0.0(12), with build/upload status tracked separately. Settings > Delete account starts password-account deletion with recent authentication and explicit DELETE confirmation. Google accounts use the direct https://oharu.today/?account=delete page for a fresh PKCE OAuth transaction and a separate final confirmation; verified TOTP is required where applicable. The backend and website are active. Physical-device authentication, cleanup and deletion E2E remain unverified. Do not use a real user's account for a deletion demonstration.
+Optional account flow: Email sign-up/sign-in is used for Supabase cloud synchronization. Reviewer test access has not yet been configured or verified. No password is included in this draft. The final candidate is iOS 1.0.0 (13); build and upload are complete. Settings > Delete account starts password-account deletion with recent authentication and explicit DELETE confirmation. Google accounts use the direct https://oharu.today/?account=delete page for a fresh PKCE OAuth transaction and a separate final confirmation; verified TOTP is required where applicable. The backend and website are active. Physical-device authentication, cleanup and deletion E2E remain unverified. Do not use a real user's account for a deletion demonstration.
 
 Notifications: Permission is requested through an explicit user action. Review permission denial and later permission enablement through iOS Settings. Delivery timing depends on iOS and device state. No remote push entitlement is enabled in the current build.
 
@@ -36,7 +36,7 @@ Payments and public community features: No current in-app purchase flow, public 
 
 Support/privacy: https://oharu.today/privacy.html ; support contact ceo@moodweb.co.kr.
 
-Final candidate: iOS 1.0.0(12), EAS build 8e09f3bf-f066-4e54-9c54-89d94da66316. Build and upload are complete; Apple processing is VALID. Both internal and external beta testing are blocked by MISSING_EXPORT_COMPLIANCE. No export-compliance answer has been submitted. Physical-device video URL is still pending. Do not include private credentials, personal task data or a fabricated video URL.
+Final candidate: iOS 1.0.0 (13), EAS build c311f5b3-8c83-4220-b4c0-c9726d15d4a7. Build and App Store Connect upload are complete; EAS submission fd63770a-b10a-4a57-8090-816c3cd007fb is FINISHED with no error. The parent's authenticated App Store Connect session must confirm Apple processing and complete export compliance for this exact build. Physical-device video URL and reviewer test access are still pending. Do not include private credentials, personal task data or a fabricated video URL.
 
 ## 실물 iPhone 촬영 및 최종 검증 체크리스트
 
