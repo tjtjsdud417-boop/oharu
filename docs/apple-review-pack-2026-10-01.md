@@ -1,3 +1,5 @@
+> Latest follow-up: account deletion backend and web are active; final iOS candidate is 1.0.0(12). [Exact evidence](account-deletion-release-2026-10-01.md). Physical-device recording, real-provider E2E and legal answers remain pending. Earlier preparation notes below are historical.
+
 # Apple Guideline 2.1 대응 자료 — 제출 전 검토본
 
 대상: App Store Connect 앱 `6807312683`, bundle `com.oharu.today`, 버전 `1.0`. 기존 거절은 build 6의 Guideline 2.1 Information Needed이며, 심사 이력이 적은 신규 개발자에게 앱 설명과 실제 기기 동작 영상을 요청한 것이다. 특정 crash를 재현한 거절이라고 해석하지 않는다. [기존 심사 메시지](https://appstoreconnect.apple.com/apps/6807312683/distribution/reviewsubmissions/details/fdc865db-b6af-41bc-8049-1e5ab3f89e7f).
@@ -16,7 +18,7 @@ External services used by this version are Supabase for optional authentication 
 
 The code supports Korean, English, Japanese, Chinese and Spanish. We have not implemented country-specific feature variants. This statement does not describe the distribution territories selected in App Store Connect.
 
-We have prepared the app description and reviewer instructions below. The requested physical-device recording and the account-deletion flow are still outstanding. We will supply a recording of the final candidate running on a physical iPhone with the latest available iOS, including launch, planning, sign-up/sign-in and account deletion, after those steps have been verified. We are not representing these outstanding steps as completed.
+We have prepared the app description and reviewer instructions below. Account deletion is implemented and its backend and website are deployed, but real-provider authentication and the physical-device deletion demonstration are not yet verified. We will supply the requested recording of the final candidate running on a physical iPhone with the latest available iOS, including launch, planning, sign-up/sign-in and account deletion, after the owner supplies approved disposable test access. We are not representing the outstanding recording or device checks as completed.
 
 ## App Review Notes 초안 (English)
 
@@ -24,7 +26,7 @@ App: Oharu — personal daily task planner.
 
 Guest review: Launch the app and use Today to add two test tasks. Change a task's time, complete one task and delete the other. Open Calendar to select a date and create a dated task. Open Settings to select a theme. The guest planning flow does not require sign-in.
 
-Optional account flow: Email sign-up/sign-in is used for Supabase cloud synchronization. Reviewer test access has not yet been configured or verified. No password is included in this draft. The uploaded iOS11 does not include account deletion. A later source candidate now prepares password-account deletion in Settings and a direct website deletion screen for Google accounts, but its server/database activation and physical-device verification remain pending.
+Optional account flow: Email sign-up/sign-in is used for Supabase cloud synchronization. Reviewer test access has not yet been configured or verified. No password is included in this draft. The final candidate is iOS 1.0.0(12), with build/upload status tracked separately. Settings > Delete account starts password-account deletion with recent authentication and explicit DELETE confirmation. Google accounts use the direct https://oharu.today/?account=delete page for a fresh PKCE OAuth transaction and a separate final confirmation; verified TOTP is required where applicable. The backend and website are active. Physical-device authentication, cleanup and deletion E2E remain unverified. Do not use a real user's account for a deletion demonstration.
 
 Notifications: Permission is requested through an explicit user action. Review permission denial and later permission enablement through iOS Settings. Delivery timing depends on iOS and device state. No remote push entitlement is enabled in the current build.
 
@@ -34,7 +36,7 @@ Payments and public community features: No current in-app purchase flow, public 
 
 Support/privacy: https://oharu.today/privacy.html ; support contact ceo@moodweb.co.kr.
 
-Final build and physical-device video: pending. Replace this line only with the verified final build number and an accessible recording URL. Do not include private credentials, personal task data or a fabricated video URL.
+Final candidate: iOS 1.0.0(12), EAS build 8e09f3bf-f066-4e54-9c54-89d94da66316. Build and upload are complete; Apple processing is VALID. Both internal and external beta testing are blocked by MISSING_EXPORT_COMPLIANCE. No export-compliance answer has been submitted. Physical-device video URL is still pending. Do not include private credentials, personal task data or a fabricated video URL.
 
 ## 실물 iPhone 촬영 및 최종 검증 체크리스트
 
@@ -44,7 +46,7 @@ Final build and physical-device video: pending. Replace this line only with the 
 - Calendar의 다음달/날짜/스크롤을 선택하고 미제출 제목·시간을 입력한다. 로그인 열기→닫기 및 뒤/앞 이동 후 값과 위치가 유지되는지 보여 준다.
 - Settings 뒤로 이동, 로그인 닫기/실패, 키보드 표시·닫기 및 입력란 노출, 큰 글자 설정과 VoiceOver의 주요 버튼 접근을 확인한다. 네이티브 swipe-back은 실제 기기에서 별도로 확인한다.
 - 승인된 테스트 접근만 사용해 가입/로그인/로그아웃/클라우드 복원을 검증한다. 이메일 인증 단계나 reviewer 접근 정보가 필요하면 소유자가 먼저 준비한다. 실제 사용자 계정 삭제나 임의 공유 계정 생성은 하지 않는다.
-- 계정 삭제 기능이 마련된 후 소유자가 승인한 폐기 가능한 테스트 계정으로 삭제 시작/확인/결과를 촬영한다. 현재 기능 부재 때문에 이 항목은 **대기**다. 지원 이메일 안내만으로 삭제 기능이 구현됐다고 표시하지 않는다.
+- 계정 삭제 기능이 마련된 후 소유자가 승인한 폐기 가능한 테스트 계정으로 삭제 시작/확인/결과를 촬영한다. 코드와 운영 백엔드·웹은 마련됐지만 실물 iPhone·승인된 폐기 가능 계정 검증 및 촬영이 없어 이 항목은 **대기**다. 지원 이메일 안내만으로 삭제 기능이 구현됐다고 표시하지 않는다.
 - 알림 권한 거부와 정상 허용을 보여 주고, 실제 예약 알림을 앱 전경/백그라운드에서 확인한다. 사용하지 않는 public UGC/report/block 및 결제 흐름은 해당 없음으로 설명한다.
 - 영상에는 비밀번호, 인증 코드, API key, 개인 일정 또는 다른 사람의 정보가 노출되지 않도록 한다. 편집으로 실패를 숨기거나 OS 화면을 합성하지 않는다. 심사자가 인증 없이 볼 수 있는 영상 접근성을 별도로 확인한다.
 - 동일한 최종 사실·영상 링크를 심사 답변과 App Review Notes에 반영한다. 제출 직전 build 선택과 수출규정 상태를 확인한다.
