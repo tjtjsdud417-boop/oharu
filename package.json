@@ -3,7 +3,7 @@
   "version": "1.8.0",
   "private": true,
   "scripts": {
-    "test": "node --test tests/*.test.cjs scripts/keepalive.test.mjs desktop/test/*.test.js desktop/store/prepare.test.cjs mobile/bootstrap.test.cjs mobile/patch-webview.test.cjs mobile/reminders.test.cjs mobile/widget.test.cjs mobile/ios-widget-draft/snapshot.test.cjs apps-in-toss/tests/*.test.mjs",
+    "test": "node --test tests/*.test.cjs scripts/keepalive.test.mjs desktop/test/*.test.js desktop/store/prepare.test.cjs mobile/bootstrap.test.cjs mobile/ios-ux.test.cjs mobile/patch-webview.test.cjs mobile/reminders.test.cjs mobile/widget.test.cjs mobile/ios-widget-draft/snapshot.test.cjs apps-in-toss/tests/*.test.mjs",
     "preview": "node scripts/preview.cjs",
     "test:browser": "node scripts/browser-check.cjs"
   },

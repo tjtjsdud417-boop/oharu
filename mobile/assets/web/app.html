@@ -120,13 +120,46 @@
   html.ios-app, .ios-app body { height: 100%; overflow: hidden; }
   .ios-app .app { height: 100%; min-height: 0; padding: 0; }
   .ios-app #mainView { min-height: 0; }
-  .ios-app #authView { overflow-y: auto; padding: 28px 20px 24px; }
+  .ios-app #authView { overflow-y: auto; min-height: 0; max-height: 100%; margin: 0; border-radius: 0; padding: 16px 20px 24px; scroll-padding-block: 16px; }
   .ios-main-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 28px 20px 24px; scroll-padding-block: 16px; }
   .ios-menu { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; padding: 10px 16px 12px; background: var(--bg); border-top: 1px solid #E5E8EB; }
   .ios-menu .iconbtn { width: auto; min-width: 68px; height: auto; min-height: 52px; padding: 8px 12px; gap: 4px; font: inherit; font-size: 12px; font-weight: 600; }
   .ios-menu .textbtn { height: auto; min-height: 52px; min-width: 68px; }
   .ios-menu button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   .ios-app[data-keyboard-open="1"] .ios-menu { display: none; }
+  html.ios-app { font-size: calc(16px * var(--ios-font-scale, 1)); }
+  .ios-app .head h1 { font-size: 1.625rem; overflow-wrap: anywhere; }
+  .ios-app .head .date { font-size: .8125rem; }
+  .ios-app .settings-head h1 { font-size: 1.5rem; }
+  .ios-app .auth h2 { font-size: 1.3125rem; }
+  .ios-app .auth p, .ios-app .auth .switch, .ios-app .auth .msg, .ios-app .set-row { font-size: .875rem; }
+  .ios-app .set-row > span { min-width: 0; overflow-wrap: anywhere; }
+  .ios-app .btn, .ios-app .set-btn, .ios-app .textbtn { font-size: .875rem; height: auto; min-height: 44px; }
+  .ios-app .auth input { width: 100%; min-width: 0; font-size: max(16px, 1rem); }
+  .ios-app .ios-menu .iconbtn { font-size: .75rem; }
+  .ios-app .ios-menu .textbtn { min-height: 52px; }
+
+  .ios-app .body .label { font-size: .96875rem; }
+  .ios-app .body .time, .ios-app .clock.set { font-size: .75rem; }
+  .ios-app .empty p, .ios-app .nudge { font-size: .90625rem; }
+  .ios-app .cal-head { gap: 8px; flex-wrap: wrap; }
+  .ios-app .cal-head .month { font-size: 1rem; }
+  .ios-app .cal-head .nav button { width: 44px; height: 44px; font-size: .875rem; }
+  .ios-app .day .n { font-size: .8125rem; }
+  .ios-app .day { aspect-ratio: auto; min-height: calc(44px + .5rem); min-width: 0; }
+  .ios-app .cal-grid .dow { font-size: .6875rem; overflow-wrap: anywhere; }
+  .ios-app .day-detail .dd-title { font-size: .875rem; }
+  .ios-app .settings-head { flex-wrap: wrap; }
+  .ios-app .set-row { gap: 12px; flex-wrap: wrap; }
+  .ios-app input, .ios-app textarea, .ios-app select { font-size: max(16px, 1em); }
+  .ios-app #backLine { position: sticky; top: -16px; z-index: 2; margin: -16px -20px 16px; padding: 8px 12px; background: var(--card); text-align: left; }
+  .ios-app #backLink { min-height: 44px; padding: 8px; border: 0; border-radius: 10px; background: transparent; color: var(--blue); font: inherit; font-weight: 600; }
+  .ios-app .ios-main-scroll, .ios-app #authView { overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+  .ios-app .ios-menu { gap: 8px; }
+  .ios-app .ios-menu button { max-width: 100%; overflow-wrap: anywhere; }
+  .ios-app .composer { flex-wrap: wrap; }
+  .ios-app .composer input[type=text] { flex-basis: 120px; font-size: max(16px, 1rem); }
+
 
   /* ── 입력 ─────────────────────────────── */
   .composer {
@@ -1701,6 +1734,25 @@ function setupIOSMenu() {
   }
   actions.remove();
   main.appendChild(menu);
+  const back = document.createElement('button');
+  back.id = 'backLink'; back.type = 'button'; back.textContent = $('backLink').textContent;
+  $('backLink').replaceWith(back);
+  $('authView').prepend($('backLine'));
+  $('authH2').tabIndex = -1;
+  history.replaceState({oharuIOS: true, screen: 'today'}, '', location.href);
+  window.addEventListener('popstate', restoreIOSRoute);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && (!$('authView').hidden || view !== 'today')) {
+      event.preventDefault(); closeIOSScreen();
+    }
+  });
+  const revealInput = () => {
+    const input = document.activeElement;
+    if (input?.matches('input,textarea,select') && !input.closest('[hidden]')) input.scrollIntoView({block:'nearest'});
+  };
+  document.addEventListener('focusin', () => setTimeout(revealInput, 250));
+  window.visualViewport?.addEventListener('resize', revealInput);
+  window.addEventListener('oharu:keyboard', revealInput);
 }
 const dstr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const todayStr = () => dstr(new Date());
@@ -2270,7 +2322,47 @@ function render() {
 }
 
 // ── 보기 전환 (기본은 투두, 버튼 눌렀을 때만 캘린더/설정) ──
-function switchView(v) {
+// iOS uses same-document history so native edge-swipe and visible Back agree.
+function saveIOSRoute() {
+  if (!IS_IOS_APP) return;
+  const screen = $('authView').hidden ? view : 'auth';
+  history.replaceState({oharuIOS:true, screen, view, scroll:$('iosMainScroll')?.scrollTop || 0,
+    cal:calCursor.toISOString(), date:selDate, focus:document.activeElement?.id || ''}, '', location.href);
+}
+function pushIOSRoute(screen) {
+  history.pushState({oharuIOS:true, screen, view}, '', location.href);
+}
+function openIOSAuth() {
+  if (!IS_IOS_APP || !$('authView').hidden) return;
+  saveIOSRoute(); pushIOSRoute('auth');
+  document.activeElement?.blur();
+  requestAnimationFrame(() => { $('authView').scrollTop=0; $('authH2').focus({preventScroll:true}); });
+}
+function closeIOSScreen() {
+  document.activeElement?.blur();
+  if (history.state?.oharuIOS && history.state.screen !== 'today') history.back();
+  else { $('authView').hidden=true; $('mainView').hidden=false; switchView('today', true); }
+}
+function restoreIOSRoute(event) {
+  let state=event.state;
+  if (!state?.oharuIOS) return;
+  // A saved login route is presentation only, never an authentication source.
+  // Successful auth may reload the document while earlier history entries remain.
+  if (state.screen === 'auth' && currentUserId) {
+    state={oharuIOS:true, screen:view}; history.replaceState(state, '', location.href);
+  }
+  document.activeElement?.blur();
+  $('authView').hidden=state.screen !== 'auth'; $('mainView').hidden=state.screen === 'auth';
+  if (state.screen === 'auth') { $('backLine').hidden=false; $('authH2').focus({preventScroll:true}); return; }
+  $('pw').value='';
+  switchView(['today','cal','set'].includes(state.screen) ? state.screen : 'today', true);
+  if (state.cal && state.date) { calCursor=new Date(state.cal); selDate=state.date; if(view==='cal') renderCal(); }
+  $('iosMainScroll').scrollTop=state.scroll || 0;
+  const focus=$(state.focus); if(focus && !focus.closest('[hidden]')) focus.focus({preventScroll:true});
+}
+function switchView(v, restoring=false) {
+  if (IS_IOS_APP && !restoring && v !== view) { saveIOSRoute(); pushIOSRoute(v); document.activeElement?.blur(); }
+
   const leavingSettings = view === "set" && v !== "set";
   view = v;
   const iosSettings = IS_IOS_APP && v === "set";
@@ -2292,7 +2384,7 @@ function switchView(v) {
 }
 $("calBtn").onclick = () => switchView(view === "cal" ? "today" : "cal");
 $("setBtn").onclick = () => switchView(view === "set" ? "today" : "set");
-$("settingsBackBtn").onclick = () => switchView("today");
+$("settingsBackBtn").onclick = () => IS_IOS_APP ? closeIOSScreen() : switchView("today");
 $("prevM").onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); renderCal(); };
 $("nextM").onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCal(); };
 
@@ -2317,6 +2409,7 @@ function renderAccount(email) {
   const left = document.createElement("span");
   const right = document.createElement("button");
   right.className = "set-btn";
+  if (IS_IOS_APP) right.id = "iosAccountAction";
   if (email) {
     left.textContent = email;
     left.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
@@ -2474,6 +2567,7 @@ if (!CLOUD) {
     m.className = "msg";
   };
   const openPreviewLogin = () => {
+    openIOSAuth();
     $("mainView").hidden = true;
     $("authView").hidden = false;
     $("backLine").hidden = false;
@@ -2481,7 +2575,7 @@ if (!CLOUD) {
   openLoginScreen = openPreviewLogin;
   $("loginTopBtn").hidden = false;
   $("loginTopBtn").onclick = openPreviewLogin;
-  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  $("backLink").onclick = () => { if (IS_IOS_APP) return closeIOSScreen(); $("authView").hidden = true; $("mainView").hidden = false; };
   $("googleBtn").onclick = previewMsg;
   $("emailBtn").onclick = previewMsg;
   const sw = $("switchLink");
@@ -2516,6 +2610,7 @@ if (!CLOUD) {
 
   // 로그인 화면 열기/닫기 (게스트 모드에서 버튼으로 진입)
   const openAuth = () => {
+    openIOSAuth();
     $("mainView").hidden = true;
     $("authView").hidden = false;
     $("backLine").hidden = false;
@@ -2523,7 +2618,7 @@ if (!CLOUD) {
     msg.textContent = t("migrateHint");
     msg.className = "msg";
   };
-  $("backLink").onclick = () => { $("authView").hidden = true; $("mainView").hidden = false; };
+  $("backLink").onclick = () => { if (IS_IOS_APP) return closeIOSScreen(); $("authView").hidden = true; $("mainView").hidden = false; };
   openLoginScreen = openAuth;
   $("loginTopBtn").onclick = openAuth;
   $("nudgeLoginBtn").onclick = openAuth;

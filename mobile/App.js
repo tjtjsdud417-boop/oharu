@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform, BackHandler, Linking, Alert, Keyboard, AppState, NativeModules } from 'react-native';
+import { StyleSheet, View, Text, Pressable, ActivityIndicator, Platform, BackHandler, Linking, Alert, Keyboard, AppState, NativeModules, useWindowDimensions } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { createReminderService } from './reminders.cjs';
 import { createWidgetService } from './widget.cjs';
@@ -29,6 +29,7 @@ export default function App() {
 }
 
 function OharuContent() {
+  const { fontScale } = useWindowDimensions();
   const [uri, setUri] = useState(null);
   const [error, setError] = useState(null);
   const [canGoBack, setCanGoBack] = useState(false);
@@ -40,15 +41,15 @@ function OharuContent() {
   };
   useEffect(() => {
     const sub = AppState.addEventListener('change', state => {
-      if (state === 'active') nativeEvent('oharu:reminders:resync');
+      if (state === 'active') { nativeEvent('oharu:reminders:resync'); syncKeyboardUI(); }
     });
     return () => sub.remove();
-  }, []);
+  }, [fontScale]);
   const syncKeyboardUI = (visible = Keyboard.isVisible()) => {
     if (Platform.OS !== 'ios') return;
-    // Fixed boolean only: no user input, tokens, or arbitrary bridge commands.
+    // Fixed UI metrics only: no user input, tokens, or arbitrary bridge commands.
     webviewRef.current?.injectJavaScript(
-      `document.documentElement.dataset.keyboardOpen = '${visible ? '1' : '0'}'; true;`
+      `document.documentElement.style.setProperty('--ios-font-scale', '${Number.isFinite(fontScale) ? Math.max(1, fontScale) : 1}'); document.documentElement.dataset.keyboardOpen = '${visible ? '1' : '0'}'; window.dispatchEvent(new Event('oharu:keyboard')); true;`
     );
   };
 
@@ -57,7 +58,9 @@ function OharuContent() {
     const show = Keyboard.addListener('keyboardWillShow', () => syncKeyboardUI(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => syncKeyboardUI(false));
     return () => { show.remove(); hide.remove(); };
-  }, []);
+  }, [fontScale]);
+
+  useEffect(() => { syncKeyboardUI(); }, [fontScale]);
 
   const clearReadyTimer = () => {
     if (readyTimer.current) clearTimeout(readyTimer.current);
