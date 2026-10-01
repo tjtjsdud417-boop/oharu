@@ -20,7 +20,7 @@ test('account switching clears preview/undo immediately and ignores old async co
     });
     await page.waitForFunction(()=>document.querySelector('select').value==='forest');
     const preview=async()=>{
-      await page.locator('details').evaluate(el=>el.open=true);
+      await page.locator('#oharu-theme-ai').evaluate(el=>el.open=true);
       await page.locator('textarea').fill(await page.evaluate(()=>JSON.stringify(OharuThemes.exportTheme())));
       await page.locator('[data-action="import"]').click();
     };

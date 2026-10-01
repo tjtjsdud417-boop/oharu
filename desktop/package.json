@@ -41,6 +41,7 @@
         "filter": [
           "index.html",
           "theme-system.js",
+          "settings-experience.js",
           "theme-system.css",
           "reminders.js",
           "icon-*.png",

@@ -10,7 +10,7 @@ test('published schema fields and runtime validator allow exactly the same Theme
   assert.equal(schema.additionalProperties,false);
   assert.equal(schema.properties.tokens.additionalProperties,false);
   assert.deepEqual(schema.required.slice().sort(),Object.keys(draft).sort());
-  assert.deepEqual(Object.keys(schema.properties).sort(),Object.keys(draft).sort());
+  assert.deepEqual(Object.keys(schema.properties).sort(),Object.keys(draft).concat('visual').sort());
   assert.deepEqual(schema.properties.tokens.required.slice().sort(),Object.keys(draft.tokens).sort());
   assert.deepEqual(Object.keys(schema.properties.tokens.properties).sort(),Object.keys(draft.tokens).sort());
   assert.equal(schema.properties.version.const,1);
@@ -21,6 +21,12 @@ test('published schema fields and runtime validator allow exactly the same Theme
   assert.equal(namePattern.test('나의 숲 🌿'),true);
   for(const invalid of ['','<b>','a\u0000b','a\nb']) assert.equal(namePattern.test(invalid),false);
   for(const extra of ['css','image','script','url']) { const value=sample();value[extra]='bad';assert.throws(()=>api.validate(value)); }
+});
+test('declarative visual data rejects unapproved assets, URLs, executable fields and motion',()=>{
+  const value=sample();value.visual={scene:'none',pattern:'none',pet:'none',motion:'off'};
+  assert.deepEqual(api.validate(value).visual,value.visual);
+  for(const [key,bad] of [['scene','https://evil.test/a.svg'],['scene','cloud-post'],['pattern','url(x)'],['pet','cat'],['motion','gentle']]){const candidate=JSON.parse(JSON.stringify(value));candidate.visual[key]=bad;assert.throws(()=>api.validate(candidate));}
+  const extra=JSON.parse(JSON.stringify(value));extra.visual.script='alert(1)';assert.throws(()=>api.validate(extra));
 });
 test('exactly ten distinct built-ins pass all foreground/background contrast pairs',()=>{
   assert.equal(api.themes.length,10); assert.equal(new Set(api.themes.map(t=>t.tokens.bg)).size,10);

@@ -7,7 +7,7 @@ const os = require('node:os');
 test('integration is idempotent and preserves a single hook at every boundary', () => {
   const sourceRoot=path.join(__dirname,'..');
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'oharu-integration-'));
-  for(const name of ['scripts/integrate-launch.cjs','web/index.html','mobile/assets/web/app.html','web/theme-system.css','web/theme-system.js','web/reminders.js']){
+  for(const name of ['scripts/integrate-launch.cjs','web/index.html','mobile/assets/web/app.html','web/theme-system.css','web/theme-system.js','web/settings-experience.js','web/reminders.js']){
     const destination=path.join(root,name);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(sourceRoot,name),destination);
   }
   execFileSync(process.execPath,['scripts/integrate-launch.cjs'],{cwd:root});

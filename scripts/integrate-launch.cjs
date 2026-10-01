@@ -9,8 +9,8 @@ for (const name of ['web/index.html', 'mobile/assets/web/app.html']) {
   const start = '<!-- oharu-launch-assets:start -->';
   const end = '<!-- oharu-launch-assets:end -->';
   const assets = mobile
-    ? `<style>${fs.readFileSync(path.join(root, 'web/theme-system.css'), 'utf8')}</style>\n<script>${fs.readFileSync(path.join(root, 'web/theme-system.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/reminders.js'), 'utf8')}</script>`
-    : '<link rel="stylesheet" href="./theme-system.css">\n<script src="./theme-system.js"></script>\n<script src="./reminders.js"></script>';
+    ? `<style>${fs.readFileSync(path.join(root, 'web/theme-system.css'), 'utf8')}</style>\n<script>${fs.readFileSync(path.join(root, 'web/theme-system.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/settings-experience.js'), 'utf8')}</script>\n<script>${fs.readFileSync(path.join(root, 'web/reminders.js'), 'utf8')}</script>`
+    : '<link rel="stylesheet" href="./theme-system.css">\n<script src="./theme-system.js"></script>\n<script src="./settings-experience.js"></script>\n<script src="./reminders.js"></script>';
   const block = `${start}\n${assets}\n${end}`;
   if (html.includes(start)) html = html.slice(0, html.indexOf(start)) + block + html.slice(html.indexOf(end) + end.length);
   else html = html.replace('<script type="module">', `${block}\n<script type="module">`);
