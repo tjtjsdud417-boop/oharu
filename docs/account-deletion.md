@@ -1,3 +1,5 @@
+> 2026-10-01 배포 진행 갱신: 아래 준비 단계 설명보다 이 상태를 우선한다. 검토된 FK가 정확한 Oharu 프로젝트에 적용·재조회되었고, 내부 gate=false인 delete-account v1을 gateway verify_jwt=true로 배포하여 거부 동작을 검증했다. 로컬 entrypoint에만 활성화를 준비했으며 **활성 버전 배포는 새 커밋 CI 통과 대기**다. adapter 기본값 false는 유지했다. 실제 사용자 계정삭제는 실행하지 않았다.
+
 # 계정삭제 서버 준비 상태 — 2026-10-01
 
 **미배포·기본 차단 상태. 실제 삭제와 SQL 적용은 수행하지 않았다.**
@@ -91,3 +93,14 @@ verified MFA factor가 있는 계정은 password/OAuth 모두 서명 검증된 �
 추가 fixture는 서명 검증 adapter 실패/미검증 claims, 다른 issuer·sub·aud·session·만료, 직접 Google JWT 경계, refresh recent iat + old oauth AMR, 과거·미래 timestamp, nonce/cancel 추가필드와 취소 후 옛 토큰, linked identity, aal2+TOTP 두 조건 및 password MFA 경로를 검사한다. **서명 위조 테스트는 SDK 실패를 주입하는 adapter 경계 모의 테스트이며 실제 Supabase 서명키·원격 provider 검증 테스트가 아니다.**
 
 공식 근거: [JWT claims와 AMR 값](https://supabase.com/docs/guides/auth/jwt-fields), [서명 검증 getClaims](https://supabase.com/docs/reference/javascript/auth-getclaims), [MFA와 AAL](https://supabase.com/docs/guides/auth/auth-mfa). 조회일 2026-10-01.
+
+
+## 배포 진행 증거 — 2026-10-01
+
+- 확정 소스 `511826edb8da69820e1a86b5e254b8d6ec960c83`: launch CI [36840665666](https://github.com/tjtjsdud417-boop/oharu/actions/runs/36840665666) 성공 및 상위 담당자 실행 신호 이후 변경했다.
+- Supabase 정확 프로젝트 `tcaghsjndfaxlsgaqrdi`, 이름 oharu, ap-southeast-1, ACTIVE_HEALTHY 확인.
+- `account_deletion_todos_fk` migration 1회 성공. `todos_user_id_account_fkey`, convalidated=false, confdeltype=c, `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE NOT VALID` 재조회 일치. 행 삭제·고아 정리·RLS·grant·키 변경 없음.
+- 비활성 함수 v1 ID `b72fa900-0110-498f-8494-4753e23b9101`, bundle SHA256 `7fabdbfe1b8def00f7b7a63d8136276965da09e9cd3db91f3b9c1451abce87c7`, gateway verify_jwt=true.
+- 실제 사용자 토큰 없는 HTTP 검증: 무인증401, 위조형식JWT401, 기존 공개anonJWT의 정확OAuth body는503 deletion_not_enabled/deleted:false, GET405, 악성Origin403, 정상웹 preflight204. 공개 client key는 메모리에서만 사용하고 출력하지 않았다.
+- [공식 gateway 문서](https://supabase.com/docs/guides/functions/auth-headers)는 현재 verify_jwt=true가 HS256과 새 asymmetric signing keys 모두 검증한다고 설명한다. 보안을 완화해 flag를 끄지 않고 handler의 getUser/getClaims·재인증 검사도 유지했다.
+- 활성화 diff는 index.ts에서 factory 반환 adapter에 securityPrerequisites=true를 설정하는 부분뿐이다. adapter의 안전한 기본 false, frozen handler 및 기존 fixture는 바꾸지 않았다. 이 로컬 설정은 추가 커밋 CI 성공 후에만 원격 활성 버전으로 배포한다.
